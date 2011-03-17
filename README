@@ -1,0 +1,65 @@
+MSE (NC)
+
+C-style mud/webgame script engine
+
+C was dead after forced to mix OO, java was born to be rebirth of C, but was dead after J2EE was "invented".
+The original reason why we need computer language is we need a "language", not "framework" with tons of document.
+We need a kind of "language" we can just use it to create world, without reading tons of documents about "framework".
+
+1. This script syntax is inherit from C/java/javascript, it's easy to learn, easy to read, easy to maintain.
+2. It supports weak-type variable, you don't need define the type before use it.
+3. It's designed for huge concurrency runtime, so any object can be defined as "real global" accross multi-server.
+If a variable is defined like:
+	global world;
+The object "world" wil be stored on global memcached cluster automatically.
+Every front web server will read/write it synchronized and safely.
+
+In addition to above feature, I hope it can be a kind of light-wight and high-efficient web programming language. ( So an template toolkit should be developed in the future)
+
+
+Installation and development guide:
+
+-------- MACOS & linux ------------
+
+Make:
+$ make -f makefile_macos
+
+test mse:
+$ cd bin
+$ ./mse
+change the main.cpp as you want to test, and rebuild again
+
+test cgi from apache:
+1. Modify the configuration file of your apache
+$ vi /usr/local/apache2/conf/httpd.conf 
+
+add line
+ScriptAlias /cgi-bin/ "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/cgi-bin/"
+in block
+<IfModule alias_module>
+...
+</IfModule>
+
+add lines
+<Directory "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/cgi-bin">
+    AllowOverride None
+    Options None
+    Order allow,deny
+    Allow from all
+</Directory>
+Please change the position of cgi-bin folder to your own
+
+2. start apache
+$ /usr/local/apache2/bin/apachectl start
+(The position where you installed apache maybe different)
+
+3. access http://localhost/cgi-bin/cs.cgi from your browser
+You can change cgi-bin/cs_cgi.cpp as you want
+
+Add/Change syntax
+The grammar is defined in cocoR/cs.atg, you can change it and run "make parser" then "make -f makefile_macos"
+There is a "grep.pl" under cocoR folder, you can use it to see the clean grammar definition without code
+
+
+-------- windows ------------
+Not available currently
