@@ -3,17 +3,17 @@
 //
 
 // import class def used by this class
-use cgi;  
+/*use cgi;  
 use object;
 use a::testobj;
-
+*/
 // load dynamic link library
 load baselib; 
 
 
 //inherit object;
 int a;
-
+class test{
 /*test comments*/
 void main(string j, string p)
 {
@@ -32,26 +32,33 @@ void set(string name, var obj){
 	// static variable
 //	::name = obj;       
 	var a;
+	put_str("===>>>");
+	put_str(name+"="+value+"\r\n");
 }
 
 void test0(){
 
 }
 
+
 void test1( var a){
     putl(999);
 }
 
+void test99(var b){
+putl(b);
+}
 void create()
 {
 	int l = 110;
-	test0();
+/*	test0();
 	test1(111);
 // = 123456;
 	putl(l);
 	putl(324);
 	put_str("1234567890\r\nok\r\n");
 	put_str("afa\r\n");
+	test99(l);*/
         set("short", "东门\n");
         set("long",
 "这是东城门，城门正上方刻着“"+"东门"+"”两个楷书大字。城墙上贴着几张官府"+"告示(gaoshi)。官兵们警惕地注视着过往行人，好不威严。这里车水马龙，到处都是行人。虽然这里是城门口，但是小贩们也来到这里，不远处，有卖水的、卖苹果的、橘子香瓜、零食小点，真是要什么有什么。一条笔直的青石板大道向东西两边延伸。东边是郊外，北面有一片茂盛的青竹林。\n"
@@ -74,6 +81,11 @@ void create()
                 "/clone/npc/zuo" : 1
         });
 
-        set("cost", 1);
-        //setup();
+       set("cost", 1);
+         //setup();
+      
 }
+
+
+
+};

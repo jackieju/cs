@@ -21,9 +21,17 @@ public:
 		c.setConf(conf);
 	};
 	
+	CConfigure* getConf(){
+		return c.getConf();
+	};
+	
 	void setOutput(FILE* file){
 		if (file)
 			c.setOutput(file);
+	}
+	
+	CCompiler* getCompiler(){
+		return &c;
 	}
 	
 

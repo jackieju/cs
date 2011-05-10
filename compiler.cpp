@@ -268,3 +268,74 @@ BOOL CCompiler::Compile(char *szFileName)
 	}
 	return TRUE;
 }
+	void CCompiler::setConf(CConfigure& conf){
+		std::map<std::string, std::string> & _map = *conf.map();
+		std::map<std::string, std::string>::iterator it;
+		// printf("\n[Compiler options]:\n");
+		for ( it=_map.begin() ; it != _map.end(); it++ ){
+		 	m_conf.set((*it).first,(*it).second);
+		 	//printf("set %s=%s\n", (*it).first.c_str(), (*it).second.c_str());
+		 }
+		// printf("\n");
+		 //printf("Classpath:\n");
+		 std::string cp = m_conf.get("classpath");
+		 if (!cp.empty()){
+			char str[1024] ="";
+			strcpy(str, (char*)cp.c_str());
+			char* pch = NULL;
+		
+		   	pch = strtok (str,":");
+	
+		   			while (pch != NULL)
+		   			{
+			
+		 				class_path.push_back(pch);
+		     			printf ("\t%s\n",pch);
+		     			pch = strtok (NULL, ":");
+		   			}
+		 }
+	//	printf("-->%s\n", m_conf.get("classpath").c_str());
+		// printf("\n");
+			
+	}
+	
+
+	std::string CCompiler::findSrc(std::string filename){
+#ifdef _MACOS	// binary and text files has no difference in unix
+		int mode = O_RDONLY;
+#else
+		int mode = O_RDONLY | O_BINARY;
+#endif
+		int src = NULL;
+		
+		std::string cwd = std::string(JUJU::getWorkingPath());
+		std::string path=cwd+PATH_SEPARATOR_S+filename;
+		printf("try %s\n", path.c_str());
+		// find from current path
+		src = open(path.c_str(), mode);
+		
+		if (src != -1){
+			close(src);
+			return  path;
+		}
+			
+		// find in classpath
+		int i = 0;
+
+		printf("try\n");
+		for (i = 0;i<class_path.size(); i++){
+			path=class_path[i]+PATH_SEPARATOR_S+filename;
+			printf("\t%s ...\n", path.c_str());
+			src = open(path.c_str(), mode);
+			if (src != -1){
+				close(src);
+				printf("\tfound\n");
+				return path;
+			}
+		}
+		return "";
+	}
+	
+	std::vector<std::string>& CCompiler::getClassPath(){
+		return class_path;
+	}

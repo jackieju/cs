@@ -19,9 +19,31 @@ CPubFuncTable g_PubFuncTable;
 // function for external lib function
 ///////////////////////////////////////
 
-
-void applyOption(char* p, char* v){
-	
+	char* target = NULL;
+bool applyOption(char** argv, int number){
+	if (number <= 0)
+		return true;
+	char* p = argv[0];
+//	printf("arg=%s, number=%d",p, number);
+	if (p[0]=='-'){
+		if (strcmp(p+1, "sp")==0){
+			printf("set classpath %s\n", argv[1]);
+			if (--number <= 0)
+				return false;
+			else
+				conf.set("classpath", argv[1]);
+			applyOption(argv+2, number-1);
+		}else if(strcmp(p+1, "d")==0){
+			  conf.set("debug","yes");
+			  applyOption(argv+1, number-1);
+		}else{
+			printf("unknow option %s", p);
+			return false;
+		}
+	}else{
+		target = argv[0];
+		applyOption(argv+1, number-1);
+	}
 }
 
 int main(int num, char** args){
@@ -58,34 +80,59 @@ int main(int num, char** args){
 	//Delete(files);
 	//getchar();
 #endif
-	if (num == 1){
+	if (num == 1 || !applyOption(args+1, num-1)){
 	
 		printf("New C Script 0.0.1 Deveopled by jackie.ju@gmail.com\n");
 		printf("New C Script is C-style programming script language.\n");
 		printf("Usage: mse {options} (class_name)\n");
+		printf("Options:\n");
+		printf("-sp \tsource path separated with ':'\n e.g. -sp /usr/local/mse:/root/mse\n");
+		printf("-d  \ttoggle debug mode");
 		printf("www.cs-soft.com\n");
 		return 0;
 	}
 	
 	bool bOption = false;
-	char* target = NULL;
-	for (int i = 1; i < num; i++){
-		if (args[i][0]=='-'){
-			applyOption(args[i], args[i+1]);
-			i++;
-		}else{
-			target = args[i];
-		}
-			
-	} 
+
+
 	
-CConfigure  conf;
+
 CS* cs;
 	cs = new CS();
     cs->setOutput(stdout);
-    conf.set("debug","yes");
-    conf.set("classpath", "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/lib;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse");
-    cs->setConf(conf);
+    //conf.set("debug","yes");
+  //  conf.set("classpath", "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/lib;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/test");
+  
+cs->setConf(conf);
+		std::map<std::string, std::string>::iterator it;
+
+		std::map<std::string, std::string> & _map = *(conf.map());
+	/*for ( it=_map.begin() ; it != _map.end(); it++ ){
+		 
+		 	printf("%s=%s\n", (*it).first.c_str(), (*it).second.c_str());
+			}	
+
+*/
+
+
+	CConfigure* m_conf = (cs->getConf());
+		 _map = *(m_conf->map());
+
+	 printf("\n[Compiler options]:\n");
+	
+		for ( it=_map.begin() ; it != _map.end(); it++ ){
+		 	printf("%s=%s\n", (*it).first.c_str(), (*it).second.c_str());
+		 }
+		 printf("\n");
+		 printf("Classpath:\n");
+		std::vector<std::string>& class_path = cs->getCompiler()->getClassPath();
+		int i =0;
+			for (i = 0;i<class_path.size(); i++){
+				printf("\t%s\n", class_path[i].c_str());
+		
+		}
+		 printf("\n");
+			
 //	cs->loadobj("test/test");
 	cs->loadobj(target);
 }

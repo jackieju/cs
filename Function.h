@@ -43,6 +43,9 @@ public:
 	int AddStaticData(int size_t, unsigned char* pData);       //向符号表添加常量
 	CFunction();
 	virtual ~CFunction();
+	char* name(){
+		return m_szName;
+	};
 
 //	void SetAX(long val);
 //	BOOL MoveCmd(unsigned int uFrom, unsigned int uTo);//不能使用该功能， 因为她会导致跳转语句出错

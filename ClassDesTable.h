@@ -24,19 +24,16 @@ public:
 			ERR(msg);			
 		}
 		tables[szName] = ccd;
-		printf("====>add class %s, %x\n", szName, ccd);
-		printf("this=%x, %x\n", this, tables[szName]);
-		tables["123"] = (CClassDes* )0x123456;
-		char m[100]="";
-		sprintf(m, "123");
-		printf("this=%x, %x\n", this, tables[m]);
-		printf(" tables[\"test/test\"]%x\n", tables["test/test"]);
+		printf("add class %s, %x\n", szName, ccd);
+	//	printf("this=%x, %x\n", this, tables[szName]);
+	//	tables["123"] = (CClassDes* )0x123456;
+	//	char m[100]="";
+	//	sprintf(m, "123");
+	//	printf("this=%x, %x\n", this, tables[m]);
+	//	printf(" tables[\"test/test\"]%x\n", tables["test/test"]);
 	}
 
-	CClassDes* getClass(char* szName){
-			printf("getClass [\"test/test\"]%x\n", tables["test/test"]);
-		return tables[szName];
-	}
+	CClassDes* getClass(char* szName);
 	void removeClass(char* szName);
 
 	void dump(){

@@ -284,6 +284,9 @@ long CFunction::OutupCmd(long index, char *buffer)
 		case 0x1050: sprintf(cmd, "sub");break;
 		case 0x10a1: sprintf(cmd, "jz");break;
 		case 0x10a2: sprintf(cmd, "jnz");break;
+		case 0x10a6: sprintf(cmd, "callv");break;
+		case 0x10a7: sprintf(cmd, "paramv");break;
+		case 0x10a8: sprintf(cmd, "endcallv");break;
 		case 0x10f2: sprintf(cmd, "test");break;
 		case 0x10f3: sprintf(cmd, "ret");break;
 		case 0x10a3: sprintf(cmd, "callpub");break;

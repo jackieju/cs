@@ -456,6 +456,7 @@ void CVirtualMachine::LoadFunction(CFunction *pFunc)
 */
 void CVirtualMachine::_LoadFunc(CFunction *pFunc)
 {
+	printf("call virtual function %s", pFunc->name());
 	if (pFunc == NULL)
 		throw new CVMMException("input CFuntion is null");	
 	
@@ -522,11 +523,12 @@ return FALSE;
 	if (cmd == NULL)\
 {\
 	nLOG("SE:: commond is NUll", 50);\
+	printf("command is NULL");\
 	return FALSE;\
 }\
 	int op1mode, op1reflvl;\
 	unsigned char * dest;\
-if (!Preprocess1(cmd, op1mode, op1reflvl, dest)) return FALSE;
+	if (!Preprocess1(cmd, op1mode, op1reflvl, dest))  {printf("Preprocess1 failed\n");return FALSE;}
 
 
 
@@ -1238,7 +1240,7 @@ BOOL CVirtualMachine::_paramv(PCOMMAND cmd)
 {
 	CMD_PREPROCESS1
 	short opsize;// 是字节操作, 字操作, 还双字操作
-	
+
 	// get opsize
 	opsize= (cmd->address_mode >> 14)&0x3;
 	int size = 1;
@@ -1247,6 +1249,7 @@ BOOL CVirtualMachine::_paramv(PCOMMAND cmd)
 		size *= 2;
 	}	
 	FUNCTIONSTACKELE *pCallInfo = NULL;
+
 	if (m_FuncStack.empty() == true)
 		return FALSE;
 	pCallInfo = m_FuncStack.top();
@@ -1706,7 +1709,7 @@ BOOL CVirtualMachine::Run()
 	while (m_ToStop.Wait(0) == LOCKEX_ERR_TIMEOUT && !bError)
 	{
 		printf("--->__IP=%d, mode=%d\n", __IP, m_nWorkMode);
-		printf("--->line %d, code %d\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
+		printf("--->line %d, code 0x%x\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
 		m_StatusLock.Lock();
 		opcode = m_pCurCall->pFunc->m_pCmdTable[__IP].opcode;
 		pcmd = &(m_pCurCall->pFunc->m_pCmdTable[__IP]);
@@ -2249,11 +2252,13 @@ long CVirtualMachine::AttachParam(BYTE *pParam, int size_t)
 
 	// modified on 20030331 by weihua ju
 	// modified on 20030327 by weihua ju
+	// moddified on 20110510 by weihua ju (jackie.ju@gmail.com)
+	// doosn't check params size for virtual function call
 	if (size_t != m_pCurCall->pFunc->m_iParamTotalSize)
 	{
-		snprintf(sMsg, 200, "SE::AttachParam: input parameter block size(%d) is bigger than function total parameters size(%d), script: %s", size_t, m_pCurCall->pFunc->m_iParamTotalSize, m_pCurCall->pFunc->m_szName);
+		snprintf(sMsg, 200, "SE::AttachParam: input parameter block size(%d) is not equal to function total parameters size(%d), script: %s", size_t, m_pCurCall->pFunc->m_iParamTotalSize, m_pCurCall->pFunc->m_szName);
 		nLOG(sMsg, 9);
-		return REQERR_PARAMNUMERROR;
+	//	return REQERR_PARAMNUMERROR;
 	}
 	memcpy(m_pCurCall->DataSeg, pParam, size_t);
 	return REQERR_NOERROR;

@@ -92,9 +92,9 @@ PRODUCTIONS
     C                    =      (. 
 	
 	 m_pCurClassDes = new CClassDes(this);
-	 std::string className = JUJU::getFileName(curFileName);
-	 m_pCurClassDes->SetName((char*)className.c_str());	
-	
+	 //std::string className = JUJU::getFileName(curFileName);
+	 //m_pCurClassDes->SetName((char*)className.c_str());	
+	m_pCurClassDes->SetName("_global_");
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
     
@@ -102,10 +102,10 @@ PRODUCTIONS
    { Import | LoadLib } [ Inheritance ]
 
     { Definition } EOF (. 
-
+/*
 	if (Error->Errors){ // if compile failed, remove this class
 		m_classTable->removeClass((char*)className.c_str());
-	}
+	}*/
 //	std::string name = m_pCurClassDes->GetFullName();
   //	name += ".class";
   //FILE* file = fopen(name.c_str(), "w");
@@ -125,11 +125,11 @@ PRODUCTIONS
 						CCompiler cc;
 	                         std::string s = JUJU::getFilePath(c->getCurSrcFile())+szName;
 					printf("current file: %s\n", c->getCurSrcFile());
-					printf("crrent file path: %s\n", JUJU::getFilePath(c->getCurSrcFile()).c_str());
+					printf("current file path: %s\n", JUJU::getFilePath(c->getCurSrcFile()).c_str());
 					printf("use %s\n", szName);
 								if (m_conf)	
 									cc.setConf(*m_conf);
-								
+								// add path of current class file to class path
 								cc.getClassPath().insert(cc.getClassPath().begin(), JUJU::getFilePath(c->getCurSrcFile()));
 	                            cc.Compile(szName);
 	}
@@ -214,7 +214,7 @@ PRODUCTIONS
   
   Include = "#include" files .*/
   
-  Inheritance              = "inherit" identifier 
+  Inheritance              = ("inherit"|"<") identifier 
   (.
   
    // TODO get full name in current imported classes, should not need to provide full name here
@@ -240,7 +240,15 @@ PRODUCTIONS
 	char *szName = new char[MAX_IDENTIFIER_LENGTH];
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-.)
+	
+	 m_pCurClassDes = new CClassDes(this);
+	// std::string className = JUJU::getFileName(curFileName);
+	 m_pCurClassDes->SetName(szName);	
+	
+	// add class def first because it maybe referenced by its own code
+	 m_classTable->addClass(m_pCurClassDes);
+.) 
+{Inheritance}
 ClassBody	";" .
 	ClassBody			 = 
 	(.
@@ -1502,7 +1510,8 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 						ADDCOMMAND1(__callv, CC, (long)pScript);
 						
 						// add "this" as first parameter
-						ADDCOMMAND1(__paramv, 0x5100, 0);
+						printf("add this as parameter for class method\n");
+						ADDCOMMAND1(__paramv, 0xc100, 0);
 						
 						m_pCurClassDes->getFuncTable()->ReleaseFunc();
 					}
@@ -1988,9 +1997,11 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 
  [ ActualParameters<pFuncEntry> ] ")" 
   (.
+
     //long lParamNum = 0;
 	if (pFuncEntry->nType) // public function
 	{
+	printf("for native function \n");
   		//addcommand
 		ADDCOMMAND0(__endcallpub);
 		//save return value
@@ -2010,6 +2021,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 	}
 	else // virtual function
 	{
+		printf("for virtual function \n");
 	// check param number
 	//if (lParamNum != pFuncEntry->pVF->m_iParamNum)
 	//{

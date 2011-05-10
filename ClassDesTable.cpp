@@ -20,3 +20,8 @@ CClassDesTable::~CClassDesTable(void)
 		tables[szName] = NULL;
 	//	tables.erase(tables[szName]);
 	}
+	
+		CClassDes* CClassDesTable::getClass(char* szName){
+			printf("getClass [\"%s\"] in class table, result %x\n", szName, tables[szName]);
+		return tables[szName];
+	}
