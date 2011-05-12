@@ -39,7 +39,7 @@ CPubFuncTable::~CPubFuncTable()
 
 BOOL CPubFuncTable::AddFunction(void* pfn, char *szName, char cParamNum)
 {
-		printf("pfn is %lx\n", pfn);
+	// printf("pfn is %lx\n", pfn);
 	char sMsg[201] = "";
 
 	if (szName == NULL)
@@ -87,7 +87,7 @@ BOOL CPubFuncTable::AddFunction(void* pfn, char *szName, char cParamNum)
 		this->m_FuncTable[m_iFuncNum].uMinParamNum = uMinParamNum;
 		*/
 		this->m_FuncTable[m_iFuncNum].cParamNum = cParamNum;
-			printf("function address is %lx\n", this->m_FuncTable[m_iFuncNum].pfn);
+		//	printf("function address is %lx\n", this->m_FuncTable[m_iFuncNum].pfn);
 		m_iFuncNum++;
 	}
 

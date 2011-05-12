@@ -3,7 +3,7 @@
 
  class CPUtil{
 	public:
-		long typesize(long type, long id)
+		long static typesize(long type, long id)
 {
 #ifdef _64
 	switch (type)
@@ -69,7 +69,8 @@
 	}
 #endif
 }
-int log2(int x)
+
+int static log2(int x)
 {
 	printf("===>x=%d\n", x);
 	int i = 0;
@@ -85,6 +86,20 @@ int log2(int x)
 		return 0;
 }
 
+int static UnitSize(TYPEDES &type)
+{
+	if (type.refLevel<=0)
+		return typesize(type.type, type.objID);
+	else
+		return sizeof(long*);
+}
+
+
+int static getAddressMode(long type1, long type2, TYPEDES& dt1, TYPEDES& dt2){
+	int address_mode = (type1<<8)|(short)type2;
+	address_mode |= (log2(UnitSize(dt1))<<14)|(log2(UnitSize(dt2))<<6);
+	return address_mode;
+}
 	
 	
 };

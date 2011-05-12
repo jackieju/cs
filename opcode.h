@@ -47,6 +47,7 @@
 #define __eaobj			0x10aa				// get address of object
 #define __newobj		0x10ab				// create new object or array
 #define __movobj		0x10ac				// assignment for object
+#define __i_evelstring	0x10ad				// eval string including
 
 //类型转换(__cast(目标地址,  原地址, 转换类型)
 #define	__cast			0x10f6				

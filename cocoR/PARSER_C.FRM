@@ -317,16 +317,8 @@ char* cParser::AnalyzeConstString(char *string)
 
 
 
-int cParser::UnitSize(TYPEDES &type)
-{
-	if (type.refLevel<=0)
-		return typesize(type.type, type.objID);
-	else
-		return sizeof(long*);
-}
 
-
-
+#if 0
 /*
 函数名称     : cParser::NeedCast
 函数功能	    : 判断是否需要类型转换, 并返回转换码和要转换的运算数
@@ -525,8 +517,95 @@ long cParser::NeedCast(TYPEDES dt1, TYPEDES dt2, char &casted)
 	GENERR(110);
 	return -1;
 }
+#endif 
+long cParser::NeedCast(TYPEDES dt1, TYPEDES dt2, char &casted)
+{
+	casted = 0;
+	TYPEDES DT1, DT2;
+	//beckup
+	memcpy(&DT1, &dt1, sizeof(TYPEDES));
+	memcpy(&DT2, &dt2, sizeof(TYPEDES));
+	
+	if (DT1.type == DT2.type || // same type
+	 (dt1.refLevel>0 && dt2.refLevel>0) // both are pointer
+	)
+		return -1;
+		
+	if ( (DT1.refLevel > 0 && DT2.refLevel == 0) || (DT2.refLevel > 0 && DT1.refLevel == 0) ){
+		fprintf(stderr, "pointer cannot operat with non-pointer");
+		GENERR(110);		
+		return -1;
+	}
+	
 
+	if (dt1.type == dt2.type)
+		return -1;
 
+	switch (dt1.type)
+	{
+	case dtFloat:
+		{
+			casted = 2;
+			switch (dt2.type)
+			{
+			case dtChar: return __CAST_C2F;
+			case dtShort: return __CAST_S2F;
+			case dtInt: return __CAST_I2F;
+			case dtLong: return __CAST_L2F;
+			default:GENERR(110);return -1;
+			}
+		}
+	case dtLong:
+		{
+			switch (dt2.type)
+			{
+			case dtChar: casted = 2; return __CAST_C2L;
+			case dtShort: casted = 2; return __CAST_S2L;
+			case dtInt: return -1;
+			case dtFloat: casted = 1; return __CAST_L2F;
+			default:GENERR(110);return -1;
+			}
+		}
+	case dtInt:
+		{
+			switch (dt2.type)
+			{
+			case dtChar: casted = 2; return __CAST_C2I;
+			case dtShort: casted = 2; return __CAST_S2I;
+			case dtLong: return -1;
+			case dtFloat: casted = 1; return __CAST_I2F;
+			default:GENERR(110);return -1;
+			}
+		}
+	case dtShort:
+		{
+			switch (dt2.type)
+			{
+			case dtChar: casted = 2; return __CAST_C2S;
+			case dtInt: casted = 1; return __CAST_S2I;
+			case dtLong: casted = 1;  return __CAST_S2L;
+			case dtFloat: casted = 1; return __CAST_S2F;
+			default:GENERR(110);return -1;
+			}
+		}
+	case dtChar:
+		{
+			switch (dt2.type)
+			{
+			case dtShort: casted = 1;return __CAST_C2S;
+			case dtInt: casted = 1; return __CAST_C2I;
+			case dtLong: casted = 1;  return __CAST_C2L;
+			case dtFloat: casted = 1; return __CAST_C2F;
+			default:GENERR(110);return -1;
+			}
+		}
+	case 0:// 空操作数(dummy type)
+		return -1;
+	default:GENERR(110);		
+	}
+	
+	return 0;
+}
 /*
    函数名称     : cParser::AllocTempVar
    函数功能	    : 分配一个临时变量
@@ -561,6 +640,10 @@ long cParser::AllocTempVar(long type, long reflevel)
 */
 void cParser::Cast(long &op1, long &type1, TYPEDES &dt1, long &op2, long &type2, TYPEDES &dt2)
 {
+// change by jackie ju at 20110512
+// 
+#if 0
+/***** old code ********
 			long castcode = -1; //cast操作码
 			char casted = 0;	//被转换类型的运算数
 			castcode = NeedCast(dt1, dt2, casted);
@@ -611,7 +694,67 @@ void cParser::Cast(long &op1, long &type1, TYPEDES &dt1, long &op2, long &type2,
 						dt2.type = type;
 					}
 				}				
-			}
+			}*/
+#endif		
+			/***** new code *****/
+			// check if need cast
+			char casted = 0; // which operand need to be cast
+			if (NeedCast(dt1, dt2, casted) <=0)
+				return;
+				
+				long temp = -1;//临时变量地址, 存放转换后的变量
+				long t_type;//目标类型
+				long t_ref;
+				long* castedop = NULL;
+				int address_mode = 0;
+				if (casted == 1)
+				{
+					t_type = dt2.type;
+					castedop = &op1;
+					t_ref = dt2.refLevel;
+			
+				}
+				if (casted == 2)
+				{
+					t_type = dt1.type;
+					castedop = &op2;
+					t_ref = dt1.refLevel;
+				}
+
+				temp = AllocTempVar(t_type, t_ref);
+
+				if (temp == -1)
+				{
+					GENERR(98);
+				}
+				else
+				{
+				
+				 
+					if (casted == 1)
+					{			
+						address_mode = 	getAddressMode(AMODE_MEM, type1, dt2, dt1);
+						ADDCOMMAND4(__movobj, address_mode, temp, op1, t_type<<4|t_ref, dt1.type<<4|dt1.refLevel) 
+						//修改运算数
+						op1 = temp;
+						type1 = AMODE_MEM;
+						dt1.type = t_type;
+					}
+					if (casted == 2)
+					{
+						address_mode = 	getAddressMode(AMODE_MEM, type2, dt1, dt2);
+							ADDCOMMAND4(__movobj, address_mode, temp, op2, t_type<<4|t_ref, dt2.type<<4|dt2.refLevel) 
+						//修改运算数
+						op2 = temp;
+						type2 = AMODE_MEM;
+						dt2.type = t_type;
+					}
+				}
+			
+			
+			
+			/***** end change ***/
+
 }
 
 BOOL cParser::AddClass(CClassDes& obj)
@@ -722,11 +865,9 @@ void cParser::SetByteCodeFilePath(char* szPath)
 
 bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES& dt1, TYPEDES& dt2 )
 {
-
 	//get address mode
-	int address_mode = (type1<<8)|(short)type2;
-	address_mode |= (log2(UnitSize(dt1))<<14)|(log2(UnitSize(dt2))<<6);
-
+	int address_mode = getAddressMode(type1, type2, dt1, dt2);
+/*
 	if (dt1.type != dtGeneral && dt2.type != dtGeneral){
 
 		//add commmand to command table
@@ -734,12 +875,21 @@ bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES&
 		pushResultAX();
 	}
 	else{
-		if (dt2.type == dtGeneral && dt1.type != dtGeneral) // can not assign object to primitive type
+		if (dt2.type == dtGeneral && dt1.type != dtGeneral) {// can not assign object to primitive type
 			this->GENERR(11); // TODO
+			fprintf(stderr, "Cannot assign objrct o primitive type");
+		}
+	//	int source_type = dt2.type;
+	//	if (dt1.type == dtGeneral && dt2.type == dtChar && dt2.refLevel == 1) // char* => object{
+	//		source_type = dtString;
+	//	}
 		//add commmand to command table
-		ADDCOMMAND3(__movobj, address_mode, op1, op2, dt2.type)      
+		ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel)      
 		m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
-	}
+	}*/
+	ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel) 
+	m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
+//	pushResultAX();    
 	return true;
 }
 

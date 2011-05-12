@@ -56,3 +56,17 @@
 使用cocor改造compiler， 就是把生成语法树或代码段的逻辑放到.atg和.frm中
 1. CompoundStatement
 2. functoncall and ActualParameter
+
+
+20110512
+1. need type cast, or implicitly cast ?
+2. call pub function
+function puts(string v){
+	put_str(v);
+	put_str((char*)v);
+}
+function create(){
+ var a = "dd"; // is object
+ puts(s); // should check parameter type ? should cast implicitly ?
+ puts((string(s)); // should cast explicitly ?
+}

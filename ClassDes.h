@@ -13,7 +13,7 @@ typedef struct _tagObjMemDes
 	long offset;			//offset
 }OBJMEMDES;
 class cParser;
-class CClassDes{
+class CClassDes : public CFunction{
 
 private:
 
@@ -23,12 +23,12 @@ private:
 	//long m_lMemberNum;			// 成员数
 	//long m_lCurSize;			// 当前obj的大小
 
-	CSymbolTable m_memberTable;
+//	CSymbolTable m_memberTable;
 	cParser *m_pParser;
 
-	char m_szName[1024]; // full class name
+//	char m_szName[1024]; // full class name
 	CScriptFuncTable fnTable; // member function table
-	char szParentName[1024]; // full class name of parent
+//	char szParentName[1024]; // full class name of parent
 
 public:
 	CScriptFuncTable* getFuncTable(){
@@ -54,17 +54,19 @@ public:
 
 	// add primitive member
 	bool AddMember(char* szName, TYPEDES& dt){
-		return this->m_memberTable.AddSymbol(szName, dt);
+		return this->m_SymbolTable.AddSymbol(szName, dt);
 	};
 	BOOL SetName(char* szName);
 	long GetMemberNum(){
-		return m_memberTable.m_nSymbolCount;
+		return m_SymbolTable.m_nSymbolCount;
 	};
-	void setParent(char* szName){
-		strcpy(szParentName, szName);
-	}
+
+	// void setParent(char* szName){
+	// 	strcpy(szParentName, szName);
+	// }
+
 	SYMBOLTABLEELE *GetMemberByName(char* szName){
-		return  this->m_memberTable.GetSym(szName);
+		return  this->m_SymbolTable.GetSym(szName);
 	};
 	std::string output(){
 		char msg[1024] = "";
@@ -78,9 +80,9 @@ public:
 
 
 
-		for (int i = 0; i< m_memberTable.m_nSymbolCount; i ++){
-			snprintf(msg, 1000, "%s\t%04x\t%04x\t%04x\r\n", m_memberTable.tableEntry[i].szName, 
-				m_memberTable.tableEntry[i].type.type, m_memberTable.tableEntry[i].address, m_memberTable.tableEntry[i].size_t);
+		for (int i = 0; i< m_SymbolTable.m_nSymbolCount; i ++){
+			snprintf(msg, 1000, "%s\t%04x\t%04x\t%04x\r\n", m_SymbolTable.tableEntry[i].szName, 
+				m_SymbolTable.tableEntry[i].type.type, m_SymbolTable.tableEntry[i].address, m_SymbolTable.tableEntry[i].size_t);
 			r += msg;
 		}		
 		r += "===========================\r\n\r\n";

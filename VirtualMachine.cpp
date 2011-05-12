@@ -259,7 +259,7 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 	}
 	else
 		lParamSize =0;
-	printf("%d %d %d %d %d %d\n", p1, p2, p3, p4, p5, p6);
+	printf("===>CallPubFunc %d %d %d %d %d %d\n", p1, p2, p3, p4, p5, p6);
 	//_HGDispatchCall(pRet, (void*)pfn, p, lParamSize);
 	
 			__asm__ __volatile__ (
@@ -456,7 +456,7 @@ void CVirtualMachine::LoadFunction(CFunction *pFunc)
 */
 void CVirtualMachine::_LoadFunc(CFunction *pFunc)
 {
-	printf("call virtual function %s", pFunc->name());
+	printf("call virtual function %s\n", pFunc->name());
 	if (pFunc == NULL)
 		throw new CVMMException("input CFuntion is null");	
 	
@@ -1815,6 +1815,9 @@ BOOL CVirtualMachine::Run()
 		case __cast:
 			if (!_cast(pcmd)) bError = TRUE;
 			break;
+		case __movobj:
+			if (!_movobj(pcmd)) bError = TRUE;
+			break;
 		default:
 			snprintf(msg, 200, "SE:: can not find the implement of this command %xH (line: %d)", opcode, pcmd->line);
 			nLOG(msg, 9);
@@ -2618,7 +2621,91 @@ BOOL CVirtualMachine::_cast(PCOMMAND cmd)
 	__IP++;
 	return TRUE;	
 }
+BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
+{
+	char msg[201] = "";
+	CMD_PREPROCESS2
+	//long op3 = cmd->op[2];// dest type 
+	long dest_type = (cmd->op[2] & 0xf0 ) >> 4;	
+	long dest_reflevel = cmd->op[2] & 0x0f;
+	//long op4 = cmd->op[3];// src type
+	long src_type = (cmd->op[3] & 0xf0 ) >> 4;	
+	long src_reflevel = cmd->op[3] & 0x0f;
+	printf("cast %d(%d) to %d(%d)\n", dest_type, dest_reflevel, src_type, src_reflevel);
+	
+	if (dest_type == dtGeneral){ // if dest is object
+		CObjectInst *obj = *(CObjectInst**)dest;
+		if (src_type == dtGeneral ){ // object => object
+			*(CObjectInst**)dest =  *(CObjectInst**)src; // copy address of object
+		}else if (obj == NULL){ // primitive => object, if src is primitive and dest is not and initialized object reference
+			obj = CObjectInst::createObject(NULL);
+			*(CObjectInst**)dest = obj;
+			if (src_reflevel > 0)
+				obj->setValue(dtLong, src);
+			else
+				obj->setValue(src_type, src);
+		}
+   }else { // dest is primitive type
+		if (src_type == dtGeneral ){  // object => primitive
+			CObjectInst *obj = *(CObjectInst**)src;
+			if (dest_reflevel>0){
+				if (dest_type == dtChar){
+					*(char**)dest = (char*)obj->getSValue().c_str();
+				}else
+					*(long*)dest = obj->getValue().l;
+			}else{
+				switch (src_type){
+					case dtInt:
+					*(int*)dest = obj->getValue().i;
+					break;
+					case dtUInt:
+					*(int*)dest = obj->getValue().ui;
+					break;
+					case dtShort:
+					*(int*)dest = obj->getValue().st;
+					break;
+					case dtUShort:
+					*(int*)dest = obj->getValue().ust;
+					break;
+					case dtLong:
+					*(int*)dest = obj->getValue().l;
+					break;
+					case dtULong:
+					*(int*)dest = obj->getValue().ul;
+					break;
+					case dtChar:
+					*(int*)dest = obj->getValue().c;
+					break;
+					case dtUChar:
+					*(int*)dest = obj->getValue().uc;
+					break;
+					case dtFloat:
+					*(int*)dest = obj->getValue().f;
+					break;
+					default:
+					fprintf(stderr, "Execute __movobj failed, dest type not support when move a object to primitive");
+				}
+			}
+		}else{ // primitive => primitive
+			short opsize;//是字节操作, 字操作, 还双字操作
+			//opsize = __min((cmd->address_mode >> 14)&0x3 ,(cmd->address_mode >> 6)&0x3);
+			   if (((cmd->address_mode >> 14)&0x3)>((cmd->address_mode >> 6)&0x3))
+			       opsize = (cmd->address_mode >> 6)&0x3;
+			   else
+			       opsize = (cmd->address_mode >> 14)&0x3;
+			switch (opsize)
+			{
+			case 0:	memcpy(dest, src, 1);break;
+			case 1:	memcpy(dest, src, 2);break;
+			case 2:	memcpy(dest, src, 4);break;
+			case 3:	memcpy(dest, src, 8);break;
+			}
+		}
+	}
 
+	__IP++;
+	return TRUE;	
+}
 BOOL CVirtualMachine::_fadd(PCOMMAND cmd)
 {
 	char msg[201] = "";

@@ -85,6 +85,15 @@ typedef struct _tagExpressionOp
 	_op_[2] = (long)param3;\
 	m_pMainFunction->AddCommand(code, address_mode, 3, _op_, Scanner->CurrSym.Line);}
 
+#define ADDCOMMAND4(code, address_mode, param1, param2, param3, param4){\
+	long _op_[4];\
+	memset(_op_, 0, 4*sizeof(long));\
+	_op_[0] = (long)param1;\
+	_op_[1] = (long)param2;\
+	_op_[2] = (long)param3;\
+	_op_[3] = (long)param4;\
+	m_pMainFunction->AddCommand(code, address_mode, 4, _op_, Scanner->CurrSym.Line);}
+	
 class CPubFuncTable;
 class CLoopTree;
 class CFunction;
@@ -110,7 +119,7 @@ public:
 	BOOL init(CClassDesTable *table, CPubFuncTable* pft, CConfigure* c=NULL);
 	void destroy();
 
-	int UnitSize(TYPEDES& type);                //实际数据类型的size
+//	int UnitSize(TYPEDES& type);                //实际数据类型的size
 	//void Init(CClassTable *table, CPubFuncTable* ptf);                                       //初始化
 	void SetPubFuncTable(CPubFuncTable* pTable);       //设置脚本将使用的基本函数表
     CClassDes *getCurClassDes(){

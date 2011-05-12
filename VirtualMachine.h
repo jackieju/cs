@@ -299,6 +299,7 @@ private:
 	BOOL _cast(PCOMMAND cmd);
 	BOOL _loadlib(PCOMMAND cmd);  // not used
 	BOOL _eaobj(PCOMMAND cmd);    // get address for object/member
+	BOOL _movobj(PCOMMAND cmd);   // new command for object
 };
 
 

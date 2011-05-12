@@ -77,7 +77,10 @@ public:
 	
 //	DATA m_StackSegment;                  //堆栈段
 
-
+	CFunction *parent; // parent , can be a class or function
+		void setParent(CFunction* p){
+		parent = p;
+	}
 public:
 		//运算数栈
 	EXPRESSIONDIGIT m_ExpDigit;

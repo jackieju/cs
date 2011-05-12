@@ -13,8 +13,8 @@ CClassDes::CClassDes(cParser* p)
 	//m_lMemberNum = 0;
 	//m_lTableSize = 0;
 	
-	memset(this->m_szName, 0, 1024);
-	memset(this->szParentName, 0, 1024);
+//	memset(this->m_szName, 0, 1024);
+//	memset(this->szParentName, 0, 1024);
 	m_pParser = p;
 
 	//m_MemberTable = NULL;

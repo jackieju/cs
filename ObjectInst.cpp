@@ -5,8 +5,10 @@ CObjectInst::CObjectInst(long id, CClass* cls)
 	this->id = id;
 	this->cls = cls;
 	ref = 0;
-	
+	valueType = 0;	
+	v.s = &vs;
 }
+
 
 CObjectInst::~CObjectInst(void)
 {

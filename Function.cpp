@@ -36,6 +36,8 @@ CFunction::CFunction()
 	m_pExpDigitPt = &m_ExpDigit;
 	m_ExpDigit.pPrev = NULL;
 
+	memset(this->m_szName, 0, 1024);
+
 }
 
 CFunction::~CFunction()
