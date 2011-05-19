@@ -100,6 +100,8 @@
 #include "ObjTable.h"
 #include "VirtualMachine.h"
 #include "VMManager.h"
+
+#include "compiler.h"
 //#include "sym_engine.h"
 
 long CVirtualMachine::m_lDbgCmdID = 0;
@@ -259,7 +261,7 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 	}
 	else
 		lParamSize =0;
-	printf("===>CallPubFunc %d %d %d %d %d %d\n", p1, p2, p3, p4, p5, p6);
+	printf("===>CallPubFunc %x %d %d %d %d %d\n", p1, p2, p3, p4, p5, p6);
 	//_HGDispatchCall(pRet, (void*)pfn, p, lParamSize);
 	
 			__asm__ __volatile__ (
@@ -840,6 +842,7 @@ BOOL CVirtualMachine::_jmp(PCOMMAND cmd)
 	return TRUE;
 }
 
+// get physical address of one variable, and put into dest 
 BOOL CVirtualMachine::_ea(PCOMMAND cmd)
 {
 	long EA;
@@ -852,24 +855,54 @@ BOOL CVirtualMachine::_ea(PCOMMAND cmd)
 	return TRUE;
 }
 
+// get address of an object member
 BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 {
-	INT EA;
+	CMD_PREPROCESS2
+	INT EA=NULL;
  
-	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
-	unsigned char* obj = &m_pCurCall->DataSeg[cmd->op[1]];
+//	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
+	CObjectInst* obj = (CObjectInst*)src;
 
 	if (cmd->opnum > 2){
 		if (obj == NULL)
 			return FALSE;
 		char* member = (char*)(&(m_pCurCall->StaticSeg[cmd->op[2]]));
-		EA = (INT)(((CObjectInst*)obj)->getMemberAddress(member));
+		CObjectInst* o =  obj->getMemberAddress(member);
+		if (o != NULL)
+			EA = (INT)o;
 	}else
 		EA = (long)obj;
 	memcpy(dest, &EA, sizeof(long));
 	__IP++;
 	return TRUE;
 }
+
+BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
+{
+	
+	if ( cmd->op[0] != -1){
+		CMD_PREPROCESS1
+		printf("create object for %s\n", (char*)dest);
+	
+	/*	CClassDes*	pc = CCompiler::classDesTable.getClass((char*)dest);
+		if (pc == NULL){
+			fprintf(stderr, "Load Object for %s failed!", (char*)dest);
+			return FALSE;
+		}*/
+		
+
+		__AX = (long)createObject((char*)dest);
+	}else{
+		__AX = (long)createObject(NULL);
+
+	}
+	//__AX = LoadObject((char*)dest);
+
+	__IP++;
+	return TRUE;
+}
+
 /*
 
 int exception_filter(EXCEPTION_POINTERS * pex)
@@ -1174,7 +1207,16 @@ BOOL CVirtualMachine::_parampub(PCOMMAND cmd)
 		return FALSE;
 	pCallInfo = m_FuncStack.top();
 
-	pCallInfo->paramPt->pData = (unsigned char*)dest;
+	int dt = (cmd->address_mode >> 8) & 0x0f;
+	// if allow pass object as param to pub function, should add datat type into pCallInfo->paramPt
+	if (dt == AMODE_OBJ){
+		
+		BYTE* vt = ( (CObjectInst*) dest)->getValueAddress();
+		pCallInfo->paramPt->pData = vt;
+		debug("====>3333%s\n", *(char**)vt);
+	}
+	else
+		pCallInfo->paramPt->pData = (unsigned char*)dest;
 	pCallInfo->paramPt->size = size;
 	pCallInfo->paramPt->reflvl = op1reflvl;
 	pCallInfo->lParamBlockSize += pCallInfo->paramPt->size;
@@ -1708,8 +1750,8 @@ BOOL CVirtualMachine::Run()
 
 	while (m_ToStop.Wait(0) == LOCKEX_ERR_TIMEOUT && !bError)
 	{
-		printf("--->__IP=%d, mode=%d\n", __IP, m_nWorkMode);
-		printf("--->line %d, code 0x%x\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
+		JUJU::CLog::debug("--->__IP=%d, mode=%d\n", __IP, m_nWorkMode);
+		JUJU::CLog::debug("--->line %d, code 0x%x\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
 		m_StatusLock.Lock();
 		opcode = m_pCurCall->pFunc->m_pCmdTable[__IP].opcode;
 		pcmd = &(m_pCurCall->pFunc->m_pCmdTable[__IP]);
@@ -1817,6 +1859,9 @@ BOOL CVirtualMachine::Run()
 			break;
 		case __movobj:
 			if (!_movobj(pcmd)) bError = TRUE;
+			break;
+		case __newobj:
+			if (!_newobj(pcmd)) bError = TRUE;
 			break;
 		default:
 			snprintf(msg, 200, "SE:: can not find the implement of this command %xH (line: %d)", opcode, pcmd->line);
@@ -2318,6 +2363,10 @@ BOOL CVirtualMachine::Preprocess1(PCOMMAND cmd, int &op1mode, int &op1reflvl, un
 		
 		//	dest = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[0]]]);break;
 		
+	case AMODE_OBJ:
+		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		break;
+		
 	default:
 		{
 			snprintf(msg, 200, "invalid address mode, line %d, op %xH, addressmode %xH", cmd->line, cmd->op, cmd->address_mode);
@@ -2394,7 +2443,9 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 		//		dest = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[0]]]);break;
 	*/	
 
-
+	case AMODE_OBJ:
+		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		break;
 	default:
 		{			
 			snprintf(msg, 200, "SE:: invalid address mode, line %d, op %xH, addressmode %xH", cmd->line, cmd->op, cmd->address_mode);
@@ -2462,6 +2513,9 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 	//	src = (unsigned char*)&(cmd->op[1]);break;
 		
 		//		src = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[1]]]);break;
+	case AMODE_OBJ:
+		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		break;
 	default:
 		{			
 			snprintf(msg, 200, "SE:: invalid address mode, line %d, op %xH, addressmode %xH", cmd->line, cmd->op, cmd->address_mode);
@@ -2621,6 +2675,14 @@ BOOL CVirtualMachine::_cast(PCOMMAND cmd)
 	__IP++;
 	return TRUE;	
 }
+
+/**
+ *  move value of src to dest
+ * op[0] - dest:  
+ * op[1] - src: 
+ * op[2] - dest type:  
+ * op[3] - src type: 
+ */
 BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 {
 	char msg[201] = "";
@@ -2631,30 +2693,34 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 	//long op4 = cmd->op[3];// src type
 	long src_type = (cmd->op[3] & 0xf0 ) >> 4;	
 	long src_reflevel = cmd->op[3] & 0x0f;
-	printf("cast %d(%d) to %d(%d)\n", dest_type, dest_reflevel, src_type, src_reflevel);
+	printf("cast %d(%d) to %d(%d)\n", src_type, src_reflevel, dest_type, dest_reflevel);
 	
 	if (dest_type == dtGeneral){ // if dest is object
 		CObjectInst *obj = *(CObjectInst**)dest;
 		if (src_type == dtGeneral ){ // object => object
 			*(CObjectInst**)dest =  *(CObjectInst**)src; // copy address of object
-		}else if (obj == NULL){ // primitive => object, if src is primitive and dest is not and initialized object reference
-			obj = CObjectInst::createObject(NULL);
-			*(CObjectInst**)dest = obj;
-			if (src_reflevel > 0)
+		}else{ 
+			if (obj == NULL){ // primitive => object, if src is primitive and dest is not initialized object reference
+				obj = CObjectInst::createObject(NULL);
+				*(CObjectInst**)dest = obj;
+			}
+			if (src_reflevel == 1 && src_type == dtChar){
+				obj->setValue(dtStr, src);
+			}else if (src_reflevel > 0 )
 				obj->setValue(dtLong, src);
 			else
 				obj->setValue(src_type, src);
-		}
+	}
    }else { // dest is primitive type
 		if (src_type == dtGeneral ){  // object => primitive
 			CObjectInst *obj = *(CObjectInst**)src;
-			if (dest_reflevel>0){
+			if (dest_reflevel>0){ // object => char*
 				if (dest_type == dtChar){
-					*(char**)dest = (char*)obj->getSValue().c_str();
+					*(char**)dest = *(char**)obj->getValueAddress();
 				}else
-					*(long*)dest = obj->getValue().l;
-			}else{
-				switch (src_type){
+				*(long*)dest = obj->getValue().l;
+		}else{ // object -> int, long, short ...
+				switch (dest_type){
 					case dtInt:
 					*(int*)dest = obj->getValue().i;
 					break;
@@ -2683,7 +2749,7 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 					*(int*)dest = obj->getValue().f;
 					break;
 					default:
-					fprintf(stderr, "Execute __movobj failed, dest type not support when move a object to primitive");
+					fprintf(stderr, "Execute __movobj failed, dest type %d not support when move a object to primitive", src_type);
 				}
 			}
 		}else{ // primitive => primitive
@@ -2985,17 +3051,55 @@ void CVirtualMachine::GetStatus(VMSTATUS* status)
 		m_StatusLock.Unlock();
 }
 
-CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
-	printf("==>LoadObject %x\n", c);
-	
+
+CClassDes* getClassDes(char* name){
+	return CCompiler::classDesTable.getClass((char*)(name));
+}
+
+// load object and exectue constructor
+CObjectInst* CVirtualMachine::LoadObject(char* name){
+	printf("==>LoadObject %s\n", name);
+	CClassDes* pc = NULL;
+	pc = getClassDes(name);
+	if (pc == NULL){
+		fprintf(stderr, "Load Object for %s failed!");
+		return NULL;
+	}
+	return LoadObject(pc);
+}
+
+CClass* CVirtualMachine::loadClass(char* name){
 	// lookup regestered class instance, create new class instance if not foudn
-	CClass* pClass = m_classTable.getClass(c->GetFullName());
-	if (pClass == NULL)
+	CClass* pClass = NULL;
+	pClass = m_classTable.getClass(name);
+	if (pClass == NULL){
+		CClassDes *c = getClassDes(name);
+		if (c == NULL)
+			return NULL;
 		pClass = m_classTable.createClassInst(c);
-	printf("==>class %s found\n", c->GetFullName());
+	}
+	printf("==>class %s found\n", name);
+	return pClass;
+}
+
+CObjectInst* CVirtualMachine::createObject(char* className){
+	CClass* pClass = NULL;
+	if (className !=  NULL){
+		// load class instance
+		pClass = loadClass(className);
+	}
 
 	// create object according to class instance
 	CObjectInst* obj = m_objTable.createObjectInstance(pClass);
+	return obj;
+}
+	
+// create new object and execute it's constructor
+CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
+	printf("==>LoadObject %x\n", c);
+	
+	CObjectInst* obj = createObject(c->GetFullName());
+
 	printf("==>create instance OK\n");
 	
 	// load "create" method
@@ -3006,7 +3110,7 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
 	LoadFunction(pfn);
 	printf("==>LoadFunction OK\n");
 	void* pthis = this;
-	AttachParam((BYTE*)&pthis, sizeof(int));
+	AttachParam((BYTE*)&pthis, sizeof(long*));
 	
 	printf("==>AttachParam OK\n");
 	

@@ -94,10 +94,14 @@ PRODUCTIONS
 
     C                    =      (. 
 	
-	 m_pCurClassDes = new CClassDes(this);
+	CClassDes *pNewCD = new CClassDes(this);
+	if (m_pCurClassDes != NULL){
+		pNewCD->setParent(m_pCurClassDes);
+	}
+	 m_pCurClassDes = pNewCD;
 	 //std::string className = JUJU::getFileName(curFileName);
 	 //m_pCurClassDes->SetName((char*)className.c_str());	
-	m_pCurClassDes->SetName("_global_");
+	m_pCurClassDes->setName("_global_");
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
     
@@ -198,13 +202,13 @@ PRODUCTIONS
 .)
 (
    (
-		FunctionDefinition (.this->m_pCurClassDes->AddMember(szName, *type);.)
+		FunctionDefinition (./*this->m_pCurClassDes->AddMember(szName, *type);*/.)
 	   /*| (VarList< type,  szName> ";")*/
 	)
 	|
 	( /* this is bug of cocor, you have to keep number of OR factor less than 2, otherwise it generate switch-case with multi-"default"*/
-	   ("=" (.this->m_pCurClassDes->AddMember(szName, *type);.)Expression (./*TODO*/.)";")
-	   | ";" (.this->m_pCurClassDes->AddMember(szName, *type);.) 
+	   ("=" (.this->m_pCurClassDes->AddMember(szName, *type);.)Expression (./*TODO*/.)";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .))
+	   | ";" (.this->m_pCurClassDes->AddMember(szName, *type); if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .) 
     ) 
    )
    ) 
@@ -245,9 +249,11 @@ PRODUCTIONS
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
 	
-	 m_pCurClassDes = new CClassDes(this);
+	CClassDes * pNewCD = new CClassDes(this);
+	pNewCD->setParent(m_pCurClassDes);
+	 m_pCurClassDes = pNewCD;
 	// std::string className = JUJU::getFileName(curFileName);
-	 m_pCurClassDes->SetName(szName);	
+	 m_pCurClassDes->setName(szName);	
 	
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
@@ -382,8 +388,7 @@ ArraySize
 
   FunctionDefinition   = 
   (.
- 	this->m_pMainFunction = new CFunction;
-	printf("--->m_pMainFunction1=%x", m_pMainFunction);
+ 	this->m_pMainFunction = new CFunction();
 
 	//for test
 	long t = sizeof(CFunction);
@@ -401,16 +406,22 @@ ArraySize
 		
 	// add "this" as first parameter to function if it belong to a class
 	if (m_pCurClassDes){
+		if (m_pCurClassDes != m_pMainFunction){
+		//	m_pCurClassDes->AddMethod(m_pMainFunction);
+			m_pMainFunction->setParent(m_pCurClassDes);
+		}
 		PTYPEDES type = new TYPEDES;
-		type->refLevel = 1;
-		type->type = dtObject;
+		type->refLevel = 0;
+		type->type = dtGeneral;
 		if (!AllocVar(type, "this"))
 			GENERR(113);
 		else
 			m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
 		delete type;
 	}
-	
+
+	printf("--->FunctionDefinition:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+
 		
   .)
   FunctionHeader FunctionBody  
@@ -425,10 +436,16 @@ ArraySize
 	            m_pMainFunction->Output(path);
 		
 	}else{
-	printf("--->m_pMainFunction2=%x", m_pMainFunction);
-		SAFEDELETE( m_pMainFunction);	
+	printf("--->m_pMainFunction22=%x, name=%s\n", m_pMainFunction, m_pMainFunction->name());
+		//SAFEDELETE( m_pMainFunction);	
+		if (m_pMainFunction!=NULL){
+			printf("--->m_pMainFunction221=%x, name=%s\n", m_pMainFunction, m_pMainFunction->name());
+//			delete m_pMainFunction;
+			m_pMainFunction = NULL;
+		}
 	 }
 	 m_pMainFunction = NULL;
+	//	printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
   .)
   .
   FunctionHeader       = 
@@ -441,12 +458,15 @@ ArraySize
 
 							"(" [ FormalParamList ] ")" 
   (. 	
+//printf("add function%s line=%d\n",  m_pMainFunction->name(), Scanner->CurrSym.Line);
   this->m_pMainFunction->m_iParamNum = this->m_pMainFunction->m_SymbolTable.m_nSymbolCount; 
-  if 	(!m_pCurClassDes->getFuncTable()->AddFunction(this->m_pMainFunction))
+		if (m_pCurClassDes != m_pMainFunction)
+			m_pCurClassDes->AddMethod(m_pMainFunction);
+  /*if 	(!m_pCurClassDes->getFuncTable()->AddFunction(this->m_pMainFunction))
 		{
 			GENERR(114);
 		}		
- 
+ */
   .).
   FunctionBody         = CompoundStatement (.	ADDCOMMAND0(__ret); .)  .
   FormalParamList      = FormalParameter { "," FormalParameter } .
@@ -516,11 +536,13 @@ ArraySize
 	}
 .)  }
 (.
-	printf("===>2\n");
+//	printf("===>2\n");
 // allocate variable
-	if (type->type == dtGeneral){
-	printf("===>1\n");
+	if (type->type == dtGeneral){ // create object automatically if not type specified or type is dtGeneral
+//	printf("===>1\n");
+//	printf("--->m_pMainFunction1=%x, expStockPt=%x", m_pMainFunction, m_pMainFunction->m_pExpDigitPt);
 		doVarDecl(type, szName);
+		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
 	}
 	delete type;
 .)
@@ -549,14 +571,15 @@ ArraySize
 /* There is no requirement that a switch statement be followed by a compound
    statement.  Actually labels may be even more general */
 
-  AssignmentStatement = Expression ";" .
+  AssignmentStatement = Expression ";" (.  if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .).
 
-  BreakStatement       = "break" ";" 
+  BreakStatement       = "break"  
   (. 	//recode this command for write back
 	this->m_curloop->AddBreak(this->m_pMainFunction->m_nCurrentCmdNum);
 	//add command
 	ADDCOMMAND1(__jmp, CC, 0);	
  .)
+	";"(.  if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
  .
  LocalDeclaration     = 
 							(.
@@ -567,18 +590,18 @@ ArraySize
  ( Type<type> |  StorageClass  [Type<type>] )
   
 							
- /* { "*"						(. 		type->refLevel++; .)
-  } */
+  { "*"						(. 		type->refLevel++; .)
+  } 
   
   identifier				(.	
 								memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 								Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);
 							.)
- VarList<type, szName>";"  (. delete type; .)
+ VarList<type, szName>";"  (. delete type; if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
  . 
   CompoundStatement    = "{" { LocalDeclaration | Statement } "}" .
 
-  ContinueStatement    = "continue" ";" 
+  ContinueStatement    = "continue"  
   (.
   	//recode this command for write back
 	this->m_curloop->AddContinue(this->m_pMainFunction->m_nCurrentCmdNum);
@@ -586,9 +609,10 @@ ArraySize
 	ADDCOMMAND1(__jmp, CC, 0);	
 
   .)
+	";" (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
   .
 
-  DoStatement          = "do" Statement "while" "(" Expression ")" ";" .
+  DoStatement          = "do" Statement "while" "(" Expression ")" ";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .).
 
   ForStatement         = "for"  "(" [ Expression ] ";" 
   (.
@@ -602,7 +626,7 @@ ArraySize
 
 
   .)
-  
+   (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
   [ Expression ] 
   (.
  		//add command jz
@@ -610,7 +634,7 @@ ArraySize
 		ADDCOMMAND1(__jnz, CC, 0)
  
   .)
-  ";" 
+  ";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
   (.
 	PCOMMAND cmd = NULL;
 	int cmdsaved;
@@ -722,7 +746,7 @@ ArraySize
 .)
  .
 
-  NullStatement        = ";" .
+  NullStatement        = ";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .) . 
 
   ReturnStatement      = "return" [ Expression ] 
   (.
@@ -746,7 +770,7 @@ ArraySize
 	ADDCOMMAND0(__ret);
 
   .)
-  ";" .
+  ";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .) .
                          /* Expression usually in parentheses */
 
   SwitchStatement      = "switch" "("
@@ -850,8 +874,9 @@ ArraySize
 
   Expression           = Conditional { AssignmentOperator Expression
   (.
+printf("===>AssignmentOperator\n");
 	if (!doAssign()) 
-			continue;
+		continue;
 
   .)
    }.
@@ -1373,7 +1398,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				m_pMainFunction->PushDigit(m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount -1].address, type1, dt1);
 			}
 			break;
-		case AndSym:  
+		case AndSym:  // & 取地址操作符
 			{
 				long temp;
 				temp = AllocTempVar(dtLong, 1);
@@ -1497,7 +1522,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					ADDCOMMAND2(__mov, DR, temp, _AX)
 					//入栈, 作为指针用
 					m_pMainFunction->PushDigit(temp, AMODE_MEM|0x10|((log2(UnitSize(dt1)))<<6), dt1);
-}
+				}
 }
 .)
                           | 
@@ -1546,34 +1571,84 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 						  
 .)FunctionCall<&fn>
 (.}.)
-                          | ("." identifier)  
-                          (.
-                          {
-                          char* member = GetCurrSym();
-                          int address = m_pMainFunction->AddStaticData(strlen(member)+1, (BYTE*)member);
-                          //add command
-		            long op1, type1;
-		            TYPEDES dt1;
-		
-		            //pop
-		            if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 != dtGeneral){
-		                     GENERR(96);
-		                    return;
-		            }else
-					{
-					     long temp = AllocTempVar(dtGeneral);
-				    	 if (temp == -1)
-						 {
-	                     GENERR(98);
+                          | ("." identifier)
+(.
+{
+				long op1;
+				long type1;
+				TYPEDES dt1;
+				if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 <FIRST_ADDRESS_MODE || type1 >LAST_ADDRESS_MODE )
+				{
+					//	REPORT_COMPILE_ERROR("POP UP FAILED");
+					GENERR(96);
+					return;
+				}
+				// must be object
+				if (dt1.type != dtGeneral){
+					GENERR(129);
+					return;
+				}
+				if (dt1.type == dtUnknown){
+				   GENERR(130);
+				   return;
+				}
+				CClassDes *cd = (CClassDes *)dt1.objID;
+				
+                bool bFun = false;
+				char* member = GetCurrSym();
+				char szName[1024]="";
+				strcpy(szName, member);
+.)
+						{ 
+	(. 
+	
+	 bFun = true;
+	FUNCCALL fn;
+	CFunction* pScript = cd->getMethod(szName);	
+	fn.name = szName;
+    
+	fn.pVF = pScript;
+	fn.nType = 0;
+	ADDCOMMAND1(__callv, CC, (long)pScript);
+				
+	// add "this" as first parameter
+	printf("add this as parameter for class method\n");
+	ADDCOMMAND1(__paramv, O0 , op1);
+				
+	m_pCurClassDes->getFuncTable()->ReleaseFunc();
+	
+.)
+						FunctionCall<&fn>
 						}
-						// get effective address for object member
-						ADDCOMMAND3(__eaobj, AMODE_OBJ|AMODE_MEM<<8, temp, op1, address);
-						 _typedes(DT1, dtLong)
-						 m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, DT1);
-					}
-					}
-                          .)
-                          
+					(.
+					
+							if (!bFun)
+							{
+	                          int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
+	     					   //add command
+			            		long op1, type1;
+			            		TYPEDES dt1;
+		
+			 		           //pop
+					            if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 != dtGeneral){
+					                     GENERR(96);
+					                    return;
+					            }
+								else{
+								     long temp = AllocTempVar(dtGeneral);
+							    	 if (temp == -1)
+									 {
+				                     	GENERR(98);
+									 }
+									// get effective address for object member
+									ADDCOMMAND3(__eaobj, AMODE_OBJ|AMODE_MEM<<8, temp, op1, address);
+									 _typedes(DT1, dtLong)
+							 		m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, DT1);
+								}
+							}
+						
+		}			.)
+                   
                           
                           
                           | ( (. {int state = 0;.) "->" {"{"(. state++ .)} identifier {"}"(. state++ .)} 
@@ -1681,6 +1756,10 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				}
 				else
 				{
+					if (dt1.type == dtUnknown){
+				   		GENERR(130);
+				   		return;
+					}
 					if (dt1.type == dtFloat)
 					{
 						GENERR(112);
@@ -1731,6 +1810,10 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				}
 				else
 				{
+					if (dt1.type == dtUnknown){
+				   		GENERR(130);
+				   		return;
+					}
 					if (dt1.type == dtFloat)
 					{
 						GENERR(112);
@@ -1772,7 +1855,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
   
   Creator = 
   (. char szName[_MAX_PATH] = ""; .)
-  ClassFullName<szName> {"(" {FormalParamList} ")"} 
+  ClassFullName<szName>
   (. 	
 	CClassDes* cd = this->m_classTable->getClass(szName);
 	if (cd == NULL){
@@ -1781,34 +1864,71 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 		cd = this->m_classTable->getClass(szName);
 		if (cd == NULL){
 				strcat(szName, SCRIPT_EXT);
-				CCompiler cc;                         
+				CCompiler cc;      
+				if (m_conf)	
+					cc.setConf(*m_conf);
 	            cc.Compile(szName);
 	    }
 		// TODO generete correct error
 		//GENERR(100);
 		//return;
 	}
-		int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
-	ADDCOMMAND1(__newobj,DS, address);
+	int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
+	ADDCOMMAND1(__newobj,DS, address); // create object to set to AX
 	
-    
-    TYPEDES dt1;
+    // mov result from ax to temp and push temp variable
+	TYPEDES dt1;
 	memset(&dt1, 0, sizeof(TYPEDES));
 	dt1.type = dtGeneral;
+	dt1.objID = (long)cd;
    // 将AX中的结果存入临时变量
+	long temp = NULL;
 	if (m_pMainFunction->AddVal(NULL,  dt1))
 	{                       
-			long temp;
+		
 			long opsize = log2(UnitSize(dt1))<<6;
 			temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
 			ADDCOMMAND2(__mov, DR|((opsize<<8)|opsize), temp , _AX);
-			m_pMainFunction->PushDigit(temp, AMODE_MEM|opsize, dt1);
+			m_pMainFunction->PushDigit(temp, AMODE_OBJ, dt1);
 	}
 	else
 	{
 			REPORT_COMPILE_ERROR("add symbol failed");
 	}
+ 
   .)
+(.
+	FUNCCALL fn;
+	CFunction* pScript = cd->getMethod("create");	
+	fn.name = "::create";
+    
+	fn.pVF = pScript;
+	fn.nType = 0;
+	ADDCOMMAND1(__callv, CC, (long)pScript);
+				
+	// add "this" as first parameter
+	printf("add this as parameter for class method\n");
+	ADDCOMMAND1(__paramv, O0 , temp);
+				
+	m_pCurClassDes->getFuncTable()->ReleaseFunc();
+.)
+ {FunctionCall<&fn>} 
+(.
+	
+	
+	// pop function return value, because the constructor return value should be discarded
+	{
+		long op1;
+		long type;
+		TYPEDES dt1;
+		if (!m_pMainFunction->PopDigit(&op1, &type, &dt1)|| type <FIRST_ADDRESS_MODE || type >LAST_ADDRESS_MODE )
+		{
+		//	REPORT_COMPILE_ERROR("POP UP FAILED");
+			this->GENERR(96);
+			return;
+		}
+	}
+.)
    .
   
   ClassFullName<char* szName> = 
@@ -1841,11 +1961,11 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 			}else
 			    address = GetSymAddress(szName); // return -1 if not found
 		*/
-			address = GetSymAddress(szName);
-			printf("address=%x", address);	
+			address = GetSymAddress(szName); // try to get symbol from main function and its ancestor
+			printf("identiefier=%s, address=%x\n", szName, address);	
 
-			 //如果address<0是函数名
-			          if (address >= 0 )//如果不是函数名， 是变量名。
+			 // address < 0 => function, address >= 0 => variable
+			          if (address >= 0 )// is a variable of current main function, push it into expression stack
 			          {
 			                  TYPEDES dt;
 			                  SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym(szName);
@@ -1863,8 +1983,8 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 			                          }
 			                          else*/
 			                  
-			                          if ((dt.dim ==0 && dt.objID == 0 )
-			                                  ||(dt.objID > 0 && dt.refLevel > 0))
+			                          if ((dt.dim ==0 && dt.type !=dtGeneral ) // if not array and not object
+			                                  || (dt.type ==dtGeneral  && dt.refLevel > 0)) // if is pointer to object 
 			                          {//如果不是数组和obj
 			                                  int opsize;
 			                                  if (dt.refLevel > 0) 
@@ -1893,10 +2013,11 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 			                                  }
 			                                  else // if it is object
 			                                  {
-												  int opsize;
-												  opsize = log2((int)OPSIZE_PTR);
-			                                      opsize &= 0x3;
-												  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
+												 // int opsize;
+												 // opsize = log2((int)OPSIZE_PTR);
+			                                     // opsize &= 0x3;
+												//  m_pMainFunction->PushDigit(address, AMODE_OBJ|(opsize << 6), dt);
+												m_pMainFunction->PushDigit(address, getAddressMode(AMODE_OBJ, dt), dt);
 			                                  }
 			                          }
 			                          
@@ -1910,7 +2031,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					// find it in class methods
 					long index = 0;
 					if (m_pCurClassDes->getFuncTable()->GetFunction(szName, &index) == NULL){ // not found in class function table
-						// create an object variable ?
+						// cannot create an object variable for it, because it maybe a function call
 						GENERR(104);
 					} 
 
@@ -1954,7 +2075,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 			                    if (m_pMainFunction->AddStaticData(strlen(string)+1, (BYTE*)string)>=0)
 			                    {       
 			                            _typedes(dt, dtStr)
-			                            
+			                            dt.refLevel = 1;
 			                            if (m_pMainFunction->AddVal(NULL,  dt))
 			                            {
 			                                    long temp;
@@ -2143,11 +2264,23 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				ADDCOMMAND1(__parampub, size|0x100, temp)	
 				}
 				else	
-				*/			
-				if (pFuncEntry->nType)	// native function
-				ADDCOMMAND1(__parampub, address_mode, op1)			
-					else
-				ADDCOMMAND1(__paramv, address_mode, op1)		
+				*/	
+				if (pFuncEntry->nType){	// native function
+					
+					/*// if it's object, create temp variable and pass into function call		
+					if (m_pMainFunction->AddVal(NULL, dt))
+					{			
+					    long temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
+						ADDCOMMAND2(__movobj, DD, temp, op1);
+					}
+					else{
+						REPORT_COMPILE_ERROR("add symbol failed");
+						return FALSE;
+					}*/
+					ADDCOMMAND1(__parampub, address_mode, op1)			
+				}	
+				else
+					ADDCOMMAND1(__paramv, address_mode, op1)		
 				cParamNum++; 
 			}		
 

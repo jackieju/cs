@@ -83,6 +83,7 @@ CClassDes::~CClassDes(void)
 
 */
 
+/*
 BOOL CClassDes::SetName(char* szName)
 {
 	if (strlen(m_szName) > 1024)
@@ -93,6 +94,7 @@ BOOL CClassDes::SetName(char* szName)
 	strcpy(m_szName, szName);
 	return TRUE;		
 }
+*/
 
 /*
 OBJMEMDES *CClassDes::GetMemberByName(char* szName)

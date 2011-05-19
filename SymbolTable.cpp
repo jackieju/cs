@@ -83,6 +83,7 @@ bool CSymbolTable::AddSymbol(char *szName, TYPEDES dt)
 		tableEntry = pNew;
 		m_nMaxCount += 64;
 	}
+	
 	//add symbol
 	this->tableEntry[this->m_nSymbolCount].address = this->m_nTotalSize;//address
 	tableEntry[this->m_nSymbolCount].size_t = size_t;                   //size
@@ -93,7 +94,9 @@ bool CSymbolTable::AddSymbol(char *szName, TYPEDES dt)
 		strcpy(tableEntry[this->m_nSymbolCount].szName, szName);
 	else
 		tableEntry[this->m_nSymbolCount].szName[0] = 0;
-
+		
+	
+	debug("add symbol %s", szName);
 	this->m_nTotalSize += size16;
 	m_nSymbolCount++;
 	return true;

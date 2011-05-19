@@ -17,9 +17,23 @@ bool CLog::bUseCache = false;
 bool CLog::bStdOut = true;
 CLog CLog::pInst;// = new CLog;
 char CLog::logFileName[256] = "";
+bool CLog::bDebug = true;
 	
-void JUJU::debug(char* fmt, ...){
 
+void debug(char* fmt, ...){
+	if (!JUJU::CLog::isDebug())
+		return;
+	char msg[1001] = "";
+	 va_list v;
+	 va_start(v, fmt);
+	 vsnprintf(msg, 1000, fmt, v);
+	 va_end(v);
+	printf("[debug]%s\n", msg);
+}
+
+void JUJU::CLog::debug(char* fmt, ...){
+	if (!bDebug)
+		return;
 	 char msg[1001] = "";
 	 va_list v;
 	 va_start(v, fmt);
@@ -28,7 +42,8 @@ void JUJU::debug(char* fmt, ...){
 	JUJU::CLog::Log(msg, __FILE__, __LINE__, 100, "DBG", "");
 }
  void JUJU::CLog::debug2(char* fmt, char* file, int line, ...){
-
+	if (!bDebug)
+		return;
 	 char msg[1001] = "";
 	 va_list v;
 	 va_start(v, fmt);
@@ -95,6 +110,8 @@ void JUJU::debug(char* fmt, ...){
     }
 
 	void JUJU::CLog::_log(char *msg, char* file, long line, int l, char *type){
+	//	if (l>level)
+	//		return;
 		if (msg == NULL)
             msg = "";
         char *p, prefix[1024];

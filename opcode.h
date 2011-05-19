@@ -124,16 +124,20 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 //0:常量c 1: 直接寻址d 2:registerR 3: 常量段寻址
 //高子节为op1, 低字节为op2
 #define FIRST_ADDRESS_MODE 0
-#define AMODE_DIRECT 0  //立即数
-#define AMODE_MEM   1   //内存
+#define AMODE_DIRECT 0  //立即数   no need to address, the content of operand is just the value
+#define AMODE_MEM   1   //内存    // operand content is the offest to data segment, need translate to physical address
+								// dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]])
 #define AMODE_REG   2
-#define AMODE_STATIC 3  //常量段寻址
+#define AMODE_STATIC 3  //常量段寻址  // operand content is the offest to data segment, need translate to physical address
+								// dest = (unsigned char*)&(m_pCurCall->Staticeg[cmd->op[0]])
 //#define AMODE_ARRAY   4  //数组寻址, 及基址变址寻址EA = DS + BX + OP)
-#define AMODE_OBJ      4// address mode for object
-//#define AMODE_POINT  4 //指针寻址(EA = PS + OFFSET)
-#define LAST_ADDRESS_MODE 0xf4
 
-#define DD 0x8181
+//#define AMODE_POINT  4 //指针寻址(EA = PS + OFFSET)
+#define AMODE_OBJ      5 // address mode for object, the content of the address of oprand 0 is physical of object, 
+						 // dest =  (CObjectInst*)(m_pCurCall->DataSeg[cmd->op[0]]) 
+#define LAST_ADDRESS_MODE 0xf5
+
+#define DD 0x8181	// AMODE_MEM, AMODE_MEM
 #define CC 0x8080
 #define CD 0x8081
 #define CR 0x8082
@@ -145,6 +149,7 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 #define DS 0x8183
 #define DA 0x8184
 #define AR 0x8482
+#define O0 0x8500
 
 #endif
 

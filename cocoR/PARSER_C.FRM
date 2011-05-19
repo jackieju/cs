@@ -15,6 +15,7 @@
 ***************************************/
 
 #include "clib.h"
+#include "log.h"
 #include -->TokensHeader
 
 -->UserDeclarations
@@ -85,6 +86,7 @@ void -->ParserClass::Parse()
 // all these function maybe should be move to single class
 BOOL cParser::AllocVar(PTYPEDES type, char *szName)
 {
+printf("allocate var for %s\n", szName);
 	/*int size_t = 0;
 	//get size 
 	if (nType < 0)
@@ -128,8 +130,9 @@ BOOL cParser::AllocVar(PTYPEDES type, char *szName)
 
 }
 
-
-
+long cParser::getLastAllocVarAddress(){
+	return m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
+}
 BOOL cParser::PopOp(int *op)
 {
 	if (op == NULL)
@@ -226,7 +229,16 @@ void cParser::ClearOpStack()
 
 int cParser::GetSymAddress(char *szName)
 {
-	return this->m_pMainFunction->GetSymbolAddress(szName);
+	int ret = -1;
+	ret = this->m_pMainFunction->GetSymbolAddress(szName);
+	CFunction* p = m_pMainFunction;
+	while (p != NULL){
+		ret = p->GetSymbolAddress(szName);
+		if (ret >= 0)
+			return ret;
+		p = p->getParent();
+	}
+	return ret;
 }
 
 
@@ -732,8 +744,8 @@ void cParser::Cast(long &op1, long &type1, TYPEDES &dt1, long &op2, long &type2,
 				
 				 
 					if (casted == 1)
-					{			
-						address_mode = 	getAddressMode(AMODE_MEM, type1, dt2, dt1);
+					{		
+						address_mode = 	getAddressMode2(AMODE_MEM, type1, dt2, dt1);
 						ADDCOMMAND4(__movobj, address_mode, temp, op1, t_type<<4|t_ref, dt1.type<<4|dt1.refLevel) 
 						//修改运算数
 						op1 = temp;
@@ -742,8 +754,8 @@ void cParser::Cast(long &op1, long &type1, TYPEDES &dt1, long &op2, long &type2,
 					}
 					if (casted == 2)
 					{
-						address_mode = 	getAddressMode(AMODE_MEM, type2, dt1, dt2);
-							ADDCOMMAND4(__movobj, address_mode, temp, op2, t_type<<4|t_ref, dt2.type<<4|dt2.refLevel) 
+						address_mode = 	getAddressMode2(AMODE_MEM, type2, dt1, dt2);
+						ADDCOMMAND4(__movobj, address_mode, temp, op2, t_type<<4|t_ref, dt2.type<<4|dt2.refLevel) 
 						//修改运算数
 						op2 = temp;
 						type2 = AMODE_MEM;
@@ -782,9 +794,7 @@ BOOL cParser::AddClass(CClassDes& obj)
 */
     m_classTable->addClass(&obj);
 	std::string msg = "add classes";
-	debug(msg);
-    return TRUE;
-
+	debug((char*)msg.c_str());
     return TRUE;
 
 }
@@ -866,7 +876,7 @@ void cParser::SetByteCodeFilePath(char* szPath)
 bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES& dt1, TYPEDES& dt2 )
 {
 	//get address mode
-	int address_mode = getAddressMode(type1, type2, dt1, dt2);
+	int address_mode = getAddressMode2(type1, type2, dt1, dt2);
 /*
 	if (dt1.type != dtGeneral && dt2.type != dtGeneral){
 
@@ -884,9 +894,11 @@ bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES&
 	//		source_type = dtString;
 	//	}
 		//add commmand to command table
+		printf("==>movobj");
 		ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel)      
 		m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
 	}*/
+
 	ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel) 
 	m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
 //	pushResultAX();    
@@ -896,6 +908,7 @@ bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES&
 
 void -->ParserClass::doVarDecl(PTYPEDES type, char* szFirstName)
 {
+//printf("-=====>1111, %x\n", m_pMainFunction->m_pExpDigitPt);
      long op;
 	      long type1;
 	      TYPEDES DT1;
@@ -967,6 +980,7 @@ void -->ParserClass::pushResultAX(){
 }
 bool -->ParserClass::doAssign()
 {
+printf("==>do Assign\n");
     //add command
     long op1, op2;
     long type1, type2;
@@ -977,12 +991,20 @@ bool -->ParserClass::doAssign()
     || type1 <FIRST_ADDRESS_MODE || type1 >LAST_ADDRESS_MODE 
     || type2 <FIRST_ADDRESS_MODE || type2 >LAST_ADDRESS_MODE)
     {
+			debug("type1=%x, type2=%x\n", type1, type2);
     //      REPORT_COMPILE_ERROR("POP UP FAILED");
             GENERR(96);
             return false;
     }
     else
     {
+		if (dt1.type == dtUnknown){ // not decleared variable
+			dt1.type = dtGeneral;
+			char name1[1024] = "";
+			long variable_address = AllocVar(&dt1, (char*)name1);
+	   		ADDCOMMAND1(__newobj,DS, -1); // create object and set to AX
+			
+		}
             //类型转换
             long castcode = -1; //cast操作码
             char casted = 0;        //被转换类型的运算数
@@ -999,9 +1021,11 @@ bool -->ParserClass::doAssign()
             objid = dt1.objID;
 		    if (dt1.type != dtGeneral && dt2.type != dtGeneral) //get cast code
             {
-                    TYPEDES DT1, DT2;
+				    TYPEDES DT1, DT2;
                     memcpy(&DT1, &dt1, sizeof(TYPEDES));
                     memcpy(&DT2, &dt2, sizeof(TYPEDES));
+	debug("==>111   type1=%x, type2=%x, DT1.refLevel=%d, DT2.refLevel=%d\n", type1, type2, DT1.refLevel, DT2.refLevel);
+              
                     if ( (DT1.objID > 0 && DT2.objID ==0) || (DT2.objID > 0 && DT1.objID ==0))
                     {
                             GENERR(110);
@@ -1028,6 +1052,7 @@ bool -->ParserClass::doAssign()
                             }
                             DT2.type = dtLong;                                      
                     } 
+					debug("DT2.type=%x, DT1.type=%x\n", DT2.type, DT1.type);
                     switch (DT2.type)
                     {
                     case dtChar:

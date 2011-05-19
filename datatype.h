@@ -26,6 +26,7 @@
 #else
 #define dtLastType 11
 #endif
+#define dtUnknown 13
 
 typedef struct _tagTypeDes
 {
@@ -34,7 +35,7 @@ typedef struct _tagTypeDes
 	long refLevel;  //有多少颗星 例:char为0, char*为1, char**为2
 	long dim;       //如果是数组, 表示它的维数
 	long dimsize[8];  //每一维的大小, 最大8维
-	long objID;    //obect的类型， 初始值为0
+	long objID;    //obect的类型， 初始值为0 (CClassDes*)
 	_tagTypeDes(){
 		type = dtGeneral;
 		refLevel = 0;// not used in web game c
@@ -42,7 +43,6 @@ typedef struct _tagTypeDes
 		memset(dimsize, 0, 8*sizeof(long));
 		objID = 0;
 	}
-
 }TYPEDES, *PTYPEDES;
 
 #define _typedes(var, dt)\

@@ -56,7 +56,11 @@ public:
 	bool AddMember(char* szName, TYPEDES& dt){
 		return this->m_SymbolTable.AddSymbol(szName, dt);
 	};
-	BOOL SetName(char* szName);
+	
+	bool AddMethod(CFunction* fn){
+		return fnTable.AddFunction(fn);
+	}
+	//BOOL SetName(char* szName);
 	long GetMemberNum(){
 		return m_SymbolTable.m_nSymbolCount;
 	};

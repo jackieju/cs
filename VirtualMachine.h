@@ -242,6 +242,9 @@ public:
 	CClassTable m_classTable;  // loaded class instance
 	CObjTable m_objTable;		// loaded Objects
 	CObjectInst*  LoadObject(CClassDes* c);
+	CObjectInst*  LoadObject(char* name);
+	CClass* loadClass(char* name);
+	CObjectInst* createObject(char* className);
 
 	//以下成员用于调试
 	void SetWorkMode(int mode);
@@ -300,6 +303,7 @@ private:
 	BOOL _loadlib(PCOMMAND cmd);  // not used
 	BOOL _eaobj(PCOMMAND cmd);    // get address for object/member
 	BOOL _movobj(PCOMMAND cmd);   // new command for object
+	BOOL _newobj(PCOMMAND cmd); 
 };
 
 

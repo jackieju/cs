@@ -2,7 +2,9 @@
 #define __CLASS_H__
 #include <string>
 #include "ClassDes.h"
-
+/**
+Class instance
+*/
 class CClass
 {
 private:

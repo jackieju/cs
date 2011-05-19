@@ -20,9 +20,10 @@
 */
 typedef struct _tagExpressionDigit
 {
-	long digit;
-	int  type;            //0: 常量 1: 变量地址 2:寄存器
-	TYPEDES dtType;
+	long digit;				// operand
+	int  type;            //  address mode, 0: 常量 1: 变量地址 2:寄存器
+	TYPEDES dtType;			// variable description
+	std::string name;		// variable
 	_tagExpressionDigit* pPrev;
 }EXPRESSIONDIGIT;//表达式使用的操作数栈的节点
 
@@ -46,6 +47,19 @@ public:
 	char* name(){
 		return m_szName;
 	};
+	void setName(char* n){
+		if (strlen(n) > 1000)
+		{
+			nLOG("member name too long", 300);
+			return;
+		}
+		if (n == NULL){
+			printf("name is NULL");
+			return;
+		}
+		if (n != NULL)
+			strncpy(m_szName, n, 1000);
+	}
 
 //	void SetAX(long val);
 //	BOOL MoveCmd(unsigned int uFrom, unsigned int uTo);//不能使用该功能， 因为她会导致跳转语句出错
@@ -58,7 +72,7 @@ public:
 	
 	int m_iParamNum;					//参数个数
 	int m_iParamTotalSize;				//参数空间长度
-	char m_szName[21];					//函数名称
+	char m_szName[1024];					//函数名称
 
 	PCOMMAND m_pCmdTable;				   //指令表
 	int m_nCurrentCmdNum;                  //当前的命令数
@@ -78,73 +92,103 @@ public:
 //	DATA m_StackSegment;                  //堆栈段
 
 	CFunction *parent; // parent , can be a class or function
-		void setParent(CFunction* p){
+	
+	void setParent(CFunction* p){
 		parent = p;
 	}
+	CFunction* getParent(){
+		return this->parent;
+	}
+protected:
+
 public:
-		//运算数栈
+			//运算数栈
 	EXPRESSIONDIGIT m_ExpDigit;
    	EXPRESSIONDIGIT* m_pExpDigitPt;//栈指针
-	/*
-   函数名称     : cParser::ClearExpStack
-   函数功能	    : 清空表达式栈
-   变量说明     : 
-   返回值       : 
-   编写人       : 居卫华
-   完成日期     : 2001 - 4 - 17
-*/
-void ClearExpStack()
-{
-	while (m_pExpDigitPt->pPrev != NULL)
+		/*
+	   函数名称     : cParser::ClearExpStack
+	   函数功能	    : 清空表达式栈
+	   变量说明     : 
+	   返回值       : 
+	   编写人       : 居卫华
+	   完成日期     : 2001 - 4 - 17
+	*/
+	void ClearExpStack()
 	{
+		while (m_pExpDigitPt->pPrev != NULL)
+		{
+			EXPRESSIONDIGIT *pTemp = m_pExpDigitPt;
+			this->m_pExpDigitPt = this->m_pExpDigitPt->pPrev; 		
+			delete pTemp;
+		}
+		m_pExpDigitPt = &m_ExpDigit;
+	}
+	BOOL PopDigit(long *digit, long *type, TYPEDES *dtType)
+	{
+		if (digit == NULL || type == NULL)
+			return FALSE;
+		*digit = 0;
+		*type = -1;
+	//	printf("===>33331, %x,", this);
+		memset(dtType, 0, sizeof(TYPEDES));
+	//	printf("===>3333, %x,", this);
+		if (this->m_pExpDigitPt->pPrev == NULL)
+			return FALSE;
+		*digit = m_pExpDigitPt->digit;
+		*type = m_pExpDigitPt->type;
+		memcpy(dtType, &(m_pExpDigitPt->dtType), sizeof(TYPEDES));
 		EXPRESSIONDIGIT *pTemp = m_pExpDigitPt;
-		this->m_pExpDigitPt = this->m_pExpDigitPt->pPrev; 		
+		m_pExpDigitPt = m_pExpDigitPt->pPrev;
 		delete pTemp;
+
+	//	printf("pop %04x, %04x, line:%04x\r\n", *digit, *type, __LINE__);
+
+		return TRUE;
 	}
-	m_pExpDigitPt = &m_ExpDigit;
-}
-BOOL PopDigit(long *digit, long *type, TYPEDES *dtType)
-{
-	if (digit == NULL || type == NULL)
-		return FALSE;
-	*digit = 0;
-	*type = -1;
-	memset(dtType, 0, sizeof(TYPEDES));
-
-	if (this->m_pExpDigitPt->pPrev == NULL)
-		return FALSE;
-	*digit = m_pExpDigitPt->digit;
-	*type = m_pExpDigitPt->type;
-	memcpy(dtType, &(m_pExpDigitPt->dtType), sizeof(TYPEDES));
-	EXPRESSIONDIGIT *pTemp = m_pExpDigitPt;
-	m_pExpDigitPt = m_pExpDigitPt->pPrev;
-	delete pTemp;
-
-//	printf("pop %04x, %04x, line:%04x\r\n", *digit, *type, __LINE__);
-
-	return TRUE;
-}
-
-void PushDigit(long digit, long type, TYPEDES dtType)
-{
-	if (dtType.type < dtFirstType || dtType.type > dtLastType)
+	BOOL PopDigit(long *digit, long *type, TYPEDES *dtType, char* name)
 	{
-	//	GenError(125);
-		return;
+		if (digit == NULL || type == NULL)
+			return FALSE;
+		*digit = 0;
+		*type = -1;
+	//	printf("===>33331, %x,", this);
+		memset(dtType, 0, sizeof(TYPEDES));
+	//	printf("===>3333, %x,", this);
+		if (this->m_pExpDigitPt->pPrev == NULL)
+			return FALSE;
+		*digit = m_pExpDigitPt->digit;
+		*type = m_pExpDigitPt->type;
+		memcpy(dtType, &(m_pExpDigitPt->dtType), sizeof(TYPEDES));
+		strcpy(name, m_pExpDigitPt->name.c_str());
+		EXPRESSIONDIGIT *pTemp = m_pExpDigitPt;
+		m_pExpDigitPt = m_pExpDigitPt->pPrev;
+		delete pTemp;
+
+	//	printf("pop %04x, %04x, line:%04x\r\n", *digit, *type, __LINE__);
+
+		return TRUE;
 	}
-	EXPRESSIONDIGIT *pNew = new EXPRESSIONDIGIT;	
-	if (pNew == NULL)
+	void PushDigit(long digit, long type, TYPEDES dtType, std::string name = "")
 	{
-		REPORT_MEM_ERROR("memory allocation error");
-		return;
+		if (dtType.type < dtFirstType || dtType.type > dtLastType)
+		{
+		//	GenError(125);
+			return;
+		}
+		EXPRESSIONDIGIT *pNew = new EXPRESSIONDIGIT;	
+		if (pNew == NULL)
+		{
+			REPORT_MEM_ERROR("memory allocation error");
+			return;
+		}
+		pNew->digit = digit;
+		pNew->type = type;
+		pNew->name = name;
+		memcpy(&pNew->dtType, &dtType, sizeof(TYPEDES));
+		pNew->pPrev = this->m_pExpDigitPt;
+	//	printf("push %04x, %04x, line:%04x\r\n", digit, type, __LINE__);
+		m_pExpDigitPt = pNew;
 	}
-	pNew->digit = digit;
-	pNew->type = type;
-	memcpy(&pNew->dtType, &dtType, sizeof(TYPEDES));
-	pNew->pPrev = this->m_pExpDigitPt;
-//	printf("push %04x, %04x, line:%04x\r\n", digit, type, __LINE__);
-	m_pExpDigitPt = pNew;
-}
 };
 
 #endif // !defined(AFX_FUNCTION_H__521D16E5_8E52_45FD_98E2_6A6DD4F00749__INCLUDED_)

@@ -205,6 +205,7 @@ private:
 
 	BOOL PopOp(int* op);    //pop一元操作符
 	void PushExpOp(int op); //push一元操作符
+	long getLastAllocVarAddress();
 // <-  add by jackie
 
   public:
@@ -231,14 +232,14 @@ private:
     virtual void Get();
     void ExpectWeak (int n, int follow);
     int  WeakSeparator (int n, int syFol, int repFol);
-	void debug(std::string s){
+/*	void debug(std::string s){
 		if (m_conf){
 			const char* d = m_conf->get("debug").c_str();
 			if (!stricmp(d, "yes"))
 				printf("%s\n", s);
 		}
 	}
-	
+	*/
   private:
     void C();
     void Import();

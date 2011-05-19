@@ -70,3 +70,28 @@ function create(){
  puts(s); // should check parameter type ? should cast implicitly ?
  puts((string(s)); // should cast explicitly ?
 }
+
+3. cannot allocate var dymanically, because dont' know it's var or function call
+but now formalparameter doesn't need specify type
+
+how to solve a variable referencing outer variable ?
+1. create new address mode
+2. create new local variable, add a command to get dynamical address for it, if failed, create new local variable
+
+class member must not be primitive type, becaseu when parser meet 
+a.b
+the parser don't know whether cast the result address to an object to an primitive type, unless you allocate all primitive like object,
+although user write them as primitive type
+
+
+amode_obj  tell vm dest value is a pointer pointing to a object, the object's cls tell its class
+_newobj    just create an objectInstance
+_eaobj
+
+
+primary: search&push variable or not
+a.b: call class method
+
+object variable is allocated in two case:
+1. explicitly defined: var a;
+2. assignment expression: a = b;

@@ -96,7 +96,7 @@ PRODUCTIONS
 	)
 	|
 	( 
-	   ("=" Expression ";")
+	   ("=" Expression ";"  )
 	   | ";"  
     ) 
    )
@@ -207,33 +207,36 @@ ArraySize
 
   AssignmentStatement = Expression ";" .
 
-  BreakStatement       = "break" ";" 
+  BreakStatement       = "break"  
   
+	";"
  .
  LocalDeclaration     = 
 							
  ( Type<type> |  StorageClass  [Type<type>] )
   
 							
- 
+  { "*"						
+  } 
   
   identifier				
  VarList<type, szName>";"  
  . 
   CompoundStatement    = "{" { LocalDeclaration | Statement } "}" .
 
-  ContinueStatement    = "continue" ";" 
+  ContinueStatement    = "continue"  
   
+	";" 
   .
 
-  DoStatement          = "do" Statement "while" "(" Expression ")" ";" .
+  DoStatement          = "do" Statement "while" "(" Expression ")" ";"  .
 
   ForStatement         = "for"  "(" [ Expression ] ";" 
   
-  
+   
   [ Expression ] 
   
-  ";" 
+  ";"  
   
   [ 
 
@@ -254,11 +257,11 @@ ArraySize
    
  .
 
-  NullStatement        = ";" .
+  NullStatement        = ";"   . 
 
   ReturnStatement      = "return" [ Expression ] 
   
-  ";" .
+  ";"   .
                          
 
   SwitchStatement      = "switch" "("
@@ -383,9 +386,14 @@ MultExp     { ( "+"  | "-"  ) MultExp
                           | 
 FunctionCall<&fn>
 
-                          | ("." identifier)  
-                          
-                          
+                          | ("." identifier)
+
+						{ 
+	
+						FunctionCall<&fn>
+						}
+					
+                   
                           
                           
                           | (  "->" {"{"} identifier {"}"} 
@@ -410,8 +418,11 @@ FunctionCall<&fn>
   
   Creator = 
   
-  ClassFullName<szName> {"(" {FormalParamList} ")"} 
+  ClassFullName<szName>
   
+
+ {FunctionCall<&fn>} 
+
    .
   
   ClassFullName<char* szName> = 

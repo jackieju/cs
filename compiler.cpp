@@ -70,8 +70,10 @@ char *MyError::GetUserErrorMsg(int n)
 		 case 124: return "string use invalid escape character";
 		 case 125: return "Compiler internal error: push digit failed because the data type is invalid";
 		 case 126: return "not support function as value";
-		case 127: return "use 'this' in non-class method";
-		case 128: return "load native dynamic library failed";
+		 case 127: return "use 'this' in non-class method";
+	    	case 128: return "load native dynamic library failed";
+	    	case 129: return "variable is not a class";
+		case 130: return "use undefined variable";
 		 default:
 			 return "Unknown error or conflicting error numbers used";
 }

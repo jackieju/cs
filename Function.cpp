@@ -37,6 +37,7 @@ CFunction::CFunction()
 	m_ExpDigit.pPrev = NULL;
 
 	memset(this->m_szName, 0, 1024);
+//	m_szName = "";
 
 }
 
@@ -44,8 +45,9 @@ CFunction::~CFunction()
 {
 	if (m_pCmdTable != NULL)
 		delete this->m_pCmdTable;
-	if (this->m_staticSegment)
+	if (this->m_staticSegment != NULL)
 		delete m_staticSegment;
+	printf("--->%x,%x", m_pCmdTable, m_staticSegment);
 }
 
 
@@ -296,6 +298,9 @@ long CFunction::OutupCmd(long index, char *buffer)
 		case 0x10a5: sprintf(cmd, "endcallpub");break;
 		case 0x10f4: sprintf(cmd, "ea");break;
 		case 0x10f5: sprintf(cmd, "notr"); break;
+		case 0x10ac: sprintf(cmd, "movobj"); break; 
+		case 0x10aa: sprintf(cmd, "eaobj"); break; 
+		case 0x10ab: sprintf(cmd, "newobj"); break; 
 	}
 	size = sprintf(p, "   %s(", cmd);	
 	p += size;

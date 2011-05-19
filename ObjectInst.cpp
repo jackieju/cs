@@ -6,8 +6,11 @@ CObjectInst::CObjectInst(long id, CClass* cls)
 	this->cls = cls;
 	ref = 0;
 	valueType = 0;	
-	v.s = &vs;
+	//v.s = &vs;
+	v.s = NULL;
+	// isLeaf = false;
 }
+
 
 
 CObjectInst::~CObjectInst(void)

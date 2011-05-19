@@ -146,8 +146,10 @@ public:
         //if (f == NULL)
           //  return;
         
-        if (bStdOut && strlen(logFileName)>0)
+        if (bStdOut /*&& strlen(logFileName)>0*/)
 			fprintf(stdout, "%s", s);
+			
+//		printf("log:: filename=%s, content=%s", fileName.c_str(), s);
 	}
 	void flush(){
        
@@ -192,6 +194,10 @@ protected:
 		level = LOG_DEFAULT_LVL;
 	};
 
+public:
+	static bool isDebug(){
+		return bDebug;
+	}
 private:
 	static CLog pInst;
 	static char logFileName[256];
@@ -202,15 +208,17 @@ private:
 #endif
 	static bool bUseCache;
 	static bool bStdOut;
+	static bool bDebug;
 	int level;
-
-
+public:
+	static void debug(char* fmt, ...);
 };
 
-void debug(char* fmt, ...);
 
 }
 
+
+void debug(char* fmt, ...);
 // simple log, no cache
 #define cLOG(m) JUJU::_log(m, __FILE__, __LINE__, 10, "LOG")
 
@@ -232,5 +240,6 @@ void debug(char* fmt, ...);
 //#define TRACE(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "TRC")
 #define TRACE1(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "TRC", category)
 #define DEBUG(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", category)
+#define DEBUG0(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "")
 using namespace JUJU;
 #endif

@@ -8,6 +8,7 @@ using namespace stdext;
 #include <ext/hash_map>
 #endif
 
+
 union vtype_t {
 	char c;
 	int i;
@@ -18,25 +19,33 @@ union vtype_t {
 	unsigned int ui;
 	unsigned short ust;
 	unsigned long ul;
-	std::string* s;
+//	std::string* s;
+	char* s;
 } ;
+class CAttribute{
 
-class CObjectInst
-{
 public:
 	
-	void addRef(){
-		ref ++;
-	}
-
-	int getRef(){
-		return ref;
-	}
-
-	CObjectInst * getMemberAddress(char* name){
-		return members[name];
-	}
-	void setValue(int type, void* value){
+		CAttribute(){
+			//isLeaf = true;
+		};
+		~CAttribute(){};
+		CAttribute(const CAttribute& src){
+			//this->name = src->getName();
+			//setValue(src->getType(), &(src->getValue()));
+			this->name = src.name;
+			this->v = src.v;
+			this->valueType = src.valueType;
+		//	this->vs = src.vs;
+		};
+		void setName(char* name){
+			this->name = name;
+		}
+		char* getName(){
+			return (char*)name.c_str();
+		}
+		void setValue(int type, void* value){
+			printf("==>setValue, type=%d, value=%d\n", type, *(long*)value);
 		switch(type){
 			case dtInt:
 			v.i = *(int*)value;
@@ -67,10 +76,13 @@ public:
 			break;
 			
 			case dtStr:
-			vs = (char*)value;
+			//vs = (char*)value;
+			v.s = *(char**)value;
+			printf("set value to string %s", *(char**) value);
+			break;
 			
 			default:
-			fprintf(stderr, "Cannot set object value type to %d", type);
+			fprintf(stderr, "Cannot set object value type to %d\n", type);
 			return;
 		}
 		valueType = type;
@@ -78,6 +90,10 @@ public:
 	
 	vtype_t getValue(){
 		return v;
+	}
+	
+	BYTE* getValueAddress(){
+		return (BYTE*)&v;
 	}
 	
 	std::string getSValue(){
@@ -114,17 +130,69 @@ public:
 			break;
 			
 			case dtStr:
-				r += vs;
+				//r += vs;
+			r += v.s;
+			break;
 			
+		//	case dtGeneral:
+				
 			default:
-			fprintf(stderr, "Cannot convert object value type %d to string", valueType);
+				fprintf(stderr, "Cannot convert object value type %d to string", valueType);
 		
 		}
+		printf("get value of string %s", (char*)r.c_str());
 		return r;
 	
 	}
+	
+protected:
+	int valueType;
+	vtype_t v;
+	//std::string vs;
+	std::string name;
+	
+	// bool isLeaf;
+};
+
+class CObjectInst : public CAttribute
+{
+public:
+	
+	void addRef(){
+		ref ++;
+	}
+
+	int getRef(){
+		return ref;
+	}
+
+	CObjectInst * getMemberAddress(char* name){
+		
+		CObjectInst * r =  members[name];
+		if (r == NULL)
+			r = addMember(name);
+		return r;
+	}
+	
+	CObjectInst * addMember(char* name){
+		CObjectInst *p = CObjectInst::createObject(NULL);
+		members[name] = p;
+		return p;
+	}
+
+
+	std::vector<CAttribute> asArray(){
+		std::vector<CAttribute> v;
+		hash_map<char*, CObjectInst*>::iterator it = members.begin();
+		while(it!=members.end()) {
+			CAttribute *attr = 	(CAttribute*)it->second;
+			CAttribute a = *attr;
+			v.push_back(a);
+		}
+	}
 
 	static CObjectInst* createObject(CClass* c){
+		// TODO should put object to global list, for gc
 		CObjectInst* r = NULL;
 		r = new CObjectInst(0, c);
 		return r;
@@ -133,14 +201,13 @@ private:
 	long id;
 	CClass* cls;
 	int ref;
-	int valueType;
-	vtype_t v;
-	std::string vs;
+
+
 	
 #ifdef _MACOS
 	hash_map<char*, CObjectInst*> members;
 #else
-	stdext::hash_map<std::string, CObjectInst*> members;
+	stdext::hash_map<std::string, CAttribute*> members;
 #endif
 
 
