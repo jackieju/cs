@@ -43,11 +43,13 @@ bool CSymbolTable::AddSymbol(char *szName, TYPEDES dt)
 	int size_t = m_pParser->UnitSize(dt);
 	if (size_t < 0)
 		return FALSE;
+	debug("size_t=%d, dim=%d", size_t, dt.dim);
 
 	if (dt.dim>0)//是数组
 	{
 		for (int i = 0; i< dt.dim; i++)
 		{
+			debug("dmsize=%d",dt.dimsize[i]);
 			size_t *= dt.dimsize[i];
 		}
 	}
@@ -88,7 +90,7 @@ bool CSymbolTable::AddSymbol(char *szName, TYPEDES dt)
 	this->tableEntry[this->m_nSymbolCount].address = this->m_nTotalSize;//address
 	tableEntry[this->m_nSymbolCount].size_t = size_t;                   //size
 	memcpy(&(tableEntry[this->m_nSymbolCount].type), &dt, sizeof(TYPEDES));//datatype
-
+	debug("size_t=%d", size_t);
 	//symbol name
 	if (szName != NULL)
 		strcpy(tableEntry[this->m_nSymbolCount].szName, szName);

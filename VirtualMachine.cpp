@@ -862,7 +862,7 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 	INT EA=NULL;
  
 //	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
-	CObjectInst* obj = (CObjectInst*)src;
+	CObjectInst* obj = *(CObjectInst**)src;
 
 	if (cmd->opnum > 2){
 		if (obj == NULL)
@@ -1210,8 +1210,8 @@ BOOL CVirtualMachine::_parampub(PCOMMAND cmd)
 	int dt = (cmd->address_mode >> 8) & 0x0f;
 	// if allow pass object as param to pub function, should add datat type into pCallInfo->paramPt
 	if (dt == AMODE_OBJ){
-		
-		BYTE* vt = ( (CObjectInst*) dest)->getValueAddress();
+		debug("fdfda===>%x", *(CObjectInst**) dest);
+		BYTE* vt = ( *(CObjectInst**) dest)->getValueAddress();
 		pCallInfo->paramPt->pData = vt;
 		debug("====>3333%s\n", *(char**)vt);
 	}
@@ -1297,7 +1297,7 @@ BOOL CVirtualMachine::_paramv(PCOMMAND cmd)
 	pCallInfo = m_FuncStack.top();
 
 
-
+	debug("paramv obj %x", *(long **)dest);
 	pCallInfo->paramPt->pData = (unsigned char*)dest;
 	pCallInfo->paramPt->size = size;
 	pCallInfo->paramPt->reflvl = op1reflvl;
@@ -2364,7 +2364,7 @@ BOOL CVirtualMachine::Preprocess1(PCOMMAND cmd, int &op1mode, int &op1reflvl, un
 		//	dest = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[0]]]);break;
 		
 	case AMODE_OBJ:
-		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
 		break;
 		
 	default:
@@ -2444,7 +2444,7 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 	*/	
 
 	case AMODE_OBJ:
-		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
 		break;
 	default:
 		{			
@@ -2514,7 +2514,7 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 		
 		//		src = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[1]]]);break;
 	case AMODE_OBJ:
-		dest = (unsigned char*)(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
 		break;
 	default:
 		{			
@@ -2703,8 +2703,9 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 			if (obj == NULL){ // primitive => object, if src is primitive and dest is not initialized object reference
 				obj = CObjectInst::createObject(NULL);
 				*(CObjectInst**)dest = obj;
+				debug("new object %x", obj);
 			}
-			if (src_reflevel == 1 && src_type == dtChar){
+			if ( (src_reflevel == 1 && src_type == dtChar) || src_type == dtStr){
 				obj->setValue(dtStr, src);
 			}else if (src_reflevel > 0 )
 				obj->setValue(dtLong, src);

@@ -68,6 +68,8 @@
          "\"->\" expected",
          "\"::\" expected",
          "\"new\" expected",
+         "\"$\" expected",
+         "\"${\" expected",
          "\"*=\" expected",
          "\"/=\" expected",
          "\"%=\" expected",

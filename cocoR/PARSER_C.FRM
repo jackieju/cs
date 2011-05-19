@@ -905,7 +905,7 @@ bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES&
 	return true;
 }
 
-
+// do variable allocation, the top element in stack is array info
 void -->ParserClass::doVarDecl(PTYPEDES type, char* szFirstName)
 {
 //printf("-=====>1111, %x\n", m_pMainFunction->m_pExpDigitPt);

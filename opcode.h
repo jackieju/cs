@@ -134,7 +134,7 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 
 //#define AMODE_POINT  4 //指针寻址(EA = PS + OFFSET)
 #define AMODE_OBJ      5 // address mode for object, the content of the address of oprand 0 is physical of object, 
-						 // dest =  (CObjectInst*)(m_pCurCall->DataSeg[cmd->op[0]]) 
+						 // dest =  (CObjectInst**)&(m_pCurCall->DataSeg[cmd->op[0]]) 
 #define LAST_ADDRESS_MODE 0xf5
 
 #define DD 0x8181	// AMODE_MEM, AMODE_MEM

@@ -176,10 +176,11 @@ PRODUCTIONS
  
   Definition           =
    (
+ (. debug("===>Definition"); .)
    [ StorageClass ] (. PTYPEDES type = new TYPEDES; .) 
    [ Type<type> ]
-   
-   /*{ "*" } 
+  
+   /*{ "*" }*/ 
 (. 
 		if (type->type < dtFirstType  || type->type > dtLastType)
 		{
@@ -193,7 +194,7 @@ PRODUCTIONS
 			Get();
 		}
 .)
-   */
+   
    identifier
 (.
 	char szName[MAX_IDENTIFIER_LENGTH];
@@ -458,6 +459,7 @@ ArraySize
 
 							"(" [ FormalParamList ] ")" 
   (. 	
+m_pMainFunction->ClearExpStack();
 //printf("add function%s line=%d\n",  m_pMainFunction->name(), Scanner->CurrSym.Line);
   this->m_pMainFunction->m_iParamNum = this->m_pMainFunction->m_SymbolTable.m_nSymbolCount; 
 		if (m_pCurClassDes != m_pMainFunction)
@@ -541,7 +543,9 @@ ArraySize
 	if (type->type == dtGeneral){ // create object automatically if not type specified or type is dtGeneral
 //	printf("===>1\n");
 //	printf("--->m_pMainFunction1=%x, expStockPt=%x", m_pMainFunction, m_pMainFunction->m_pExpDigitPt);
-		doVarDecl(type, szName);
+	if (!AllocVar(type, szName))
+	                  GENERR(113);
+
 		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
 	}
 	delete type;
@@ -583,6 +587,7 @@ ArraySize
  .
  LocalDeclaration     = 
 							(.
+							debug("===>LocalDeclaration");
 								PTYPEDES type = new TYPEDES;
 								char szName[MAX_IDENTIFIER_LENGTH];
 								
@@ -2044,7 +2049,24 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
  .)
   | "new" Creator
   /*| String3*/ 
-  
+  | "$" identifier /* class member */
+(.
+{	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+ 	int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
+	// create temp variable
+	  long temp = AllocTempVar(dtGeneral);
+		if (temp == -1){
+                  	GENERR(98);
+		 }
+		// get effective address for object member
+		ADDCOMMAND3(__eaobj, AMODE_OBJ|AMODE_OBJ<<8, temp, 0, address);
+
+		 _typedes(DT1, dtGeneral)
+ 		m_pMainFunction->PushDigit(temp, getAddressMode(AMODE_OBJ, DT1), DT1);
+}
+
+.)
+  | "${" identifier "}" /* dynamic class member */
   | string1
   (.
   		 {
@@ -2216,8 +2238,15 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 		ADDCOMMAND1(__parampub, address_mode, op1)			
 	else{
 		// validate parameter type
-		CFunction* fun = pFuncEntry->pVF;
-		ADDCOMMAND1(__paramv, address_mode, op1)
+		//CFunction* fun = pFuncEntry->pVF;
+					long temp = AllocTempVar(dtGeneral);
+					if (temp == -1)
+									 {
+				                     	GENERR(98);
+									 }
+		_typedes(DTT, dtGeneral)
+		ADDCOMMAND4(__movobj, getAddressMode2(AMODE_OBJ,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
+		ADDCOMMAND1(__paramv, (AMODE_OBJ|0xc0)<<8, temp)
 	}
 	cParamNum++; 
   .)
@@ -2279,8 +2308,18 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					}*/
 					ADDCOMMAND1(__parampub, address_mode, op1)			
 				}	
-				else
-					ADDCOMMAND1(__paramv, address_mode, op1)		
+				else{
+					// if it's object, create temp variable and pass into function call		
+					long temp = AllocTempVar(dtGeneral);
+					if (temp == -1)
+									 {
+				                     	GENERR(98);
+									 }
+			
+					_typedes(DTT, dtGeneral)
+					ADDCOMMAND4(__movobj, getAddressMode2(AMODE_OBJ,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
+					ADDCOMMAND1(__paramv, (AMODE_OBJ|0xc0)<<8, temp)
+				}	
 				cParamNum++; 
 			}		
 
