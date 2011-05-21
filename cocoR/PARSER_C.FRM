@@ -900,7 +900,7 @@ bool -->ParserClass::doMove(long type1, long type2, long op1, long op2, TYPEDES&
 	}*/
 
 	ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel) 
-	m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
+	m_pMainFunction->PushDigit(op1, AMODE_MEM|0x80, dt1);
 //	pushResultAX();    
 	return true;
 }

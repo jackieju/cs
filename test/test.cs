@@ -28,7 +28,7 @@ void puts(s){
 //char* ss="fff1111111";
 char* ss; 
 ss = s;
- put_str(s);
+ put_str(ss);
 }
 void tttt(){
  char* ss="fff1111111";
@@ -140,7 +140,9 @@ void create()
 	put_str("afa\r\n");
 	test_putl(l);
 	*/
-	$.a = 0;
+	$.a = "990";
+	char* aa = $.a;
+	put_str(aa);
 	//$.l =0;
 	//var b = $.a;
 	//put_str(b);

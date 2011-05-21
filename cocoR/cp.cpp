@@ -2574,7 +2574,7 @@ void cParser::PostFixExp()
 				      
 				
 				      // AX <= a.b
-				      ADDCOMMAND2(__eaobj, getAddressMode2(AMODE_OBJ, AMODE_MEM, dt1, dtTarget), op1, address_target);
+				      ADDCOMMAND2(__eaobj, getAddressMode2(AMODE_MEM, AMODE_MEM, dt1, dtTarget), op1, address_target);
 				      _typedes(dt_ax, dtGeneral)
 				      m_pMainFunction->PushDigit(_AX, AMODE_REG|0x80, dt_ax);
 				/*      // temp <= AX
@@ -2585,7 +2585,7 @@ void cParser::PostFixExp()
 				       }
 				      _typedes(DT1, dtGeneral)
 				
-				      ADDCOMMAND2(__mov, getAddressMode(AMODE_OBJ, AMODE_REG, DT1, DT2), _AX, target);
+				      ADDCOMMAND2(__mov, getAddressMode(AMODE_MEM, AMODE_REG, DT1, DT2), _AX, target);
 				      */;
 # line 1690 "cs.atg"
 				while (Sym == LparenSym) {
@@ -2636,7 +2636,7 @@ void cParser::PostFixExp()
 				                              // get effective address for object member
 				                              _typedes(dt2, dtChar)
 				                              dt2.refLevel = 1;
-				                              ADDCOMMAND2(__eaobj, getAddressMode(AMODE_OBJ, AMODE_STATIC, dt1, dt2), op1, address);
+				                              ADDCOMMAND2(__eaobj, getAddressMode(AMODE_MEM, AMODE_STATIC, dt1, dt2), op1, address);
 				                              
 				                              
 				                              // move result from AX to Temp variable
@@ -2647,9 +2647,9 @@ void cParser::PostFixExp()
 				                               }
 				                              _typedes(DT1, dtGeneral)
 				                              _typedes(DT2, dtGeneral)
-				                              ADDCOMMAND2(__mov, getAddressMode(AMODE_OBJ, AMODE_REG, DT1, DT2), temp, _AX);
+				                              ADDCOMMAND2(__mov, getAddressMode(AMODE_MEM, AMODE_REG, DT1, DT2), temp, _AX);
 				      
-				                              m_pMainFunction->PushDigit(temp, AMODE_OBJ|0x80, DT1);
+				                              m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, DT1);
 				                      }
 				              }
 				      */
@@ -3000,8 +3000,8 @@ void cParser::Primary()
 			                                                                                   // int opsize;
 			                                                                                   // opsize = log2((int)OPSIZE_PTR);
 			                                               // opsize &= 0x3;
-			                                                                                  //  m_pMainFunction->PushDigit(address, AMODE_OBJ|(opsize << 6), dt);
-			                                                                                  m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_OBJ, dt), dt);
+			                                                                                  //  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
+			                                                                                  m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_MEM, dt), dt);
 			                                            }
 			                                    }
 			                                    
@@ -3046,7 +3046,7 @@ void cParser::Primary()
 			      }
 			      memcpy(&dt ,&(pElement->type), sizeof(TYPEDES));
 			      long address = GetSymAddress("this");
-			      m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_OBJ, dt), dt);
+			      m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_MEM, dt), dt);
 			      printf("===>push $\n");
 			};
 			break;
@@ -3348,7 +3348,7 @@ void cParser::Creator()
 	                   long opsize = log2(UnitSize(dt1))<<6;
 	                   temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
 	                   ADDCOMMAND2(__mov, DR|((opsize<<8)|opsize), temp , _AX);
-	                   m_pMainFunction->PushDigit(temp, AMODE_OBJ, dt1);
+	                   m_pMainFunction->PushDigit(temp, AMODE_MEM, dt1);
 	   }
 	   else
 	   {
@@ -3434,8 +3434,8 @@ void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 	                                                    GENERR(98);
 	                                                                     }
 	            _typedes(DTT, dtGeneral)
-	            ADDCOMMAND4(__movobj, getAddressMode2(AMODE_OBJ,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
-	            ADDCOMMAND1(__paramv, (AMODE_OBJ|0xc0)<<8, temp)
+	            ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
+	            ADDCOMMAND1(__paramv, (AMODE_MEM|0xc0)<<8, temp)
 	    }
 	    cParamNum++; 
 # line 2370 "cs.atg"
@@ -3510,8 +3510,8 @@ void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 		                                                                     }
 		                    
 		                                    _typedes(DTT, dtGeneral)
-		                                    ADDCOMMAND4(__movobj, getAddressMode2(AMODE_OBJ,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
-		                                    ADDCOMMAND1(__paramv, (AMODE_OBJ|0xc0)<<8, temp)
+		                                    ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM,type, DTT, dt1), temp, op1, DTT.type<<4|DTT.refLevel, dt1.type<<4|dt1.refLevel);
+		                                    ADDCOMMAND1(__paramv, (AMODE_MEM|0xc0)<<8, temp)
 		                            }       
 		                            cParamNum++; 
 		                    }               
@@ -4355,7 +4355,7 @@ bool cParser::doMove(long type1, long type2, long op1, long op2, TYPEDES& dt1, T
 	}*/
 
 	ADDCOMMAND4(__movobj, address_mode, op1, op2, dt1.type<<4|dt1.refLevel, dt2.type<<4|dt2.refLevel) 
-	m_pMainFunction->PushDigit(op1, AMODE_OBJ|0x80, dt1);
+	m_pMainFunction->PushDigit(op1, AMODE_MEM|0x80, dt1);
 //	pushResultAX();    
 	return true;
 }

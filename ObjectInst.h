@@ -8,7 +8,13 @@ using namespace stdext;
 #include <ext/hash_map>
 #endif
 
-
+typedef struct _eqstr
+{
+  bool operator()(const char* s1, const char* s2) const
+  {
+    return strcmp(s1, s2) == 0;
+  }
+}EQFN_STR;
 typedef union vtype_t {
 	char c;
 	int i;
@@ -23,6 +29,15 @@ typedef union vtype_t {
 	long fn;
 	char* s;
 } VTYPE;
+class CObjectInst;
+#ifdef _MACOS
+// sgi 
+typedef hash_map<char*, CObjectInst*, hash<char*>, EQFN_STR> STR_HASHMAP;
+typedef hash_map<char*, CObjectInst*, hash<char*>, EQFN_STR>::iterator STR_HASHMAP_IT;
+#else
+typedef	stdext::hash_map<std::string, CObjectInst*> STR_HASHMAP;
+typedef	stdext::hash_map<std::string, CObjectInst*>::iterator  STR_HASHMAP_IT;
+#endif
 class CAttribute{
 
 public:
@@ -51,7 +66,6 @@ public:
 		}
 		void setValue(int type, void* value){
 			printf("==>setValue, type=%d, value=%d, dtUlong=%d, dtLong=%d, v=%x\n", type, *(long*)value, dtULong, dtLong, v.s);
-			v.l = *(long*)value;
 		switch(type){
 			case dtInt:
 			v.i = *(int*)value;
@@ -185,10 +199,12 @@ public:
 		printf("===>%s.getMemberAddress %s.\n", (char*)name.c_str(), szName);
 		printf("====>member size=%d", members.size());
 		CObjectInst * r =  members[szName];
+		printf("====>member size2=%d", members.size());
 		printf("====>r=%x", r);
 		if (r == NULL)
 			r = addMember(szName);
-		printf("====>1");
+
+		printf("====>getMemberAddress=%x", r);
 		return r;
 	}
 	
@@ -202,7 +218,7 @@ public:
 	
 	std::vector<CAttribute> asArray(){
 		std::vector<CAttribute> v;
-		hash_map<char*, CObjectInst*>::iterator it = members.begin();
+		STR_HASHMAP_IT it = members.begin();
 		while(it!=members.end()) {
 			CAttribute *attr = 	(CAttribute*)it->second;
 			CAttribute a = *attr;
@@ -223,12 +239,7 @@ private:
 	int ref;
 
 
-	
-#ifdef _MACOS
-	hash_map<char*, CObjectInst*> members;
-#else
-	stdext::hash_map<std::string, CAttribute*> members;
-#endif
+	STR_HASHMAP members;
 
 
 public:

@@ -45,18 +45,27 @@ bool applyOption(char** argv, int number){
 		applyOption(argv+1, number-1);
 	}
 }
-
+/*struct eqstr
+{
+  bool operator()(const char* s1, const char* s2) const
+  {
+    return strcmp(s1, s2) == 0;
+  }
+};
+*/
 int main(int num, char** args){
 	
 	// test hash_map
-/*	hash_map<char*, char*> members;
-	char* p1 = "hello";
-	char* p2 =  "hello1";
-	
+/*	hash_map<char*, char*, hash<char*>, eqstr> members;
+	char p1[10] = "hello";
+	char p2[10] =  "hello";
+
+	char* p3 = "hello";
 	members[p1]="1";
 	members[p2]="2";
-	printf("test hash_map\n");
-	printf("%s=%s\n", p1, members["p3"]);
+	printf("test hash_map, size=%d\n", members.size());
+	printf("%s=%s\n", p1, members[p1]);
+	printf("%s=%s\n", p2, members[p2]);
 	return 0;*/
 /*	union vtype_t {
 	char c;

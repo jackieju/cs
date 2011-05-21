@@ -2756,6 +2756,8 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 				debug("new object %x", obj);
 			}
 			if ( (src_reflevel == 1 && src_type == dtChar) || src_type == dtStr){
+				printf("obj=%x ", obj);
+				printf("src=%s\n", *(char**)src);
 				obj->setValue(dtStr, src);
 			}else if (src_reflevel > 0 )
 				obj->setValue(dtLong, src);
@@ -2767,6 +2769,9 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 			CObjectInst *obj = *(CObjectInst**)src;
 			if (dest_reflevel>0){ // object => char*
 				if (dest_type == dtChar  || dest_type == dtStr){
+					printf("obj=%x ", obj);
+					printf("src=%s", (char*)obj->getSValue().c_str());
+					printf("src=%s", *(char**)obj->getValueAddress());
 					*(char**)dest = *(char**)obj->getValueAddress();
 				}else
 				*(long*)dest = obj->getValue().l;
