@@ -103,3 +103,6 @@ if a is object -> is null, b is primitive, should create a new object for a
 
 primitive type can only be used in a function, should detect and generate compiler error for it.
 or automatically convert to object
+
+"$"identifier
+"${"identifier"}"

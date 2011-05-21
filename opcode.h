@@ -47,7 +47,7 @@
 #define __eaobj			0x10aa				// get address of object
 #define __newobj		0x10ab				// create new object or array
 #define __movobj		0x10ac				// assignment for object
-#define __i_evelstring	0x10ad				// eval string including
+#define __i_evalstring	0x10ad				// eval string including #{}
 
 //类型转换(__cast(目标地址,  原地址, 转换类型)
 #define	__cast			0x10f6				
@@ -133,12 +133,12 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 //#define AMODE_ARRAY   4  //数组寻址, 及基址变址寻址EA = DS + BX + OP)
 
 //#define AMODE_POINT  4 //指针寻址(EA = PS + OFFSET)
-#define AMODE_OBJ      5 // address mode for object, the content of the address of oprand 0 is physical of object, 
+// #define AMODE_OBJ      5 // address mode for object, the content of the address of oprand 0 is physical of object, 
 						 // dest =  (CObjectInst**)&(m_pCurCall->DataSeg[cmd->op[0]]) 
-#define LAST_ADDRESS_MODE 0xf5
+#define LAST_ADDRESS_MODE 0xf3
 
 #define DD 0x8181	// AMODE_MEM, AMODE_MEM
-#define CC 0x8080
+#define CC 0x8080   // direct, direct
 #define CD 0x8081
 #define CR 0x8082
 #define DR 0x8182

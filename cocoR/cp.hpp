@@ -94,6 +94,22 @@ typedef struct _tagExpressionOp
 	_op_[3] = (long)param4;\
 	m_pMainFunction->AddCommand(code, address_mode, 4, _op_, Scanner->CurrSym.Line);}
 	
+#define POPEXP1	long op1, type1;\
+	TYPEDES dt1;\
+	if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 <FIRST_ADDRESS_MODE || type1 >LAST_ADDRESS_MODE )\
+	{\
+		GENERR(96);\
+		return;\
+	}
+#define POPEXP2  \
+		long op1, op2;\
+		long type1, type2;\
+		TYPEDES dt1, dt2;\
+		if (!m_pMainFunction->PopDigit(&op2, &type2, &dt2) || !m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 <FIRST_ADDRESS_MODE || type1 >LAST_ADDRESS_MODE || type2 <FIRST_ADDRESS_MODE || type2 >LAST_ADDRESS_MODE)\
+		{\
+			GENERR(96);\
+			return;\
+		}
 class CPubFuncTable;
 class CLoopTree;
 class CFunction;

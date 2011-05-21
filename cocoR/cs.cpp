@@ -32,7 +32,7 @@ int cScanner::STATE0[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,54,24,33,70,64,50,26,44,45,46,61,41,62,67,63,35,2,2,2,2,2,2,2,2,2,47,37,
                   30,38,56,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                   1,42,0,43,52,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                  1,1,1,39,48,40,82,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                  1,1,1,39,48,40,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -204,7 +204,7 @@ int cScanner::Get()
       	if (Scan_Ch == '%') state = 64; else
       	if (Scan_Ch == '.') state = 67; else
       	if (Scan_Ch == '$') state = 70; else
-      	if (Scan_Ch == '~') state = 82; else
+      	if (Scan_Ch == '~') state = 81; else
       	return No_Sym;
       	break;
        --------- End State0 --------- */
@@ -359,7 +359,7 @@ int cScanner::Get()
       case 45:
       	return RparenSym;
       case 46:
-      	if (Scan_Ch == '=') state = 72; else
+      	if (Scan_Ch == '=') state = 71; else
       	return StarSym;
       	break;
       case 47:
@@ -368,20 +368,20 @@ int cScanner::Get()
       	break;
       case 48:
       	if (Scan_Ch == '|') state = 49; else
-      	if (Scan_Ch == '=') state = 79; else
+      	if (Scan_Ch == '=') state = 78; else
       	return BarSym;
       	break;
       case 49:
       	return BarBarSym;
       case 50:
       	if (Scan_Ch == '&') state = 51; else
-      	if (Scan_Ch == '=') state = 77; else
+      	if (Scan_Ch == '=') state = 76; else
       	return AndSym;
       	break;
       case 51:
       	return AndAndSym;
       case 52:
-      	if (Scan_Ch == '=') state = 78; else
+      	if (Scan_Ch == '=') state = 77; else
       	return UparrowSym;
       	break;
       case 53:
@@ -402,30 +402,30 @@ int cScanner::Get()
       case 58:
       	return GreaterEqualSym;
       case 59:
-      	if (Scan_Ch == '=') state = 80; else
+      	if (Scan_Ch == '=') state = 79; else
       	return LessLessSym;
       	break;
       case 60:
-      	if (Scan_Ch == '=') state = 81; else
+      	if (Scan_Ch == '=') state = 80; else
       	return GreaterGreaterSym;
       	break;
       case 61:
       	if (Scan_Ch == '+') state = 65; else
-      	if (Scan_Ch == '=') state = 75; else
+      	if (Scan_Ch == '=') state = 74; else
       	return PlusSym;
       	break;
       case 62:
       	if (Scan_Ch == '-') state = 66; else
       	if (Scan_Ch == '>') state = 68; else
-      	if (Scan_Ch == '=') state = 76; else
+      	if (Scan_Ch == '=') state = 75; else
       	return MinusSym;
       	break;
       case 63:
-      	if (Scan_Ch == '=') state = 73; else
+      	if (Scan_Ch == '=') state = 72; else
       	return SlashSym;
       	break;
       case 64:
-      	if (Scan_Ch == '=') state = 74; else
+      	if (Scan_Ch == '=') state = 73; else
       	return PercentSym;
       	break;
       case 65:
@@ -439,32 +439,28 @@ int cScanner::Get()
       case 69:
       	return ColonColonSym;
       case 70:
-      	if (Scan_Ch == '{') state = 71; else
       	return DollarSym;
-      	break;
       case 71:
-      	return DollarLbraceSym;
-      case 72:
       	return StarEqualSym;
-      case 73:
+      case 72:
       	return SlashEqualSym;
-      case 74:
+      case 73:
       	return PercentEqualSym;
-      case 75:
+      case 74:
       	return PlusEqualSym;
-      case 76:
+      case 75:
       	return MinusEqualSym;
-      case 77:
+      case 76:
       	return AndEqualSym;
-      case 78:
+      case 77:
       	return UparrowEqualSym;
-      case 79:
+      case 78:
       	return BarEqualSym;
-      case 80:
+      case 79:
       	return LessLessEqualSym;
-      case 81:
+      case 80:
       	return GreaterGreaterEqualSym;
-      case 82:
+      case 81:
       	return TildeSym;
       
       default: return No_Sym; /* Scan_NextCh already done */

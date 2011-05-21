@@ -389,14 +389,26 @@ MultExp     { ( "+"  | "-"  ) MultExp
                           | 
 FunctionCall<&fn>
 
-                          | ("." identifier)
+                          | 
 
-						{ 
+"." 
+( 
+
+
+
+identifier
+ | "{" Expression 
+
+"}"
+
+)				
+
+
+		{ 
 	
 						FunctionCall<&fn>
 						}
-					
-                   
+					          
                           
                           
                           | (  "->" {"{"} identifier {"}"} 
@@ -439,9 +451,9 @@ FunctionCall<&fn>
  identifier 
   | "new" Creator
    
-  | "$" identifier 
-
-  | "${" identifier "}" 
+	| "$"
+	
+  
   | string1
   
 

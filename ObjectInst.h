@@ -9,7 +9,7 @@ using namespace stdext;
 #endif
 
 
-union vtype_t {
+typedef union vtype_t {
 	char c;
 	int i;
 	float f;
@@ -20,14 +20,19 @@ union vtype_t {
 	unsigned short ust;
 	unsigned long ul;
 //	std::string* s;
+	long fn;
 	char* s;
-} ;
+} VTYPE;
 class CAttribute{
 
 public:
 	
 		CAttribute(){
 			//isLeaf = true;
+				valueType = 0;	
+			//v.s = &vs;
+			v.s = NULL;
+			memset(&v, 0, sizeof(VTYPE));
 		};
 		~CAttribute(){};
 		CAttribute(const CAttribute& src){
@@ -45,7 +50,8 @@ public:
 			return (char*)name.c_str();
 		}
 		void setValue(int type, void* value){
-			printf("==>setValue, type=%d, value=%d\n", type, *(long*)value);
+			printf("==>setValue, type=%d, value=%d, dtUlong=%d, dtLong=%d, v=%x\n", type, *(long*)value, dtULong, dtLong, v.s);
+			v.l = *(long*)value;
 		switch(type){
 			case dtInt:
 			v.i = *(int*)value;
@@ -65,6 +71,10 @@ public:
 			
 			case dtLong:
 			v.l = *(long*)value;
+			break;
+			
+			case dtFn:
+			v.fn = *(long*)value;
 			break;
 			
 			case dtULong:
@@ -88,7 +98,7 @@ public:
 		valueType = type;
 	}
 	
-	vtype_t getValue(){
+	VTYPE getValue(){
 		return v;
 	}
 	
@@ -131,10 +141,14 @@ public:
 			
 			case dtStr:
 				//r += vs;
-			r += v.s;
+				r += v.s;
 			break;
 			
-		//	case dtGeneral:
+			case dtGeneral:
+				r += (cls?cls->GetFullName():"object");
+				r += "@";
+				r += id;
+				break;
 				
 			default:
 				fprintf(stderr, "Cannot convert object value type %d to string", valueType);
@@ -147,10 +161,11 @@ public:
 	
 protected:
 	int valueType;
-	vtype_t v;
+	VTYPE v;
 	//std::string vs;
 	std::string name;
-	
+	long id;
+	CClass* cls;
 	// bool isLeaf;
 };
 
@@ -166,21 +181,25 @@ public:
 		return ref;
 	}
 
-	CObjectInst * getMemberAddress(char* name){
-		
-		CObjectInst * r =  members[name];
+	CObjectInst * getMemberAddress(char* szName){
+		printf("===>%s.getMemberAddress %s.\n", (char*)name.c_str(), szName);
+		printf("====>member size=%d", members.size());
+		CObjectInst * r =  members[szName];
+		printf("====>r=%x", r);
 		if (r == NULL)
-			r = addMember(name);
+			r = addMember(szName);
+		printf("====>1");
 		return r;
 	}
 	
-	CObjectInst * addMember(char* name){
+	CObjectInst* addMember(char* name){
+	
 		CObjectInst *p = CObjectInst::createObject(NULL);
 		members[name] = p;
 		return p;
 	}
 
-
+	
 	std::vector<CAttribute> asArray(){
 		std::vector<CAttribute> v;
 		hash_map<char*, CObjectInst*>::iterator it = members.begin();
@@ -190,6 +209,8 @@ public:
 			v.push_back(a);
 		}
 	}
+	
+
 
 	static CObjectInst* createObject(CClass* c){
 		// TODO should put object to global list, for gc
@@ -198,8 +219,7 @@ public:
 		return r;
 	};
 private:
-	long id;
-	CClass* cls;
+
 	int ref;
 
 

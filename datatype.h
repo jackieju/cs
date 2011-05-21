@@ -22,11 +22,13 @@
 //#define dtLastType 11
 #ifdef __SUPPORT_OBJ
 #define dtObject 12
-#define dtLastType 12
+#define dtUnknown 13
+#define dtFn 14
+#define dtLastType 14
 #else
 #define dtLastType 11
 #endif
-#define dtUnknown 13
+
 
 typedef struct _tagTypeDes
 {

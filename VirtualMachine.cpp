@@ -855,16 +855,21 @@ BOOL CVirtualMachine::_ea(PCOMMAND cmd)
 	return TRUE;
 }
 
-// get address of an object member
+// get address of an object member,  the src must be a string
 BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 {
+	
 	CMD_PREPROCESS2
-	INT EA=NULL;
+	long EA=NULL;
  
 //	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
-	CObjectInst* obj = *(CObjectInst**)src;
-
-	if (cmd->opnum > 2){
+	CObjectInst* obj = *(CObjectInst**)dest;
+	char* member = *(char**)src;
+	printf("==>obj=%x\n", obj);
+	CObjectInst* o =  obj->getMemberAddress(member);
+	printf("==>2\n");
+	EA = (long)o;
+/*	if (cmd->opnum > 2){
 		if (obj == NULL)
 			return FALSE;
 		char* member = (char*)(&(m_pCurCall->StaticSeg[cmd->op[2]]));
@@ -872,11 +877,53 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 		if (o != NULL)
 			EA = (INT)o;
 	}else
-		EA = (long)obj;
-	memcpy(dest, &EA, sizeof(long));
+		EA = (long)obj;*/
+	__AX= EA;
 	__IP++;
 	return TRUE;
 }
+/*
+// get address of an object member,  the src must be a string
+BOOL CVirtualMachine::_evalobj(PCOMMAND cmd)
+{
+	CMD_PREPROCESS2
+	
+ 
+//	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
+	CObjectInst* obj = *(CObjectInst**)src;
+//	std::string s = obj->to_s();
+//	*(char**)dest = s.c_str();
+
+
+	__IP++;
+	return TRUE;
+}*/
+#if 0
+// get address of an object member,  the src must be a string
+BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
+{
+	CMD_PREPROCESS2
+	long EA=NULL;
+ 
+//	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
+	CObjectInst* obj = *(CObjectInst**)dest;
+	char* member = src;
+	CObjectInst* o =  obj->getMemberAddress(member);
+	EA = (long)o;
+/*	if (cmd->opnum > 2){
+		if (obj == NULL)
+			return FALSE;
+		char* member = (char*)(&(m_pCurCall->StaticSeg[cmd->op[2]]));
+		CObjectInst* o =  obj->getMemberAddress(member);
+		if (o != NULL)
+			EA = (INT)o;
+	}else
+		EA = (long)obj;*/
+	__AX= EA;
+	__IP++;
+	return TRUE;
+}
+#endif
 
 BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 {
@@ -1209,13 +1256,13 @@ BOOL CVirtualMachine::_parampub(PCOMMAND cmd)
 
 	int dt = (cmd->address_mode >> 8) & 0x0f;
 	// if allow pass object as param to pub function, should add datat type into pCallInfo->paramPt
-	if (dt == AMODE_OBJ){
+/*	if (dt == AMODE_OBJ){
 		debug("fdfda===>%x", *(CObjectInst**) dest);
 		BYTE* vt = ( *(CObjectInst**) dest)->getValueAddress();
 		pCallInfo->paramPt->pData = vt;
 		debug("====>3333%s\n", *(char**)vt);
 	}
-	else
+	else*/
 		pCallInfo->paramPt->pData = (unsigned char*)dest;
 	pCallInfo->paramPt->size = size;
 	pCallInfo->paramPt->reflvl = op1reflvl;
@@ -1860,6 +1907,9 @@ BOOL CVirtualMachine::Run()
 		case __movobj:
 			if (!_movobj(pcmd)) bError = TRUE;
 			break;
+		case __eaobj:
+			if (!_eaobj(pcmd)) bError = TRUE;
+			break;
 		case __newobj:
 			if (!_newobj(pcmd)) bError = TRUE;
 			break;
@@ -2363,9 +2413,9 @@ BOOL CVirtualMachine::Preprocess1(PCOMMAND cmd, int &op1mode, int &op1reflvl, un
 		
 		//	dest = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[0]]]);break;
 		
-	case AMODE_OBJ:
-		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
-		break;
+	// case AMODE_OBJ:
+		// dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
+		// break;
 		
 	default:
 		{
@@ -2443,9 +2493,9 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 		//		dest = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[0]]]);break;
 	*/	
 
-	case AMODE_OBJ:
-		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
-		break;
+	// case AMODE_OBJ:
+	// 	dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
+	// 	break;
 	default:
 		{			
 			snprintf(msg, 200, "SE:: invalid address mode, line %d, op %xH, addressmode %xH", cmd->line, cmd->op, cmd->address_mode);
@@ -2513,9 +2563,9 @@ BOOL CVirtualMachine::Preprocess2(PCOMMAND cmd, int &op1mode, int &op2mode, int 
 	//	src = (unsigned char*)&(cmd->op[1]);break;
 		
 		//		src = (unsigned char*)(m_pCurCall->DataSeg[__BX+ m_pCurCall->DataSeg[cmd->op[1]]]);break;
-	case AMODE_OBJ:
-		dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
-		break;
+	// case AMODE_OBJ:
+	// 	dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]) ;
+	// 	break;
 	default:
 		{			
 			snprintf(msg, 200, "SE:: invalid address mode, line %d, op %xH, addressmode %xH", cmd->line, cmd->op, cmd->address_mode);
@@ -2716,7 +2766,7 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 		if (src_type == dtGeneral ){  // object => primitive
 			CObjectInst *obj = *(CObjectInst**)src;
 			if (dest_reflevel>0){ // object => char*
-				if (dest_type == dtChar){
+				if (dest_type == dtChar  || dest_type == dtStr){
 					*(char**)dest = *(char**)obj->getValueAddress();
 				}else
 				*(long*)dest = obj->getValue().l;
@@ -3101,7 +3151,7 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
 	
 	CObjectInst* obj = createObject(c->GetFullName());
 
-	printf("==>create instance OK\n");
+	printf("==>create instance %x OK\n", obj);
 	
 	// load "create" method
 	
@@ -3110,7 +3160,7 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
 	CFunction* pfn = c->getMethod("create");
 	LoadFunction(pfn);
 	printf("==>LoadFunction OK\n");
-	void* pthis = this;
+	void* pthis = obj;
 	AttachParam((BYTE*)&pthis, sizeof(long*));
 	
 	printf("==>AttachParam OK\n");

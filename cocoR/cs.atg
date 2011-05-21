@@ -1576,45 +1576,134 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 						  
 .)FunctionCall<&fn>
 (.}.)
-                          | ("." identifier)
+                          | 
+(.	printf("==> 1 \n");
+{  // for "break" problem
+	int nStatus = 0;  bool bFun = false;
+
+
+.)
+"." (. 		
+//	long target = NULL;  // the variable presenting a string will be used by _eaobj
+	_typedes(dtTarget, dtStr)
+	 dtTarget.refLevel = 1;
+	 	
+ 	if (!m_pMainFunction->AddVal(NULL,  dtTarget)){
+		// generror
+		GENERR(113);
+		return;
+	}
+	long address_target;
+	address_target = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
+.)
+( 
+
+
+/*{"{" (. nStatus++;.) } */
+identifier
 (.
-{
-				long op1;
-				long type1;
-				TYPEDES dt1;
-				if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 <FIRST_ADDRESS_MODE || type1 >LAST_ADDRESS_MODE )
-				{
-					//	REPORT_COMPILE_ERROR("POP UP FAILED");
-					GENERR(96);
-					return;
-				}
-				// must be object
-				if (dt1.type != dtGeneral){
-					GENERR(129);
-					return;
-				}
-				if (dt1.type == dtUnknown){
-				   GENERR(130);
-				   return;
-				}
-				CClassDes *cd = (CClassDes *)dt1.objID;
-				
-                bool bFun = false;
-				char* member = GetCurrSym();
+				char* member = GetCurrSym(); // get identifier
 				char szName[1024]="";
 				strcpy(szName, member);
+		
+				
+				
+	{
+		// if just identifier, create a string varible for target.
+		int straddress = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
+
+	    
+	
+	     ADDCOMMAND2(__ea, DS, address_target, straddress);
+		
+//	     m_pMainFunction->PushDigit(address_target, AMODE_MEM, dtTarget);       
+	
+	   
+	}
+.) | "{" Expression 
+(.
+	{ // if it is expression, convert the result to string variable by "_evalobj"
+		POPEXP1
+	
+	// for simplicity, currently not eval but direct use the string value, so the object must be a string value type,
+	// otherwise, need to call "to_s"
+	//	ADDCOMMAND2(__evalobj, getAddressMode(AMODE_MEM, type1, dtTarget, dt1), address_target, op1);      
+		ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTarget, dt1), address_target, op1,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+    
+	}
+		 
+
 .)
-						{ 
+"}"
+/* {"{"}
+
+(.
+
+	if (nStatus == 0){
+		
+	
+	}else{
+		  long temp = AllocTempVar(dtGeneral);
+            ADDCOMMAND2(__eval, AMODE_MEM, temp, address_target);
+     
+			target = temp;
+    
+	
+	}
+
+.)*/
+)				
+(.
+	// get target address for a.b
+	// popup a
+	CClassDes *cd = NULL;
+	
+		POPEXP1
+		// must be object
+		if (dt1.type != dtGeneral){
+			GENERR(129);
+			return;
+		}
+		if (dt1.type == dtUnknown){ // object not initialized
+		   GENERR(130);
+		   return;
+		}
+			 cd = (CClassDes *)dt1.objID;
+	
+
+	// AX <= a.b
+	ADDCOMMAND2(__eaobj, getAddressMode2(AMODE_OBJ, AMODE_MEM, dt1, dtTarget), op1, address_target);
+	_typedes(dt_ax, dtGeneral)
+	m_pMainFunction->PushDigit(_AX, AMODE_REG|0x80, dt_ax);
+/*	// temp <= AX
+	long temp = AllocTempVar(dtGeneral);
+	if (temp == -1)
+	{
+                 	GENERR(98);
+	 }
+	_typedes(DT1, dtGeneral)
+
+	ADDCOMMAND2(__mov, getAddressMode(AMODE_OBJ, AMODE_REG, DT1, DT2), _AX, target);
+	*/
+.)
+
+		{ 
 	(. 
 	
-	 bFun = true;
+	bFun = true;
 	FUNCCALL fn;
-	CFunction* pScript = cd->getMethod(szName);	
-	fn.name = szName;
+//	CFunction* pScript = cd->getMethod(szName);	
+//	fn.name = szName;
     
-	fn.pVF = pScript;
+//	fn.pVF = pScript;
 	fn.nType = 0;
-	ADDCOMMAND1(__callv, CC, (long)pScript);
+	long op1, type1;
+	TYPEDES dt1;
+	if (!m_pMainFunction->PopDigit(&op1, &type1, &dt1) || type1 != dtGeneral){
+		GENERR(96);
+		return;
+	}
+	ADDCOMMAND1(__callv, O0, _AX);
 				
 	// add "this" as first parameter
 	printf("add this as parameter for class method\n");
@@ -1626,7 +1715,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 						FunctionCall<&fn>
 						}
 					(.
-					
+					/*
 							if (!bFun)
 							{
 	                          int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
@@ -1640,20 +1729,30 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					                    return;
 					            }
 								else{
-								     long temp = AllocTempVar(dtGeneral);
+		
+									// get effective address for object member
+									_typedes(dt2, dtChar)
+									dt2.refLevel = 1;
+									ADDCOMMAND2(__eaobj, getAddressMode(AMODE_OBJ, AMODE_STATIC, dt1, dt2), op1, address);
+									
+									
+									// move result from AX to Temp variable
+									long temp = AllocTempVar(dtGeneral);
 							    	 if (temp == -1)
 									 {
 				                     	GENERR(98);
 									 }
-									// get effective address for object member
-									ADDCOMMAND3(__eaobj, AMODE_OBJ|AMODE_MEM<<8, temp, op1, address);
-									 _typedes(DT1, dtLong)
-							 		m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, DT1);
+									_typedes(DT1, dtGeneral)
+									_typedes(DT2, dtGeneral)
+									ADDCOMMAND2(__mov, getAddressMode(AMODE_OBJ, AMODE_REG, DT1, DT2), temp, _AX);
+						
+							 		m_pMainFunction->PushDigit(temp, AMODE_OBJ|0x80, DT1);
 								}
 							}
-						
-		}			.)
-                   
+						*/
+			
+} // for "break" problem 
+.)          
                           
                           
                           | ( (. {int state = 0;.) "->" {"{"(. state++ .)} identifier {"}"(. state++ .)} 
@@ -1949,7 +2048,8 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 .)
  identifier (.
  
- 		{	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+ 		{
+	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
  		
  			
 			int address = -1;
@@ -2022,7 +2122,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 												 // opsize = log2((int)OPSIZE_PTR);
 			                                     // opsize &= 0x3;
 												//  m_pMainFunction->PushDigit(address, AMODE_OBJ|(opsize << 6), dt);
-												m_pMainFunction->PushDigit(address, getAddressMode(AMODE_OBJ, dt), dt);
+												m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_OBJ, dt), dt);
 			                                  }
 			                          }
 			                          
@@ -2049,8 +2149,24 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
  .)
   | "new" Creator
   /*| String3*/ 
-  | "$" identifier /* class member */
-(.
+	| "$"
+	(.{
+		TYPEDES dt;
+		SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym("this");
+		if (pElement == NULL){
+		   ERR1p("Cannot find variable %s", "this");
+		   GENERR(115); // not found it symbol table, check it in runtime
+		return;
+		}
+		memcpy(&dt ,&(pElement->type), sizeof(TYPEDES));
+		long address = GetSymAddress("this");
+		m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_OBJ, dt), dt);
+		printf("===>push $\n");
+	}.)
+  /*| "$" identifier 
+(. // dynamic class member 
+
+
 {	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
  	int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
 	// create temp variable
@@ -2062,11 +2178,12 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 		ADDCOMMAND3(__eaobj, AMODE_OBJ|AMODE_OBJ<<8, temp, 0, address);
 
 		 _typedes(DT1, dtGeneral)
- 		m_pMainFunction->PushDigit(temp, getAddressMode(AMODE_OBJ, DT1), DT1);
+ 		m_pMainFunction->PushDigit(temp, getAddressModeForExpStack(AMODE_OBJ, DT1), DT1);
 }
 
 .)
-  | "${" identifier "}" /* dynamic class member */
+  | "${" identifier "}" (. // dynamic class member 
+.)*/
   | string1
   (.
   		 {
@@ -2296,7 +2413,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				*/	
 				if (pFuncEntry->nType){	// native function
 					
-					/*// if it's object, create temp variable and pass into function call		
+					/*// if its object, create temp variable and pass into function call		
 					if (m_pMainFunction->AddVal(NULL, dt))
 					{			
 					    long temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
@@ -2309,7 +2426,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					ADDCOMMAND1(__parampub, address_mode, op1)			
 				}	
 				else{
-					// if it's object, create temp variable and pass into function call		
+					// if its object, create temp variable and pass into function call		
 					long temp = AllocTempVar(dtGeneral);
 					if (temp == -1)
 									 {

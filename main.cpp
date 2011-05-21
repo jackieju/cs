@@ -47,7 +47,36 @@ bool applyOption(char** argv, int number){
 }
 
 int main(int num, char** args){
-
+	
+	// test hash_map
+/*	hash_map<char*, char*> members;
+	char* p1 = "hello";
+	char* p2 =  "hello1";
+	
+	members[p1]="1";
+	members[p2]="2";
+	printf("test hash_map\n");
+	printf("%s=%s\n", p1, members["p3"]);
+	return 0;*/
+/*	union vtype_t {
+	char c;
+	int i;
+	float f;
+	short st;
+	long l;
+	unsigned char uc;
+	unsigned int ui;
+	unsigned short ust;
+	unsigned long ul;
+//	std::string* s;
+	long fn;
+	char* s;
+} v;
+unsigned long a = 90;
+unsigned long* aa = &a;
+v.ul = *(unsigned long*)aa;
+printf("%d\n", v.l);
+return 0;*/
 #if 0
 
 	//c.setOutput("compile_err.txt");
