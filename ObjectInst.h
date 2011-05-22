@@ -8,6 +8,7 @@ using namespace stdext;
 #include <ext/hash_map>
 #endif
 
+
 typedef struct _eqstr
 {
   bool operator()(const char* s1, const char* s2) const
@@ -15,6 +16,8 @@ typedef struct _eqstr
     return strcmp(s1, s2) == 0;
   }
 }EQFN_STR;
+class CObjectInst;
+class CAttribute;
 typedef union vtype_t {
 	char c;
 	int i;
@@ -26,18 +29,25 @@ typedef union vtype_t {
 	unsigned short ust;
 	unsigned long ul;
 //	std::string* s;
+	CObjectInst * o;
 	long fn;
 	char* s;
 } VTYPE;
+
+
+class CRef;
 class CObjectInst;
 #ifdef _MACOS
 // sgi 
-typedef hash_map<char*, CObjectInst*, hash<char*>, EQFN_STR> STR_HASHMAP;
-typedef hash_map<char*, CObjectInst*, hash<char*>, EQFN_STR>::iterator STR_HASHMAP_IT;
+typedef hash_map<char*, CRef*, hash<char*>, EQFN_STR> STR_HASHMAP;
+typedef hash_map<char*, CRef*, hash<char*>, EQFN_STR>::iterator STR_HASHMAP_IT;
 #else
 typedef	stdext::hash_map<std::string, CObjectInst*> STR_HASHMAP;
 typedef	stdext::hash_map<std::string, CObjectInst*>::iterator  STR_HASHMAP_IT;
 #endif
+
+
+
 class CAttribute{
 
 public:
@@ -50,6 +60,7 @@ public:
 			//v.s = &vs;
 			v.s = (char*)s_temp.c_str();
 			memset(&v, 0, sizeof(VTYPE));
+			ref = 0;
 		};
 		~CAttribute(){};
 		CAttribute(const CAttribute& src){
@@ -106,6 +117,9 @@ public:
 			v.s = *(char**)value;
 			printf("set value to string %s", *(char**) value);
 			break;
+			
+			case dtGeneral:
+			v.o = *(CObjectInst**)value;
 			
 			default:
 			fprintf(stderr, "Cannot set object value type to %d\n", type);
@@ -186,7 +200,12 @@ public:
 		return r;
 	
 	}
-	
+	void addRef(){
+		ref ++;
+	}
+	void subRef(){
+		ref --;
+	}
 protected:
 	int valueType;
 	VTYPE v;
@@ -196,8 +215,35 @@ protected:
 	CClass* cls;
 	std::string s_temp;
 	// bool isLeaf;
+	int ref;
 };
-
+class CRef {
+public:
+	CRef(){
+		ref = NULL;
+		this->name="";
+	};
+	CRef(char* name){
+		ref = NULL;
+		this->name=name;
+	};
+	~CRef();
+	CAttribute* getRef(){
+		return ref;
+	}
+	void setRef(CAttribute *p){
+		ref = p;
+		ref->addRef();
+	}
+	void release(){
+		if (ref != NULL)
+		ref->subRef();
+	}
+private:
+	CAttribute* ref;
+	std::string name;
+	
+};
 class CObjectInst : public CAttribute
 {
 public:
@@ -210,28 +256,37 @@ public:
 		return ref;
 	}
 
-	CObjectInst * getMemberAddress(char* szName){
+	CRef*  getMemberRef(char* szName){
+		CRef * r =  members[szName];
+		if (r == NULL){
+			r = addMember(szName);
+		}
+		printf("r=%x\n",r);
+		return r;
+	}
+	/*
+	CAttribute ** getMemberAddress(char* szName){
 		printf("===>%s.getMemberAddress %s.\n", (char*)name.c_str(), szName);
 		printf("====>member size=%d", members.size());
-		CObjectInst * r =  members[szName];
+		CRef * r =  members[szName];
 		printf("====>member size2=%d", members.size());
 		printf("====>r=%x", r);
 		if (r == NULL)
 			r = addMember(szName);
 
 		printf("====>getMemberAddress=%x", r);
-		return r;
-	}
+		return &(r->getRef());
+	}*/
 	
-	CObjectInst* addMember(char* name){
+	CRef* addMember(char* szName){
 	
-		CObjectInst *p = CObjectInst::createObject(NULL);
-		members[name] = p;
-		return p;
+		// CAttribute *p = CObjectInst::createObject(NULL);
+		members[szName] = new CRef(szName);
+		return members[szName];
 	}
 
 	
-	std::vector<CAttribute> asArray(){
+/*	std::vector<CAttribute> asArray(){
 		std::vector<CAttribute> v;
 		STR_HASHMAP_IT it = members.begin();
 		while(it!=members.end()) {
@@ -241,7 +296,7 @@ public:
 		}
 	}
 	
-
+*/
 
 	static CObjectInst* createObject(CClass* c){
 		// TODO should put object to global list, for gc
@@ -251,7 +306,7 @@ public:
 	};
 private:
 
-	int ref;
+	
 
 
 	STR_HASHMAP members;

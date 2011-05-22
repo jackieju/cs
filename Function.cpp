@@ -274,7 +274,7 @@ long CFunction::OutupCmd(long index, char *buffer)
 		char cmd[20];
 		char* p = buffer;
 
-		int size = sprintf(p, "%04x: mode=%04x line=%04x opcode = %04x  ", index, this->m_pCmdTable[index].address_mode, this->m_pCmdTable[index].line, this->m_pCmdTable[index].opcode);
+		int size = sprintf(p, "%04x: mode=%04x line=%04d opcode = %04x  ", index, this->m_pCmdTable[index].address_mode, this->m_pCmdTable[index].line, this->m_pCmdTable[index].opcode);
 		p += size;
 		memset(cmd, 0, 10);
 		switch (m_pCmdTable[index].opcode)

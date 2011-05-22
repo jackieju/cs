@@ -108,7 +108,7 @@ void test3(){
 }
 
 void testobj(){
-
+/*
 	$.a = "990";
 	char* aa = $.a;
 	put_str(aa);
@@ -120,7 +120,10 @@ void testobj(){
 	
 	$.b = $.a;
 	puts($.b);
-	
+	*/
+	var a;
+	a.q = "qqqqqq";
+	puts(a.q);
 }
 void create()
 {

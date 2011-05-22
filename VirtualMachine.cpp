@@ -550,6 +550,7 @@ BOOL CVirtualMachine::_mov(PCOMMAND cmd)
 	case 2:	memcpy(dest, src, 4);break;
 	case 3:	memcpy(dest, src, 8);break;
 	}
+	printf("*dest=%x", *(long*)dest);
 	__IP++;
 	return TRUE;
 }
@@ -861,14 +862,25 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 	
 	CMD_PREPROCESS2
 	long EA=NULL;
+	
+	CRef *dest_ref = *(CRef**)dest;
+	if (dest_ref == NULL){
+		dest_ref = new CRef();
+		*(CRef**)dest = dest_ref;
+	}
+	if (dest_ref->getRef() == NULL){
+		dest_ref->setRef(createObject(NULL));
+	}
  
 //	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
-	CObjectInst* obj = *(CObjectInst**)dest;
+	CObjectInst* obj = (CObjectInst*)(dest_ref->getRef());
 	char* member = *(char**)src;
-	printf("==>obj=%x\n", obj);
-	CObjectInst* o =  obj->getMemberAddress(member);
-	printf("==>2\n");
-	EA = (long)o;
+
+//	CAttribute* o =  obj->getMemberAddress(member);
+	CRef* r = obj->getMemberRef(member);
+		printf("==>obj=%x,ref=%x, ea=%x, member=%s\n", obj, *(CRef**)dest, r, member);
+		r->release();
+	EA = (long)r;
 /*	if (cmd->opnum > 2){
 		if (obj == NULL)
 			return FALSE;
@@ -927,7 +939,8 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 
 BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 {
-	
+		
+			CRef * r = new CRef();
 	if ( cmd->op[0] != -1){
 		CMD_PREPROCESS1
 		printf("create object for %s\n", (char*)dest);
@@ -937,13 +950,16 @@ BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 			fprintf(stderr, "Load Object for %s failed!", (char*)dest);
 			return FALSE;
 		}*/
-		
+	
+		r->setRef(createObject((char*)dest));
 
-		__AX = (long)createObject((char*)dest);
 	}else{
-		__AX = (long)createObject(NULL);
+				
+		r->setRef(createObject(NULL));
+
 
 	}
+		__AX = (long)r;
 	//__AX = LoadObject((char*)dest);
 
 	__IP++;
@@ -2746,15 +2762,39 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 	printf("cast %d(%d) to %d(%d)\n", src_type, src_reflevel, dest_type, dest_reflevel);
 	
 	if (dest_type == dtGeneral){ // if dest is object
-		CObjectInst *obj = *(CObjectInst**)dest;
+		// TODO find and call "=" operator method first, if failed then do address copy or create new object
+			CRef *dest_ref = *(CRef**)dest;
 		if (src_type == dtGeneral ){ // object => object
-			*(CObjectInst**)dest =  *(CObjectInst**)src; // copy address of object
-		}else{ 
-			if (obj == NULL){ // primitive => object, if src is primitive and dest is not initialized object reference
-				obj = CObjectInst::createObject(NULL);
-				*(CObjectInst**)dest = obj;
-				debug("new object %x", obj);
+			CRef* src_ref = *(CRef**)src;
+			if (src_ref == NULL || src_ref->getRef() == NULL){
+				ERR("object not initialzed");
+				return FALSE;
 			}
+			if (dest_ref == NULL){
+				dest_ref = new CRef();
+				*(CRef**)dest = dest_ref;
+			}
+			dest_ref->setRef(  src_ref->getRef() ); // copy address of object
+		}else{ // primitive => object, 
+		
+			
+			printf("dest_ref=%x\n", dest_ref);
+			CObjectInst* obj = NULL;
+				// release current object instance
+			if (dest_ref == NULL){ //if src is primitive and dest is not initialized object reference
+				CRef* r = new CRef();
+				*(CRef**)dest = r;
+				dest_ref = *(CRef**)dest;
+			}else {
+				dest_ref->release();			
+			}
+			
+			// create new object instance
+				obj = CObjectInst::createObject(NULL);
+				dest_ref->setRef(obj);
+			
+				debug("new object %x, ref %x", obj, dest_ref);
+				
 			if ( (src_reflevel == 1 && src_type == dtChar) || src_type == dtStr){
 				printf("obj=%x ", obj);
 				printf("src=%s\n", *(char**)src);
@@ -2766,7 +2806,14 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 	   }
    }else { // dest is primitive type
 		if (src_type == dtGeneral ){  // object => primitive
-			CObjectInst *obj = *(CObjectInst**)src;
+			CRef * src_ref = *(CRef**)src;
+			CObjectInst *obj = NULL;
+			printf("src_ref=%x\n", src_ref);
+			if (src_ref == NULL || src_ref->getRef() == NULL){
+				ERR("object not initialzed");
+				return FALSE;
+			}
+			obj = (CObjectInst *)src_ref->getRef();
 			if (dest_reflevel>0){ // object => char*
 				if (dest_type == dtChar  || dest_type == dtStr){
 					printf("obj=%x\n", obj);
@@ -2775,7 +2822,7 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 					*(char**)dest = (char*)obj->getSValue();
 				}else
 				*(long*)dest = obj->getValue().l;
-		}else{ // object -> int, long, short ...
+	    	}else{ // object -> int, long, short ...
 				switch (dest_type){
 					case dtInt:
 					*(int*)dest = obj->getValue().i;
@@ -3166,7 +3213,10 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
 	LoadFunction(pfn);
 	printf("==>LoadFunction OK\n");
 	void* pthis = obj;
-	AttachParam((BYTE*)&pthis, sizeof(long*));
+	CRef* ref = new CRef("this");
+	ref->setRef(obj);
+	
+	AttachParam((BYTE*)&ref, sizeof(long*));
 	
 	printf("==>AttachParam OK\n");
 	

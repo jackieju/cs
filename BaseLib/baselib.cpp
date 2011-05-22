@@ -28,14 +28,14 @@ void __stdcall put_str(char* msg)
 {
 	if (msg == NULL)
 		return;
-	printf(msg);
+	printf("*******[%s]******\n", msg);
 	printf("\n");
 }
 
 
 void __stdcall putl(long l)
 {
-	printf("%ld", l);
+	printf("*******[%ld]*******\n", l);
 	return;
 }
 
