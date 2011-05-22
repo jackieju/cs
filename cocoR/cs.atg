@@ -1673,8 +1673,17 @@ identifier
 
 	// AX <= a.b
 	ADDCOMMAND2(__eaobj, getAddressMode2(AMODE_MEM, AMODE_MEM, dt1, dtTarget), op1, address_target);
+	long temp = AllocTempVar(dtGeneral);
+	if (temp == -1)
+	{
+                 	GENERR(98);
+	 }
+	_typedes(DT1, dtGeneral)
 	_typedes(dt_ax, dtGeneral)
-	m_pMainFunction->PushDigit(_AX, AMODE_REG|0x80, dt_ax);
+	ADDCOMMAND2(__mov, getAddressMode2(AMODE_MEM, AMODE_REG, DT1, dt_ax), temp, _AX)
+	
+	
+	m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, DT1);
 /*	// temp <= AX
 	long temp = AllocTempVar(dtGeneral);
 	if (temp == -1)

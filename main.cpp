@@ -54,7 +54,10 @@ bool applyOption(char** argv, int number){
 };
 */
 int main(int num, char** args){
-	
+	// test std::string
+/*	std::string r ="";
+	r += "1111";
+	printf("%s\n", (char*)r.c_str());return 0;*/
 	// test hash_map
 /*	hash_map<char*, char*, hash<char*>, eqstr> members;
 	char p1[10] = "hello";

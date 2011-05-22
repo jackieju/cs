@@ -44,9 +44,11 @@ public:
 	
 		CAttribute(){
 			//isLeaf = true;
+			s_temp = "";
+			name = "";
 				valueType = 0;	
 			//v.s = &vs;
-			v.s = NULL;
+			v.s = (char*)s_temp.c_str();
 			memset(&v, 0, sizeof(VTYPE));
 		};
 		~CAttribute(){};
@@ -120,55 +122,67 @@ public:
 		return (BYTE*)&v;
 	}
 	
-	std::string getSValue(){
-		std::string r="";
-	
+ 	char* getSValue(){
+		printf("type=%d, v.l=%d\n", valueType, v.l);
+	//	printf("v.s=%s",v.s);
+		char ss[1024]="";
+		
+		char* r = NULL;
 			switch(valueType){
 			case dtInt:
-			r += v.i;
+			snprintf(ss, 1000, "%d", v.i);s_temp = ss;r=(char*)s_temp.c_str();
 			break;
 		
 			case dtUInt:
-				r += v.ui;
+			snprintf(ss, 1000, "%d", v.ui);s_temp = ss;r=(char*)s_temp.c_str();
 			break;
 			
 			case dtShort:
-				r += v.st;
-			
+					snprintf(ss, 1000, "%d", v.st);s_temp = ss;	r=(char*)s_temp.c_str();		
 			break;
 			
 			case dtUShort:
-				r += v.ust;
+					snprintf(ss, 1000, "%d", v.ust);s_temp = ss;r=(char*)s_temp.c_str();
 				break;
 			
 			case dtLong:
-				r += v.l;
+					snprintf(ss, 1000, "%d", v.l);s_temp = ss;r=(char*)s_temp.c_str();
 			break;
 			
 			case dtULong:
-				r += v.ul;
+					snprintf(ss, 1000, "%d", v.ul);s_temp = ss;r=(char*)s_temp.c_str();
 			break;
 			
 			case dtFloat:
-				r += v.f;
+			snprintf(ss, 1000, "%d", v.f);s_temp = ss;r=(char*)s_temp.c_str();
 			break;
 			
 			case dtStr:
 				//r += vs;
-				r += v.s;
+				if (v.s != NULL){
+				if (strlen(v.s)>1000){
+					r=v.s;
+					}else{
+				snprintf(ss, 1000, "%s", v.s);s_temp = ss;r=(char*)s_temp.c_str();
+			}
+			}else{
+				v.s = r = (char*)s_temp.c_str();
+			}
 			break;
 			
 			case dtGeneral:
-				r += (cls?cls->GetFullName():"object");
-				r += "@";
-				r += id;
+					{
+				const char* p  = (cls?(const char*)cls->GetFullName():"object");
+				snprintf(ss, 1000, "%s@%d", id);
+				s_temp = ss;r=(char*)s_temp.c_str();
+				}
 				break;
 				
 			default:
 				fprintf(stderr, "Cannot convert object value type %d to string", valueType);
 		
 		}
-		printf("get value of string %s", (char*)r.c_str());
+		printf("get value of string %s", (char*)r);
 		return r;
 	
 	}
@@ -180,6 +194,7 @@ protected:
 	std::string name;
 	long id;
 	CClass* cls;
+	std::string s_temp;
 	// bool isLeaf;
 };
 

@@ -106,8 +106,25 @@ void test3(){
 	char* pq1 = b;
 	put_str(pq1);
 }
+
+void testobj(){
+
+	$.a = "990";
+	char* aa = $.a;
+	put_str(aa);
+	puts($.a);
+	
+	$.b = 111111;
+	int bb = $.b;
+	putl(bb);
+	
+	$.b = $.a;
+	puts($.b);
+	
+}
 void create()
 {
+testobj();
 //puts2("ssssssssss1", "ttttttttttt2");
 //var s;
 //char* ss="fff1111111";
@@ -140,9 +157,7 @@ void create()
 	put_str("afa\r\n");
 	test_putl(l);
 	*/
-	$.a = "990";
-	char* aa = $.a;
-	put_str(aa);
+
 	//$.l =0;
 	//var b = $.a;
 	//put_str(b);

@@ -2211,7 +2211,7 @@ void CVirtualMachine::OutputMemToFile(FILE* file)
 		return;
 	
 	int i;
-	char msg[1024];
+	char msg[1024]="";
 	SYSTEMTIME time;
 	GetLocalTime(&time);
 	snprintf(msg, 1000, "%04d-%02d-%02d %02d:%02d:%0d\n", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
@@ -2763,16 +2763,16 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 				obj->setValue(dtLong, src);
 			else
 				obj->setValue(src_type, src);
-	}
+	   }
    }else { // dest is primitive type
 		if (src_type == dtGeneral ){  // object => primitive
 			CObjectInst *obj = *(CObjectInst**)src;
 			if (dest_reflevel>0){ // object => char*
 				if (dest_type == dtChar  || dest_type == dtStr){
-					printf("obj=%x ", obj);
-					printf("src=%s", (char*)obj->getSValue().c_str());
-					printf("src=%s", *(char**)obj->getValueAddress());
-					*(char**)dest = *(char**)obj->getValueAddress();
+					printf("obj=%x\n", obj);
+				//	printf("src=%s\n", (char*)obj->getSValue().c_str());
+				//	printf("src=%s\n", *(char**)obj->getValueAddress());
+					*(char**)dest = (char*)obj->getSValue();
 				}else
 				*(long*)dest = obj->getValue().l;
 		}else{ // object -> int, long, short ...
