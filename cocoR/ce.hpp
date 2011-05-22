@@ -109,5 +109,4 @@
          "unexpected symbol in PostFixExp",
          "unexpected symbol in UnaryOperator",
          "unexpected symbol in Primary",
-         "unexpected symbol in HashItem",
          "unexpected symbol in SetItem",

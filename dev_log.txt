@@ -109,3 +109,11 @@ or automatically convert to object
 
 currently not support pass object to pubfunction, because paramv don't know the type of operand, if AMODE_OBJ was deleted.
 If need to support this, should add command parampubobj
+
+
+
+TODO
+hash
+regular express
+array
+class member must be object (primitive type only used as local variable)

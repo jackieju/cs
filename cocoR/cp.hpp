@@ -117,7 +117,7 @@ class CCompiler;
 // add by jackie juju
 /////////////////////////
 const int MAXSYM = 6;
-const int MAXERROR = 113;
+const int MAXERROR = 112;
 
 class cParser : public CRParser, public CPUtil
 {

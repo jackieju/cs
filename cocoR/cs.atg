@@ -1961,10 +1961,25 @@ identifier
 .)						  
                          } .
                          
- HashItem  = (string1 | identifier) ":" Expression . 
+ HashItem  = (/*string1 | */identifier) ":" Expression . 
  SetItem = HashItem | Expression .
   SetItems = SetItem { "," SetItem } .  
-  SetDef = "{"  [ SetItems ] "}" .
+  SetDef = "{" 
+(.
+	long temp = AllocTempVar(dtGeneral, 0);
+			                                          if (temp == -1)
+			                                          {
+			                                                  GENERR(98);
+			                                          }
+.)
+ { SetItems }
+(.
+//	TYPEDES dt1;
+	_typedes(dt1, dtGeneral);
+	m_pMainFunction->PushDigit(temp, AMODE_MEM, dt1);
+.)
+
+"}" .
   
   Creator = 
   (. char szName[_MAX_PATH] = ""; .)

@@ -426,10 +426,15 @@ identifier
 						  
                          } .
                          
- HashItem  = (string1 | identifier) ":" Expression . 
+ HashItem  = (identifier) ":" Expression . 
  SetItem = HashItem | Expression .
   SetItems = SetItem { "," SetItem } .  
-  SetDef = "{"  [ SetItems ] "}" .
+  SetDef = "{" 
+
+ { SetItems }
+
+
+"}" .
   
   Creator = 
   
