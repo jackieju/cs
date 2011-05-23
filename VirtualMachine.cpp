@@ -2760,6 +2760,8 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 	//long op4 = cmd->op[3];// src type
 	long src_type = (cmd->op[3] & 0xf0 ) >> 4;	
 	long src_reflevel = cmd->op[3] & 0x0f;
+	long src_mode = op2mode;
+	long dest_mode = op1mode;
 	printf("cast %d(%d) to %d(%d)\n", src_type, src_reflevel, dest_type, dest_reflevel);
 	
 	if (dest_type == dtGeneral){ // if dest is object
@@ -2799,13 +2801,21 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 				debug("new object %x, ref %x", obj, dest_ref);
 				
 			if ( (src_reflevel == 1 && src_type == dtChar) || src_type == dtStr){
-				printf("obj=%x ", obj);
-				printf("src=%s\n", *(char**)src);
-				obj->setValue(dtStr, src);
+				if (src_mode != AMODE_STATIC){
+					printf("obj1=%x ", obj);
+					printf("src=%s\n", *(char**)src);
+					obj->setValue(dtStr, src);
+				}else{
+					printf("obj=%x ", obj);
+					printf("src=%s(%x)\n", (char*)src, src);
+					obj->setValue(dtStr, &src);
+				}
 			}else if (src_reflevel > 0 )
 				obj->setValue(dtLong, src);
-			else
+			else{
+				debug("set value %x(%x)", *(long*)src, src);
 				obj->setValue(src_type, src);
+			}
 	   }
    }else { // dest is primitive type
 		if (src_type == dtGeneral ){  // object => primitive

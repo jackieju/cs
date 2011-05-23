@@ -106,6 +106,7 @@ int static UnitSize(TYPEDES &type)
 int static getAddressMode2(long type1, long type2, TYPEDES& dt1, TYPEDES& dt2){
 	int address_mode = (type1<<8)|(short)type2;		// get address mode ( address mode and ref level)
 	address_mode |= (log2(UnitSize(dt1))<<14)|(log2(UnitSize(dt2))<<6); // get operand size
+	debug("getAddressMode2:: type1=%x, type2=%x, return %x", type1, type2, address_mode);
 	return address_mode;
 }
 // get address mode for command, not for exp stack

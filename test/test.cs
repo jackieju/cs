@@ -138,16 +138,28 @@ void test_basic(){
 
 void test_hash(){
 var b = {};	
+var p = "u123";
 var a = {
-	p:"111",
-	q:"hello",
-	l: 222
+	{p}:"111",
+	q: "faf",
+	p: 32323
 };
-int l = a.l;
-putl(l);
-puts(a.p);
+puts(a.u123);
 puts(a.q);
+int l = a.p;
+putl(l);
 
+}
+
+void test_magic(){
+var b = "aa";
+var b2 = "9";
+var a;
+a.b = b;
+a.{b} = "9999999999";
+a.{b2} = "8888888888";
+puts(a.{3*3}); // 8888888888
+puts(a.aa); // 9999999999
 }
 void create()
 {
@@ -158,8 +170,8 @@ void create()
 //test2();
 //test3();
 
-test_hash();
-
+//test_hash();
+test_magic();
 
 
 

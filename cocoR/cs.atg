@@ -1624,11 +1624,25 @@ identifier
 (.
 	{ // if it is expression, convert the result to string variable by "_evalobj"
 		POPEXP1
-	
+		debug("pop11111");
 	// for simplicity, currently not eval but direct use the string value, so the object must be a string value type,
 	// otherwise, need to call "to_s"
 	//	ADDCOMMAND2(__evalobj, getAddressMode(AMODE_MEM, type1, dtTarget, dt1), address_target, op1);      
-		ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTarget, dt1), address_target, op1,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+		if (dt1.type != dtGeneral){ // if primitive, convert to object
+				_typedes(dtTemp, dtGeneral)
+				ADD_LOCAL_VAR(NULL, dtTemp)
+				long address_temp = getLastAllocVarAddress();
+				
+				// temp <= op1
+				ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTemp, dt1), address_temp, op1,  dtTemp.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+				
+				// temp => target
+				ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, AMODE_MEM, dtTarget, dtTemp), address_target, address_temp,  dtTarget.type<<4|dtTarget.refLevel, dtTemp.type<<4|dt1.refLevel); 
+    
+
+		
+		}else // op1 => target
+			ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTarget, dt1), address_target, op1,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
     
 	}
 		 
@@ -1998,10 +2012,11 @@ identifier
 					_typedes(dtName, dtChar)
 					dtName.refLevel = 1;
 					m_pMainFunction->PushDigit(address, AMODE_STATIC, dtName);
+					/*** static data cannot be used directly,normally should move to temp variable first ***/
 			.)
 		)
 	
-	|(	{"{" (. state++;.)}Expression{"}"} )
+	|(	{"{" (. state++;.)}(. 	 .)Expression(. 	.){"}"} )
 	
 			
 	
@@ -2024,6 +2039,17 @@ identifier
 			}
 			else{ // Expression
 				debug("expression");
+				//pop
+				POPEXP1
+	
+				_typedes(dtTarget, dtStr)
+				 dtTarget.refLevel = 1;
+			 	ADD_LOCAL_VAR(NULL, dtTarget)
+				long address_target = getLastAllocVarAddress();// the variable presenting a string will be used by as hash name
+				debug("type1=%x", type1);
+		//		ADDCOMMAND2(__ea, DS, address_target, op1);
+				ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTarget, dt1), address_target, op1,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+				m_pMainFunction->PushDigit(address_target, AMODE_MEM, dtTarget);	
 			}
 			debug("hash name");
 	
@@ -2351,6 +2377,7 @@ identifier
   | number 
  (.
 
+debug("push number");
 		if (strchr(szName, '.'))	// float
 		{
 			
