@@ -145,6 +145,7 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 #define RD 0x8281
 #define RR 0x8282
 #define RC 0x8280
+#define RS 0x8283
 #define DC 0X8180
 #define DS 0x8183
 #define DA 0x8184

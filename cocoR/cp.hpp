@@ -110,6 +110,17 @@ typedef struct _tagExpressionOp
 			GENERR(96);\
 			return;\
 		}
+		
+#define ADD_LOCAL_VAR(name, dt) \
+			if (!m_pMainFunction->AddVal(name,  dt)){\
+					GENERR(113);\
+					return;\
+			}
+#define GET_NAME \ 
+	char szName[1024]="";\
+	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);
+	
+	
 class CPubFuncTable;
 class CLoopTree;
 class CFunction;
@@ -308,10 +319,9 @@ private:
     void UnaryOperator();
     void Primary();
     void FunctionCall(FUNCCALL* pFuncEntry);
-    void HashItem();
-    void SetItem();
-    void SetItems();
     void SetDef();
+    void SetItems(long temp);
+    void HashItem(long temp);
     void Creator();
     void ActualParameters(FUNCCALL* pFuncEntry);
     

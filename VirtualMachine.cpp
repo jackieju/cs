@@ -875,11 +875,11 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 //	unsigned char* dest = (unsigned char*)&(m_pCurCall->DataSeg[cmd->op[0]]);
 	CObjectInst* obj = (CObjectInst*)(dest_ref->getRef());
 	char* member = *(char**)src;
-
+	debug("member name=%s", member);
 //	CAttribute* o =  obj->getMemberAddress(member);
 	CRef* r = obj->getMemberRef(member);
-		printf("==>obj=%x,ref=%x, ea=%x, member=%s\n", obj, *(CRef**)dest, r, member);
-		r->release();
+		printf("==>eaobj obj=%x, dest ref=%x, member ref=%x, member=%s\n", obj, *(CRef**)dest, r, member);
+		debug("member object = %x", r->getRef());
 	EA = (long)r;
 /*	if (cmd->opnum > 2){
 		if (obj == NULL)
@@ -959,6 +959,7 @@ BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 
 
 	}
+	printf("new ref=%x\n", r);
 		__AX = (long)r;
 	//__AX = LoadObject((char*)dest);
 
@@ -2764,8 +2765,10 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 	if (dest_type == dtGeneral){ // if dest is object
 		// TODO find and call "=" operator method first, if failed then do address copy or create new object
 			CRef *dest_ref = *(CRef**)dest;
+			printf("dest_ref=%x\n", dest_ref);
 		if (src_type == dtGeneral ){ // object => object
 			CRef* src_ref = *(CRef**)src;
+			printf("src=%x, src_ref=%x\n", src, src_ref);
 			if (src_ref == NULL || src_ref->getRef() == NULL){
 				ERR("object not initialzed");
 				return FALSE;
@@ -2774,11 +2777,11 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 				dest_ref = new CRef();
 				*(CRef**)dest = dest_ref;
 			}
+					printf("new dest_ref=%x\n", dest_ref);
 			dest_ref->setRef(  src_ref->getRef() ); // copy address of object
 		}else{ // primitive => object, 
 		
-			
-			printf("dest_ref=%x\n", dest_ref);
+		
 			CObjectInst* obj = NULL;
 				// release current object instance
 			if (dest_ref == NULL){ //if src is primitive and dest is not initialized object reference

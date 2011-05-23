@@ -102,6 +102,7 @@ int static UnitSize(TYPEDES &type)
 }
 
 // get address mode for command, not for exp stack
+// type1 for dest oprand, typ2 for src oprand
 int static getAddressMode2(long type1, long type2, TYPEDES& dt1, TYPEDES& dt2){
 	int address_mode = (type1<<8)|(short)type2;		// get address mode ( address mode and ref level)
 	address_mode |= (log2(UnitSize(dt1))<<14)|(log2(UnitSize(dt2))<<6); // get operand size

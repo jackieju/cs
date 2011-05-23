@@ -232,12 +232,13 @@ public:
 		return ref;
 	}
 	void setRef(CAttribute *p){
+		release();
 		ref = p;
 		ref->addRef();
 	}
 	void release(){
 		if (ref != NULL)
-		ref->subRef();
+			ref->subRef();
 	}
 private:
 	CAttribute* ref;

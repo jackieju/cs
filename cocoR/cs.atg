@@ -367,7 +367,7 @@ ClassBody	";" .
 (.
 	doVarDecl(type, szFirstName);
 	char szName[MAX_IDENTIFIER_LENGTH];
-.)    [ "=" Expression (. doAssign(); .)] 
+.)    [ "=" Expression (. debug("assignment");doAssign(); .)] 
 { ","  identifier
 (.
 		memset(szName, 0, MAX_IDENTIFIER_LENGTH-1);
@@ -1426,7 +1426,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 				}
 			}
 			break;
-		case TildeSym: //'~'
+		case TildeSym: //"~"
 			{
 				if (!m_pMainFunction->AddVal(NULL, dt1))
 					GENERR(98);
@@ -1849,8 +1849,8 @@ identifier
 			)			  
 		
 						  
-						  | identifier        
-						  /*| (["::" identifier ])
+						  /* | "->" identifier        
+						 | (["::" identifier ])
 					      | (["::" "{"identifier"}" ])*/
                           | "++"
 
@@ -1961,26 +1961,103 @@ identifier
 .)						  
                          } .
                          
- HashItem  = (/*string1 | */identifier) ":" Expression . 
- SetItem = HashItem | Expression .
-  SetItems = SetItem { "," SetItem } .  
-  SetDef = "{" 
+
+ SetDef = "{" 
 (.
+	_typedes(dtTemp, dtGeneral)
 	long temp = AllocTempVar(dtGeneral, 0);
-			                                          if (temp == -1)
-			                                          {
-			                                                  GENERR(98);
-			                                          }
+    if (temp == -1)
+    {
+            GENERR(98);
+    }
+	ADDCOMMAND1(__newobj,RS, -1); // create object and set to AX
+	_typedes(dtAx, dtGeneral)     // temp <= Ax
+	ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, AMODE_REG, dtTemp, dtAx), temp, _AX,  dtGeneral<<4, dtGeneral<<4); 
+		
 .)
- { SetItems }
-(.
-//	TYPEDES dt1;
+ { SetItems<temp> 
+		
+
+}
+(. 
+	// push the newly created hash
 	_typedes(dt1, dtGeneral);
 	m_pMainFunction->PushDigit(temp, AMODE_MEM, dt1);
 .)
 
 "}" .
+  SetItems<long temp> = HashItem<temp> { "," HashItem<temp> } .  
   
+ /*  SetItem = HashItem | Expression . */
+   HashItem<long temp>  = (. int state = 0;.)(/*string1 | */ 
+			
+ 	(identifier
+			(.
+					GET_NAME
+ 					int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
+					_typedes(dtName, dtChar)
+					dtName.refLevel = 1;
+					m_pMainFunction->PushDigit(address, AMODE_STATIC, dtName);
+			.)
+		)
+	
+	|(	{"{" (. state++;.)}Expression{"}"} )
+	
+			
+	
+	)
+	(.
+			if (state == 0)	{	// identifier		
+				debug("identifier");	
+				//pop
+				POPEXP1
+	
+				//	long target = NULL;  // the variable presenting a string will be used by as hash name
+				_typedes(dtTarget, dtStr)
+				 dtTarget.refLevel = 1;
+			 	ADD_LOCAL_VAR(NULL, dtTarget)
+				long address_target = getLastAllocVarAddress();
+				debug("type1=%x", type1);
+				ADDCOMMAND2(__ea, DS, address_target, op1);
+			//	ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type1, dtTarget, dt1), address_target, op1,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+				m_pMainFunction->PushDigit(address_target, AMODE_MEM, dtTarget);	
+			}
+			else{ // Expression
+				debug("expression");
+			}
+			debug("hash name");
+	
+			.)
+	 ":" Expression 
+			(.
+				
+				// op2 <= value, op1<=member
+				POPEXP2
+					
+				// get address temp.xxx => _AX
+				_typedes(dtTemp, dtGeneral)
+				ADDCOMMAND2(__eaobj, getAddressMode2(AMODE_MEM, AMODE_MEM, dtTemp, dt1), temp, op1);
+				
+				// Temp1 < ax
+				_typedes(DT1, dtGeneral)
+				ADD_LOCAL_VAR(NULL, DT1)
+				long address_temp1 = getLastAllocVarAddress();
+				
+				_typedes(dt_ax, dtGeneral)
+				ADDCOMMAND2(__mov, getAddressMode2(AMODE_MEM, AMODE_REG, DT1, dt_ax), address_temp1, _AX)
+				
+				printf("op2 type=%d, reflevel=%d\n", dt2.type, dt2.refLevel);
+				
+				// set temp.xxx = op2
+				ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, type2 , DT1, dt2), address_temp1, op2,  dtGeneral<<4, dt2.type<<4|dt2.refLevel); 
+		
+	
+
+			.)
+	. 
+
+
+
   Creator = 
   (. char szName[_MAX_PATH] = ""; .)
   ClassFullName<szName>
@@ -2121,6 +2198,7 @@ identifier
 			                                  else
 			                                          opsize = log2((int)typesize(dt.type, dt.objID));
 			                                  opsize &= 0x3;
+				debug("primary: push primitive");
 			                                  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
 			                          }
 			                          else
@@ -2138,6 +2216,7 @@ identifier
 			                                          dt.refLevel++;
 			                                          dt.dim--;
 			                                          */
+				debug("primary: push array");
 			                                          m_pMainFunction->PushDigit(temp, AMODE_MEM|(log2( (int)(OPSIZE_PTR) )<<6), dt);
 			                                  }
 			                                  else // if it is object
@@ -2146,6 +2225,7 @@ identifier
 												 // opsize = log2((int)OPSIZE_PTR);
 			                                     // opsize &= 0x3;
 												//  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
+												debug("primary: push obj");
 												m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_MEM, dt), dt);
 			                                  }
 			                          }

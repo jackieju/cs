@@ -416,7 +416,6 @@ identifier
 			)			  
 		
 						  
-						  | identifier        
 						  
                           | "++"
 
@@ -426,16 +425,37 @@ identifier
 						  
                          } .
                          
- HashItem  = (identifier) ":" Expression . 
- SetItem = HashItem | Expression .
-  SetItems = SetItem { "," SetItem } .  
-  SetDef = "{" 
 
- { SetItems }
+ SetDef = "{" 
+
+ { SetItems<temp> 
+		
+
+}
 
 
 "}" .
+  SetItems<long temp> = HashItem<temp> { "," HashItem<temp> } .  
   
+ 
+   HashItem<long temp>  = ( 
+			
+ 	(identifier
+			
+		)
+	
+	|(	{"{" }Expression{"}"} )
+	
+			
+	
+	)
+	
+	 ":" Expression 
+			
+	. 
+
+
+
   Creator = 
   
   ClassFullName<szName>

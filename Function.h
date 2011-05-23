@@ -141,7 +141,7 @@ public:
 		m_pExpDigitPt = m_pExpDigitPt->pPrev;
 		delete pTemp;
 
-		printf("pop %04x, %04x, line:%04x\r\n", *digit, *type, __LINE__);
+			printf("pop address=%04x, type=%04x, line:%04d\r\n", *digit, *type, __LINE__);
 
 		return TRUE;
 	}
@@ -164,7 +164,7 @@ public:
 		m_pExpDigitPt = m_pExpDigitPt->pPrev;
 		delete pTemp;
 
-		printf("pop %s, %04x, %04x, line:%04d\r\n", name, *digit, *type, __LINE__);
+		printf("pop name=%s, address=%04x, type=%04x, line:%04d\r\n", name, *digit, *type, __LINE__);
 		return TRUE;
 	}
 	void PushDigit(long digit, long type, TYPEDES dtType, std::string name = "")
@@ -186,7 +186,7 @@ public:
 		pNew->name = name;
 		memcpy(&pNew->dtType, &dtType, sizeof(TYPEDES));
 		pNew->pPrev = this->m_pExpDigitPt;
-		printf("push %s, %04x, %04x, line:%04d\r\n", (char*)name.c_str(), digit, type, __LINE__);
+		printf("push name=%s, address=%04x, type=%04x, line:%04d\r\n", (char*)name.c_str(), digit, type, __LINE__);
 		m_pExpDigitPt = pNew;
 		
 	}

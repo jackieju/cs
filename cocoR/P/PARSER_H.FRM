@@ -84,6 +84,10 @@ typedef struct _tagExpressionOp
 	_op_[2] = (long)param3;\
 	m_pMainFunction->AddCommand(code, address_mode, 3, _op_, Scanner->CurrSym.Line);}
 
+#define GET_NAME \ 
+	char szName[1024]="";\
+	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);
+	
 class CPubFuncTable;
 class CScriptFuncTable;
 class CLoopTree;
