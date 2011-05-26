@@ -13,7 +13,7 @@
 #include "commondef.h"
 //#include "Function.h"
 //#include "utility.h"
-#include "os/css_lockex.h"
+#include "css_lockex.h"
 
 class CFunction;
 #define SCRIPTFUNCTABLEINCSIZE 20

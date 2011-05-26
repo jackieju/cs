@@ -1,8 +1,14 @@
+// #include <stdio.h>
+// int main(void) {
+//   printf("Content-Type: text/plain;charset=us-ascii\n\n");
+//   printf("Hello world\n\n");
+//   return 0;
+// }
+// 
 #include "stdio.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <ctype.h>
-
 #include "clib.h"
 #include "stdio.h"
 #include "cocoR/cp.hpp"
@@ -53,11 +59,17 @@ void init_cs(){
 	cs = new CS();
 	cs->setOutput(stdout);
 	conf.set("debug","yes");
-	conf.set("classpath", "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/lib;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse");
+	char* search_path = getenv("CS_PATH");
+	debug("search_path=%s\n", search_path);
+//conf.set("classpath", "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/lib;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse");
+	conf.set("classpath", "./:lib");
 	cs->setConf(conf);
 }
 
 string exec_cmd(string user, string cmd, std::map<string, string> p){
+
+		
+
 	string r = "hello";
 	// load user
 	
@@ -79,29 +91,49 @@ string exec_cmd(string user, string cmd, std::map<string, string> p){
 //	printf("this=%x,==>ps=%x", &CCompiler::classDesTable, pc);
 	vm.LoadObject(pc);
 #endif
-	cs->loadobj("test/test");
+
+	cs->loadobj("test");
 	
 	cLOG("111");
 	return r;
 }
 
+
 int main()
 {
-
-	cLOG("1");
+	// send header, there must not any printf before this
+	printf("Content-Type: text/plain\n\n");
+  	printf("Hello world\n\n");
+	JUJU::CLog::setFile("/Users/juweihua/studio/projects/jsf/cs/cgi-bin/log");
+/*	FILE* file = fopen("/Users/juweihua/studio/projects/jsf/cs/cgi-bin/log", "a+");
+	fprintf(file, "=====hello====\n");
+	fclose(file);
+	cLOG("1");*/
+	JUJU::CLog::enableStdOut(false);
 
 //	debug("a=%s, b=%s", "aa", "bb");
-//return 0;
-    int i,n;
-//printf ("Content type: text/plain\n\n");
-printf ("Content type: text/html\n\n");
 
-n=0;
+    int i,n;
+	printf("CONTENT-LENGTH: %s\n", getenv("CONTENT-LENGTH"));
+	printf("QUERY_STRING: %s\n", getenv("QUERY_STRING"));
+	printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD"));
+	char* method = getenv("REQUEST_METHOD");
+	char* content_length = getenv("CONTENT-LENGTH");
+	char* query_string = getenv("QUERY_STRING");
+// parser request
+	n=0;
     char qs[2000] ="";
     char* pqs = qs;
-    if(getenv("CONTENT-LENGTH")){
-    n=atoi(getenv("CONTENT-LENGTH"));
+
+// parse post data
+    if(stricmp(method, "POST") == 0 && getenv("CONTENT-LENGTH") ){
+/*	if (content_length != NULL)
+    	n=atoi(getenv("CONTENT-LENGTH"));
+	else if (query_string){
+		n = strlen(query_string);
+	}
     printf("content-length:%d\n",n);
+*/
     for (i=0; i<n;i++){
         //int is-eq=0;
         char c=getchar();
@@ -135,15 +167,22 @@ n=0;
         };
     }
     }
-printf("%s\n",getenv("QUERY_STRING"));
+//printf("%s\n",getenv("QUERY_STRING"));
 printf("qs=%s\n",qs);
 
-init_cs();
-map<string, string> m;
-// object->command(param), return
-exec_cmd("test", "cmd", m);
+try{
+	init_cs();
+	map<string, string> m;
+	//object->command(param), return
+	exec_cmd("test", "cmd", m);
+}catch(...){
+	return 0;	
+}
 
 	cLOG("2");
+
+
+//fprintf(stdout, "=======================\n");
 
 fflush(stdout);
 SAFEDELETE(cs);

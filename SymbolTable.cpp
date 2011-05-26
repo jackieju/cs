@@ -5,7 +5,7 @@
 #include "PubFuncTable.h"
 #include "cocor/cp.hpp"
 #include "SymbolTable.h"
-#include "os/CSS_LOCKEX.H"
+#include "CSS_LOCKEX.H"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

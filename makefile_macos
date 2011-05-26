@@ -6,31 +6,36 @@
 
 CC   = g++ 
 
-CLIB_OBJ = clib/thread.o clib/log.o clib/utility.o os/os.o os/LogCache.o os/ostime.o os/socket.o os/str.o os/thread-pthread.o os/osutils.o os/log.o os/CSS_LOCKEX.o os/ConfigFile.o os/protected.o os/mutex.o os/LogLevel.o 
+CLIB_OBJ = clib/thread.o clib/log.o clib/utility.o os/os.o  os/ostime.o os/socket.o os/str.o os/thread-pthread.o os/osutils.o os/log.o clib/CSS_LOCKEX.o os/ConfigFile.o os/protected.o os/mutex.o 
 OBJ = cscript.o Configure.o ObjTable.o ClassDesTable.o  ObjectInst.o Class.o ClassDes.o Exp.o VMManager.o compiler.o cp.o CR_ABS.o CR_ERROR.o CR_PARSE.o CR_SCAN.o cs.o Function.o LoopTree.o ObjDes.o PubFuncTable.o Request.o ScriptFuncTable.o SymbolTable.o utility.o VirtualMachine.o VMException.o linuxlib/IsWanted.o $(CLIB_OBJ) $(RES) 
 EXEC_OBJ  =  $(OBJ) main.o 
 CGI_OBJ = $(OBJ) cgi-bin/cs_cgi.o
+MODCS_OBJ = $(OBJ) modcs/modcs.o
 #OBJ  = $(objs) $(RES)
 #OBJ  = $(objs)
 pp = cocoR1/cp.cpp
+APACHE_MOD = libModcs.so.1.0 
 BIN_EXEC = mse
 CGI = cgi-bin/cs.cgi
-#BIN  = libSE.so.1.0
-#SOBIN=$(BIN:.so.1.0=.so)
-CFLAGS = -D__SUPPORT_OBJ -g -fPIC  -D_VMMANAGER -O2 -fomit-frame-pointer -w -W -Wall -Iclib -Ios -D_MACOS -I./ -D_64
+BIN  = libCS.so.1.0
+MODSOBIN=$(APACHE_MOD:.so.1.0=.so)
+SOBIN=$(BIN:.so.1.0=.so)
+CFLAGS = -g -fPIC   -O2 -fomit-frame-pointer -w -W -Wall -Iclib -Ios  -I./ -D__SUPPORT_OBJ -D_VMMANAGER -D_MACOS  -D_64 
 # -Wfatal-errors
 LINK=g++ 
 LFLAGS=-g
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before $(BIN_EXEC) $(CGI) all-after
+all: all-before $(BIN_EXEC) $(BIN) $(CGI) all-after
 
 parser: $(pp)
+
 clean: clean-custom
 	rm -f $(OBJ) $(BIN)
 	rm -f main.o
 	rm -f cgi-bin/cs_cgi.o
+	rm -fr modcs/*.o
 DLLWRAP=g++
 main.o: main.cpp
 	$(CC) -c main.cpp -o main.o $(CFLAGS)
@@ -41,6 +46,9 @@ cscript.o: cscript.cpp
 cgi-bin/cs_cgi.o: cgi-bin/cs_cgi.cpp
 	$(CC) -c cgi-bin/cs_cgi.cpp -o cgi-bin/cs_cgi.o $(CFLAGS)
 	
+modcs/modcs.o: modcs/modcs.cpp
+	$(CC) -c modcs/modcs.cpp -o modcs/modcs.o $(CFLAGS)
+		
 Configure.o: Configure.cpp
 	$(CC) -c Configure.cpp -o Configure.o $(CFLAGS)
 
@@ -149,17 +157,17 @@ os/protected.o: os/protected.cpp
 os/thread-pthread.o: os/thread-pthread.cpp
 	$(CC) -c os/thread-pthread.cpp -o os/thread-pthread.o $(CFLAGS)
 
-os/LogLevel.o: os/LogLevel.cpp
-	$(CC) -c os/LogLevel.cpp -o os/LogLevel.o $(CFLAGS)
+#os/LogLevel.o: os/LogLevel.cpp
+	#$(CC) -c os/LogLevel.cpp -o os/LogLevel.o $(CFLAGS)
 
-os/CSS_LOCKEX.o: os/CSS_LOCKEX.cpp
-	$(CC) -c os/CSS_LOCKEX.cpp -o os/CSS_LOCKEX.o $(CFLAGS)
+clib/CSS_LOCKEX.o: clib/CSS_LOCKEX.cpp
+	$(CC) -c clib/CSS_LOCKEX.cpp -o clib/CSS_LOCKEX.o $(CFLAGS)
 
 os/mutex.o: os/mutex.cpp
 	$(CC) -c os/mutex.cpp -o os/mutex.o $(CFLAGS)
 
-os/LogCache.o: os/LogCache.cpp
-	$(CC) -c os/LogCache.cpp -o os/LogCache.o $(CFLAGS)
+#os/LogCache.o: os/LogCache.cpp
+#	$(CC) -c os/LogCache.cpp -o os/LogCache.o $(CFLAGS)
 
 os/osutils.o: os/osutils.cpp
 	$(CC) -c os/osutils.cpp -o os/osutils.o $(CFLAGS)
@@ -167,8 +175,8 @@ os/osutils.o: os/osutils.cpp
 os/str.o: os/str.cpp
 	$(CC) -c os/str.cpp -o os/str.o $(CFLAGS)
 
-os/LogLevel.o: os/LogLevel.cpp
-	$(CC) -c os/LogLevel.cpp -o os/LogLevel.o $(CFLAGS)	
+#os/LogLevel.o: os/LogLevel.cpp
+#	$(CC) -c os/LogLevel.cpp -o os/LogLevel.o $(CFLAGS)	
 	
 clib/log.o: clib/log.cpp
 	$(CC) -c clib/log.cpp -o clib/log.o $(CFLAGS)
@@ -183,10 +191,16 @@ clib/thread.o: clib/thread.cpp
 	
 $(BIN): $(OBJ)
 #	$(DLLWRAP) -shared -ldl  $(OBJ)  -o $(BIN)
-	$(DLLWRAP) -shared -Wl,-soname,$(SOBIN)  $(OBJ)  -o ./bin/$(BIN) -lc
+#	$(DLLWRAP) -shared -Wl,-soname,$(SOBIN)  $(OBJ)  -o ./bin/$(BIN) -lc
+	$(DLLWRAP) -shared -Wl -soname=$(SOBIN)  $(OBJ)  -o ./bin/$(BIN) -lc
 
 $(BIN_EXEC): $(EXEC_OBJ)
 	$(LINK) $(EXEC_OBJ) -o bin/$(BIN_EXEC) $(LFLAGS)
 
 $(CGI): $(CGI_OBJ)
 	$(LINK) $(CGI_OBJ) -o $(CGI) $(LFLAGS)
+	
+#$(APACHE_MOD): $(MODCS_OBJ)
+#	$(DLLWRAP) -shared -Wl,-soname,$(MODSOBIN)  $(MODCS_OBJ)  -o ./modcs/$(APACHE_MOD) -lc
+
+

@@ -138,7 +138,7 @@ typedef unsigned char OS_UC;
  #endif
  typedef unsigned short WORD;
  typedef unsigned char BYTE;
- typedef int BOOL;
+ //typedef int BOOL;
  typedef long LONG;
  typedef unsigned int UINT;
  typedef unsigned int SOCKET;
@@ -272,9 +272,17 @@ typedef char* LPSTR;
 typedef short INT16;
 typedef int INT32;
 //typedef	int64 INT64;
-typedef void* HMODULE;
+//typedef void* HMODULE;
 typedef int FARPROC;
 typedef void* PVOID;
+
+
+// from os/osmacros.h
+#if defined( WIN32 ) && defined (OSLIB_DLL_EXPORTS)
+ #define OSLIB_DLL_FUNC_HEAD __declspec(dllexport) 
+#else
+ #define OSLIB_DLL_FUNC_HEAD
+#endif
 
 #endif
 

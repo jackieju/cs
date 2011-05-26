@@ -3,7 +3,7 @@
 #ifndef _OSSTR_H__
 #define _OSSTR_H__
 
-#include "osmacros.h"
+//#include "osmacros.h"
 
 #define OSstrcmp(x, y)		strcmp((x), (y))
 #define OSstrncmp(x, y, z)	strncmp((x), (y), (z))

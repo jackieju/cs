@@ -92,12 +92,12 @@ public:
 
 	}
 	static CLog* getDefInst(){
-		//if (pInst == NULL)
-//		{
-//			pInst = new CLog();
-//			pInst.Init();
-//		}
-		return &pInst;
+		if (pInst == NULL)
+		{
+			pInst = new CLog();
+			pInst->Init();
+		}
+		return pInst;
 	}
 
 	void Init(){
@@ -134,23 +134,7 @@ public:
 
 	}
 
-	void real_log(char *s){
-		std::string fileName = genFileName(this->category);
-		FILE* f = NULL;
-		if (strlen(fileName.c_str())>0){
-	 		f = fopen(fileName.c_str(), "a+");
-			fprintf(f, "%s", s);
-			fflush(f);
-        	fclose(f);
-		}
-        //if (f == NULL)
-          //  return;
-        
-        if (bStdOut /*&& strlen(logFileName)>0*/)
-			fprintf(stdout, "%s", s);
-			
-//		printf("log:: filename=%s, content=%s", fileName.c_str(), s);
-	}
+	void real_log(char *s);
 	void flush(){
        
 		if (cache.length() == 0)
@@ -199,7 +183,7 @@ public:
 		return bDebug;
 	}
 private:
-	static CLog pInst;
+	static CLog *pInst;
 	static char logFileName[256];
 	char category[256];
 	std::string cache;
@@ -219,27 +203,31 @@ public:
 
 
 void debug(char* fmt, ...);
-// simple log, no cache
+// simple and stable log, no cache, write file directly, for emergency use
 #define cLOG(m) JUJU::_log(m, __FILE__, __LINE__, 10, "LOG")
 
 // cached log
+#define LOG(m) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", "")
+#define LOGc(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", category)
+#define nLOG(m, n)  JUJU::CLog::Log(m, __FILE__, __LINE__, n, "LOG", "")
 #define LOG0(m) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", "")
 #define LOG1p(m, p1) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", "", p1)
 #define LOG2p(m, p1, p2) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", "", p1, p2)
-
 #define ERR(m) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", "")
+#define ERRc(m, category) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", category)
+#define ERR0(m) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", "")
 #define ERR1p(m, p1) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", "", p1)
 #define ERR2p(m, p1, p2) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", "", p1, p2)
 #define ERR2(m, c) JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "ERR", c)
-#define LOG(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "LOG", category)
-#define nLOG(m, n)  JUJU::CLog::Log(m, __FILE__, __LINE__, n, "LOG", "")
+
 #define nTRACE(m, n) JUJU::CLog::Log(m, __FILE__, __LINE__, n, "TRC", "")
 //#ifdef TRACE
 //#undef TRACE
 //#endif
 //#define TRACE(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "TRC")
 #define TRACE1(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "TRC", category)
-#define DEBUG(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", category)
+#define DEBUGc(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", category)
 #define DEBUG0(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "")
+#define DEBUG(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "")
 using namespace JUJU;
 #endif

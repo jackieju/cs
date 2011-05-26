@@ -70,5 +70,24 @@ The grammar is defined in cocoR/cs.atg, you can change it and run "make parser" 
 There is a "grep.pl" under cocoR folder, you can use it to see the clean grammar definition without code
 
 
+Make modcs for apache
+1. Compile and install apache from source
+reference: http://httpd.apache.org/docs/current/install.html
+2. build modcs  # change the path of apxs to yours
+/usr/local/apache2.2/bin/apxs  -g -n cs
+cd cs
+/usr/local/apache2.2/bin/apxs -c mod_cs.c 
+sudo cp .libs/mod_cs.so /usr/local/apache2.2/modules/
+
+sudo vi /usr/local/apache2.2/conf/httpd.conf
+# add following lines:
+# load mod cs
+    LoadModule cs_module   modules/mod_cs.so
+
+    <Location /cs>
+        setHandler helloworld
+    </Location>
+#
+/usr/local/apache2.2/bin/apachectl restart
 -------- windows ------------
 Not available currently

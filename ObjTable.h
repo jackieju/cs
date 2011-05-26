@@ -1,7 +1,7 @@
 #ifndef __OBJTABLE_H__
 #define __OBJTABLE_H__
 #include "clib.h"
-#include "os/CSS_LOCKEX.h"
+#include "CSS_LOCKEX.h"
 #include "ObjectInst.h"
 
 #ifdef WIN32

@@ -31,7 +31,7 @@
 
  ************************************/
 
-#include "os/CSS_LOCKEX.H"
+#include "CSS_LOCKEX.H"
 #include <list>
 #include <stack>
 #include <valarray>

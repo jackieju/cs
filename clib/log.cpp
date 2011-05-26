@@ -15,7 +15,7 @@ __gnu_cxx::hash_map<char*, JUJU::CLog*> JUJU::CLog::log_list;
 
 bool CLog::bUseCache = false;
 bool CLog::bStdOut = true;
-CLog CLog::pInst;// = new CLog;
+CLog *CLog::pInst = NULL;//new CLog;
 char CLog::logFileName[256] = "";
 bool CLog::bDebug = true;
 	
@@ -53,11 +53,12 @@ void JUJU::CLog::debug(char* fmt, ...){
 }
 
 	 void JUJU::CLog::Log(char* msg, char* file, long line, int l, char* type, char* category = "", ...){
+	
 		char szMsg[1024]="";
 		va_list v;
 	 	va_start(v, msg);
 		vsnprintf(szMsg, 1000, msg, v);
-				
+	
 		if (category == NULL || strlen(category) == 0)
 			getDefInst()->_log(szMsg, file, line, l, type);
 		else{
@@ -140,12 +141,13 @@ void JUJU::CLog::debug(char* fmt, ...){
 #endif
 		char content[1024] = "";
 		snprintf(content, 1000, "%s [%s %d]%d\t%s\t(%s:%d)\r\n", p, type, l, thread_id, msg, file, line);
-
+	
 #ifdef ENABLE_LOG_CACHE
 		if (bUseCache)
 			cache.append(content);
 		else
 #endif
+
 			real_log(content);
 		
 		
@@ -153,6 +155,38 @@ void JUJU::CLog::debug(char* fmt, ...){
 
 
     
+void JUJU::CLog::real_log(char *s){
+	
+		std::string fileName = genFileName(this->category);
+		FILE* f = NULL;
+	
+		if (strlen(fileName.c_str())>0){
+			
+	 		f = fopen(fileName.c_str(), "a+");
+		try{
+			if (f != NULL){ // if run in linux or as cgi of apache, the process might hasn't permission to write file.
+				fprintf(f, "%s", s);
+				fflush(f);
+        		fclose(f);	
+			}else{
+				printf("Warning: process doesn't has permission to write log file %s\n", (char*)fileName.c_str());
+				printf("log message: %s\n", s);
+			}
+		
+		}catch(...){
+			
+			return;
+		}
+		
+		}
+        //if (f == NULL)
+          //  return;
+
+        if (bStdOut /*&& strlen(logFileName)>0*/)
+			fprintf(stdout, "%s", s);
+			
+//		printf("log:: filename=%s, content=%s", fileName.c_str(), s);
+	}
 #ifdef ENABLE_LOG_CACHE
 void JUJU::log_thread(void* p){
 	

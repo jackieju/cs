@@ -28,7 +28,7 @@
 #include "datatype.h"
 #include "LoopTree.h"
 #include "opcode.h"
-#include "os/CSS_LOCKEX.h"
+#include "CSS_LOCKEX.h"
 #include "ScriptFuncTable.h"
 #include "log.h"
 #include "PubFuncTable.h"

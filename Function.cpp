@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "memory.h"
-#include "os/css_lockex.H"
+#include "css_lockex.H"
 
 #include "PubFuncTable.h"
 #include "cocor/cp.hpp"

@@ -14,7 +14,7 @@
 #include "cocoR/cp.hpp"
 #include "compiler.h"
 
-#include "os/CSS_LOCKEX.H"
+#include "CSS_LOCKEX.H"
 #include "ScriptFuncTable.h"
 
 
@@ -205,7 +205,7 @@ BOOL CCompiler::Compile(char *szFileName)
 		
 		sprintf(msg, "%04d-%02d-%02d %02d:%02d:%02d\tCompile %s", ptm->tm_year+1900, ptm->tm_mon+1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, m_szSourceFile);
 		
-		LOG(msg, "compiler");
+		LOGc(msg, "compiler");
 	}
 	
 	
@@ -258,7 +258,7 @@ BOOL CCompiler::Compile(char *szFileName)
 			
 		char msg[1024]="";
 		snprintf(msg, 1000, "Compile %s failed.", szFileName);	
-		LOG(msg, "compiler");
+		LOGc(msg, "compiler");
 		
 		return FALSE;
 	}
@@ -266,7 +266,7 @@ BOOL CCompiler::Compile(char *szFileName)
 	{
 		char msg[1024]="";
 		snprintf(msg, 1000, "Compile %s successfully.", szFileName);	
-		LOG(msg, "compiler");
+		LOGc(msg, "compiler");
 	}
 	return TRUE;
 }

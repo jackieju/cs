@@ -39,7 +39,8 @@
 	#include <io.h>
 #endif
 
-#include "osmacros.h"
+//#include "osmacros.h"
+#include "macros.h"
 
 #ifndef INFINITE
 #define INFINITE					0xFFFFFFFF
