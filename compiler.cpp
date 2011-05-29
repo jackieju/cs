@@ -109,7 +109,7 @@ void CCompiler::setOutput(FILE *f){
 }
 
 CCompiler::CCompiler()
-{
+{ 	
 	//m_Parser.Scanner = &this->m_Scanner;
 	//m_Parser.Error = &this->m_Error;
 	//this->m_Error.Scanner = &this->m_Scanner;	
@@ -270,12 +270,19 @@ BOOL CCompiler::Compile(char *szFileName)
 	}
 	return TRUE;
 }
+
+// set configuration, the configure object will be copied
 	void CCompiler::setConf(CConfigure& conf){
+
 		std::map<std::string, std::string> & _map = *conf.map();
 		std::map<std::string, std::string>::iterator it;
 		// printf("\n[Compiler options]:\n");
 		for ( it=_map.begin() ; it != _map.end(); it++ ){
-		 	m_conf.set((*it).first,(*it).second);
+			std::string s1 = (*it).first;
+			std::string s2 = (*it).second;
+			 
+		 	m_conf.set("oo", "pp");
+		
 		 	//printf("set %s=%s\n", (*it).first.c_str(), (*it).second.c_str());
 		 }
 		// printf("\n");

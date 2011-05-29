@@ -6,6 +6,31 @@
 	objectVersion = 45;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		5A2B11341391CC6000E32FD8 /* cs */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 5A2B11371391CC7F00E32FD8 /* Build configuration list for PBXAggregateTarget "cs" */;
+			buildPhases = (
+				5A2B11331391CC6000E32FD8 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = cs;
+			productName = cs;
+		};
+		5A2B11411391D06800E32FD8 /* mod_cs */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 5A2B11441391D08600E32FD8 /* Build configuration list for PBXAggregateTarget "mod_cs" */;
+			buildPhases = (
+				5A2B11401391D06800E32FD8 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = mod_cs;
+			productName = mod_cs;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXFileReference section */
 		5A29CD13116906FF0078FAE0 /* build-state.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "build-state.dat"; sourceTree = "<group>"; };
 		5A29CD14116906FF0078FAE0 /* build-state~.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "build-state~.dat"; sourceTree = "<group>"; };
@@ -399,12 +424,22 @@
 		5A29CEB4116907000078FAE0 /* Class.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Class.cpp; path = ../Class.cpp; sourceTree = SOURCE_ROOT; };
 		5A29CEB5116907000078FAE0 /* baselib.int */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = baselib.int; path = ../baselib.int; sourceTree = SOURCE_ROOT; };
 		5A29CEB6116907000078FAE0 /* baselib.dll */ = {isa = PBXFileReference; lastKnownFileType = file; name = baselib.dll; path = ../baselib.dll; sourceTree = SOURCE_ROOT; };
+		5A2B11391391CD2000E32FD8 /* mod_cs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mod_cs.c; path = ../modcs/cs/mod_cs.c; sourceTree = SOURCE_ROOT; };
+		5A2B113B1391CD8C00E32FD8 /* cs_interface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cs_interface.cpp; path = ../cs_interface.cpp; sourceTree = SOURCE_ROOT; };
+		5A2B113C1391CD8C00E32FD8 /* cs_interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cs_interface.h; path = ../cs_interface.h; sourceTree = SOURCE_ROOT; };
+		5A2B113D1391CFA100E32FD8 /* httpd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = httpd.h; path = "../../httpd-2.2.19/include/httpd.h"; sourceTree = SOURCE_ROOT; };
+		5A2B11891391D47700E32FD8 /* Configure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Configure.cpp; path = ../Configure.cpp; sourceTree = SOURCE_ROOT; };
+		5A2B118A1391D47700E32FD8 /* Configure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Configure.h; path = ../Configure.h; sourceTree = SOURCE_ROOT; };
+		5A2B118B1391D47700E32FD8 /* cscript.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cscript.cpp; path = ../cscript.cpp; sourceTree = SOURCE_ROOT; };
+		5A2B118C1391D47700E32FD8 /* cscript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cscript.h; path = ../cscript.h; sourceTree = SOURCE_ROOT; };
+		5A2B12081391DF0C00E32FD8 /* go */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = go; path = ../modcs/cs/go; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		08FB7794FE84155DC02AAC07 /* mse */ = {
 			isa = PBXGroup;
 			children = (
+				5A2B11381391CCD000E32FD8 /* mod_cs */,
 				5A29CEBC1169077C0078FAE0 /* makefile */,
 				5A29CEBB116907600078FAE0 /* vc_prj */,
 				5A29CEBA116907290078FAE0 /* src */,
@@ -961,6 +996,12 @@
 		5A29CEBA116907290078FAE0 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				5A2B11891391D47700E32FD8 /* Configure.cpp */,
+				5A2B118A1391D47700E32FD8 /* Configure.h */,
+				5A2B118B1391D47700E32FD8 /* cscript.cpp */,
+				5A2B118C1391D47700E32FD8 /* cscript.h */,
+				5A2B113B1391CD8C00E32FD8 /* cs_interface.cpp */,
+				5A2B113C1391CD8C00E32FD8 /* cs_interface.h */,
 				5A29CD8C116907000078FAE0 /* gencode.h */,
 				5A29CD8D116907000078FAE0 /* Function.h */,
 				5A29CD8E116907000078FAE0 /* Function.cpp */,
@@ -1046,6 +1087,16 @@
 			name = makefile;
 			sourceTree = "<group>";
 		};
+		5A2B11381391CCD000E32FD8 /* mod_cs */ = {
+			isa = PBXGroup;
+			children = (
+				5A2B12081391DF0C00E32FD8 /* go */,
+				5A2B113D1391CFA100E32FD8 /* httpd.h */,
+				5A2B11391391CD2000E32FD8 /* mod_cs.c */,
+			);
+			name = mod_cs;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
@@ -1082,9 +1133,40 @@
 			projectRoot = "";
 			targets = (
 				D28A88AD04BDD90700651E21 /* mse */,
+				5A2B11341391CC6000E32FD8 /* cs */,
+				5A2B11411391D06800E32FD8 /* mod_cs */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5A2B11331391CC6000E32FD8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\ncd ..\n./go\nexit 0";
+		};
+		5A2B11401391D06800E32FD8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\ncd ../modcs/cs\n./go\nexit 0";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB919008733D9F0010E9CD /* Debug */ = {
@@ -1136,6 +1218,48 @@
 			};
 			name = Release;
 		};
+		5A2B11351391CC6100E32FD8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = cs;
+			};
+			name = Debug;
+		};
+		5A2B11361391CC6100E32FD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = cs;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		5A2B11421391D06800E32FD8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = mod_cs;
+			};
+			name = Debug;
+		};
+		5A2B11431391D06800E32FD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = mod_cs;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1153,6 +1277,24 @@
 			buildConfigurations = (
 				1DEB919408733D9F0010E9CD /* Debug */,
 				1DEB919508733D9F0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A2B11371391CC7F00E32FD8 /* Build configuration list for PBXAggregateTarget "cs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A2B11351391CC6100E32FD8 /* Debug */,
+				5A2B11361391CC6100E32FD8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A2B11441391D08600E32FD8 /* Build configuration list for PBXAggregateTarget "mod_cs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A2B11421391D06800E32FD8 /* Debug */,
+				5A2B11431391D06800E32FD8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

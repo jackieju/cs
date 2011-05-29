@@ -6,11 +6,12 @@
 
 CC   = g++ 
 
-CLIB_OBJ = clib/thread.o clib/log.o clib/utility.o os/os.o  os/ostime.o os/socket.o os/str.o os/thread-pthread.o os/osutils.o os/log.o clib/CSS_LOCKEX.o os/ConfigFile.o os/protected.o os/mutex.o 
+CLIB_OBJ =  clib/thread.o clib/log.o clib/utility.o os/os.o  os/ostime.o os/socket.o os/str.o os/thread-pthread.o os/osutils.o os/log.o clib/CSS_LOCKEX.o os/ConfigFile.o os/protected.o os/mutex.o 
 OBJ = cscript.o Configure.o ObjTable.o ClassDesTable.o  ObjectInst.o Class.o ClassDes.o Exp.o VMManager.o compiler.o cp.o CR_ABS.o CR_ERROR.o CR_PARSE.o CR_SCAN.o cs.o Function.o LoopTree.o ObjDes.o PubFuncTable.o Request.o ScriptFuncTable.o SymbolTable.o utility.o VirtualMachine.o VMException.o linuxlib/IsWanted.o $(CLIB_OBJ) $(RES) 
 EXEC_OBJ  =  $(OBJ) main.o 
 CGI_OBJ = $(OBJ) cgi-bin/cs_cgi.o
 MODCS_OBJ = $(OBJ) modcs/modcs.o
+SO_OBJ = $(OBJ) cs_interface.o 
 #OBJ  = $(objs) $(RES)
 #OBJ  = $(objs)
 pp = cocoR1/cp.cpp
@@ -20,7 +21,7 @@ CGI = cgi-bin/cs.cgi
 BIN  = libCS.so.1.0
 MODSOBIN=$(APACHE_MOD:.so.1.0=.so)
 SOBIN=$(BIN:.so.1.0=.so)
-CFLAGS = -g -fPIC   -O2 -fomit-frame-pointer -w -W -Wall -Iclib -Ios  -I./ -D__SUPPORT_OBJ -D_VMMANAGER -D_MACOS  -D_64 
+CFLAGS =  -g -fPIC   -O2 -fomit-frame-pointer -w -W -Wall -Iclib -Ios  -I./ -I/usr/local/apache2.2/include -I/usr/include/apr-1 -D__SUPPORT_OBJ -D_VMMANAGER -D_MACOS  -D_64 
 # -Wfatal-errors
 LINK=g++ 
 LFLAGS=-g
@@ -43,6 +44,9 @@ main.o: main.cpp
 cscript.o: cscript.cpp
 	$(CC) -c cscript.cpp -o cscript.o $(CFLAGS)
 	
+cs_interface.o: cs_interface.cpp
+	$(CC) -c cs_interface.cpp -o cs_interface.o $(CFLAGS)
+
 cgi-bin/cs_cgi.o: cgi-bin/cs_cgi.cpp
 	$(CC) -c cgi-bin/cs_cgi.cpp -o cgi-bin/cs_cgi.o $(CFLAGS)
 	
@@ -188,11 +192,15 @@ clib/thread.o: clib/thread.cpp
 	$(CC) -c clib/thread.cpp -o clib/thread.o $(CFLAGS)
 	
 
-	
-$(BIN): $(OBJ)
+APACHE_OBJ = ../httpd-2.2.19/server/.libs/config.o     ../httpd-2.2.19/server/.libs/connection.o     ../httpd-2.2.19/server/.libs/core.o     ../httpd-2.2.19/server/.libs/core_filters.o     ../httpd-2.2.19/server/.libs/eoc_bucket.o     ../httpd-2.2.19/server/.libs/error_bucket.o     ../httpd-2.2.19/server/.libs/exports.o     ../httpd-2.2.19/server/.libs/gen_test_char.o     ../httpd-2.2.19/server/.libs/libmain.a     ../httpd-2.2.19/server/.libs/libmain.la     ../httpd-2.2.19/server/.libs/listen.o     ../httpd-2.2.19/server/.libs/log.o        ../httpd-2.2.19/server/.libs/mpm_common.o     ../httpd-2.2.19/server/.libs/protocol.o     ../httpd-2.2.19/server/.libs/provider.o     ../httpd-2.2.19/server/.libs/request.o     ../httpd-2.2.19/server/.libs/scoreboard.o     ../httpd-2.2.19/server/.libs/util.o     ../httpd-2.2.19/server/.libs/util_cfgtree.o     ../httpd-2.2.19/server/.libs/util_charset.o     ../httpd-2.2.19/server/.libs/util_debug.o     ../httpd-2.2.19/server/.libs/util_ebcdic.o     ../httpd-2.2.19/server/.libs/util_filter.o     ../httpd-2.2.19/server/.libs/util_md5.o     ../httpd-2.2.19/server/.libs/util_pcre.o     ../httpd-2.2.19/server/.libs/util_script.o     ../httpd-2.2.19/server/.libs/util_time.o     ../httpd-2.2.19/server/.libs/util_xml.o     ../httpd-2.2.19/server/.libs/vhost.o      
+
+#  following are special flag for mac os, to make ld not check undefined symbol provided by apache
+# -dynamiclib -dynamic  --exported_symbols_order/usr/local/apache2.2/modules/httpd.exp -commonsignore_dylibs -undefined dynamic_lookup -Uap_rprintf -flat_namespace 
+#
+$(BIN): $(SO_OBJ)
 #	$(DLLWRAP) -shared -ldl  $(OBJ)  -o $(BIN)
 #	$(DLLWRAP) -shared -Wl,-soname,$(SOBIN)  $(OBJ)  -o ./bin/$(BIN) -lc
-	$(DLLWRAP) -shared -Wl -soname=$(SOBIN)  $(OBJ)  -o ./bin/$(BIN) -lc
+	$(DLLWRAP) -dynamiclib -dynamic  --exported_symbols_order/usr/local/apache2.2/modules/httpd.exp -commonsignore_dylibs -undefined dynamic_lookup -Uap_rprintf -flat_namespace -Wl -soname=$(SOBIN)  $(SO_OBJ)  -lc  -lm   -o ./bin/$(BIN) 
 
 $(BIN_EXEC): $(EXEC_OBJ)
 	$(LINK) $(EXEC_OBJ) -o bin/$(BIN_EXEC) $(LFLAGS)

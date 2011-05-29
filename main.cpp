@@ -135,11 +135,14 @@ return 0;*/
 	
 	bool bOption = false;
 
-
+	
+	LOG("FDASDF");
 	
 
+		LOG("dffff");
 CS* cs;
 	cs = new CS();
+	
     cs->setOutput(stdout);
     //conf.set("debug","yes");
   //  conf.set("classpath", "/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/lib;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse;/Users/juweihua/studio/projects/WebMudFramework/ScriptEngine/mse/test");
