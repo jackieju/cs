@@ -7,7 +7,7 @@
 CC   = g++ 
 
 CLIB_OBJ =  clib/thread.o clib/log.o clib/utility.o os/os.o  os/ostime.o os/socket.o os/str.o os/thread-pthread.o os/osutils.o os/log.o clib/CSS_LOCKEX.o os/ConfigFile.o os/protected.o os/mutex.o 
-OBJ = cscript.o Configure.o ObjTable.o ClassDesTable.o  ObjectInst.o Class.o ClassDes.o Exp.o VMManager.o compiler.o cp.o CR_ABS.o CR_ERROR.o CR_PARSE.o CR_SCAN.o cs.o Function.o LoopTree.o ObjDes.o PubFuncTable.o Request.o ScriptFuncTable.o SymbolTable.o utility.o VirtualMachine.o VMException.o linuxlib/IsWanted.o $(CLIB_OBJ) $(RES) 
+OBJ = cscript.o Configure.o ObjTable.o ClassDesTable.o  ObjectInst.o Class.o ClassDes.o Exp.o VMManager.o compiler.o cp.o CR_ABS.o CR_ERROR.o CR_PARSE.o CR_SCAN.o cs.o Function.o LoopTree.o ObjDes.o PubFuncTable.o Request.o ScriptFuncTable.o SymbolTable.o  VirtualMachine.o VMException.o linuxlib/IsWanted.o $(CLIB_OBJ) $(RES) 
 EXEC_OBJ  =  $(OBJ) main.o 
 CGI_OBJ = $(OBJ) cgi-bin/cs_cgi.o
 MODCS_OBJ = $(OBJ) modcs/modcs.o
@@ -122,8 +122,8 @@ ScriptFuncTable.o: ScriptFuncTable.cpp
 SymbolTable.o: SymbolTable.cpp
 	$(CC) -c SymbolTable.cpp -o SymbolTable.o $(CFLAGS)
 
-utility.o: utility.cpp
-	$(CC) -c utility.cpp -o utility.o $(CFLAGS)
+#utility.o: utility.cpp
+#	$(CC) -c utility.cpp -o utility.o $(CFLAGS)
 
 VirtualMachine.o: VirtualMachine.cpp
 	$(CC) -c VirtualMachine.cpp -o VirtualMachine.o $(CFLAGS)

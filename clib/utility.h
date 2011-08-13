@@ -16,7 +16,9 @@
 #endif
 
 #include <vector>
-typedef std::vector<std::string>			string_array;
+#include <string>
+
+//typedef std::vector<std::string>			string_array;
 
 
 
@@ -153,4 +155,5 @@ private:
 	char* getWorkingPath();
 
 }
+
 #endif // _UTILITY_H

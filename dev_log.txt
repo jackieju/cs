@@ -117,3 +117,33 @@ hash
 regular express
 array
 class member must be object (primitive type only used as local variable)
+
+
+language is just configure language (no additional configure language)
+[package name]
+aa => string without quote
+ 
+[package name2]
+bb = string with quote
+
+
+lanuguage is just data (no xml)
+object.to_json
+
+language is just sql (no sql)
+<storage type> class aaa{
+var a :=> hash without {}
+var b :=> type: fdaf, lenght: 1, key:yes;
+
+}===>{configure hash}
+
+
+aa => string without quote
+aa :=  hash without {}
+var aa <=> configure hash
+aa.config = configure hash (but cannot assign)
+
+
+
+
+

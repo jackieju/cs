@@ -899,6 +899,7 @@ std::string JUJU::getFilePath(char* fullName){
 };
 
 static char szWorkingPath[512] = "";
+// get current working folder
 char* JUJU::getWorkingPath()
 {
 	if (strlen(szWorkingPath) == 0){
