@@ -101,7 +101,7 @@ if a is object -> is null, b is primitive, should create a new object for a
 						   b is object, should pointer a to b
  				  not null, should call class.= operator
 
-primitive type can only be used in a function, should detect and generate compiler error for it.
+primitive type can only be used in a function(local variable of a function), should detect and generate compiler error for it.
 or automatically convert to object
 
 "$"identifier

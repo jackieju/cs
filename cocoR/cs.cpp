@@ -30,9 +30,9 @@
 
 int cScanner::STATE0[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,54,24,33,70,64,50,26,44,45,46,61,41,62,67,63,35,2,2,2,2,2,2,2,2,2,47,37,
-                  30,38,56,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                  30,40,56,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                   1,42,0,43,52,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                  1,1,1,39,48,40,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                  1,1,1,38,48,39,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -183,9 +183,9 @@ int cScanner::Get()
       	if (Scan_Ch == '<') state = 30; else
       	if (Scan_Ch == '#') state = 33; else
       	if (Scan_Ch == ';') state = 37; else
-      	if (Scan_Ch == '=') state = 38; else
-      	if (Scan_Ch == '{') state = 39; else
-      	if (Scan_Ch == '}') state = 40; else
+      	if (Scan_Ch == '{') state = 38; else
+      	if (Scan_Ch == '}') state = 39; else
+      	if (Scan_Ch == '=') state = 40; else
       	if (Scan_Ch == ',') state = 41; else
       	if (Scan_Ch == '[') state = 42; else
       	if (Scan_Ch == ']') state = 43; else
@@ -341,13 +341,13 @@ int cScanner::Get()
       case 37:
       	return SemicolonSym;
       case 38:
+      	return LbraceSym;
+      case 39:
+      	return RbraceSym;
+      case 40:
       	if (Scan_Ch == '=') state = 53; else
       	return EqualSym;
       	break;
-      case 39:
-      	return LbraceSym;
-      case 40:
-      	return RbraceSym;
       case 41:
       	return CommaSym;
       case 42:

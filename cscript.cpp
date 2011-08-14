@@ -17,6 +17,26 @@
 
 #include "cscript.h"
 
+void CS::execute(std::string s){
+	CClassDes* pc = NULL;
+
+	BOOL ret = c->Compile((char*)(s).c_str());
+	if (!ret){
+			printf("==== compile failed ===\n");
+			return;
+	}
+	pc = CCompiler::classDesTable.getClass("_global_");
+	printf("-->pc=%x",pc);
+
+
+	if (pc == NULL){
+		ERR1p("Cannnot load class %s", s.c_str());
+		return;
+	}
+	vm->LoadObject(pc);
+	return;
+}
+
 void CS::loadobj(std::string s){
 	CClassDes* pc = NULL;
 	pc = CCompiler::classDesTable.getClass((char*)(s.c_str()));
@@ -32,6 +52,10 @@ void CS::loadobj(std::string s){
 			printf("-->pc=%x",pc);
 	}
 	
+	if (pc == NULL){
+		ERR1p("Cannnot load class %s", s.c_str());
+		return;
+	}
 	vm->LoadObject(pc);
 	return;
 };

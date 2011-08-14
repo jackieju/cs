@@ -1812,7 +1812,7 @@ BOOL CVirtualMachine::Run()
 	GetLocalTime(&m_StartTime);	
 	m_StatusLock.Unlock();
 
-	while (m_ToStop.Wait(0) == LOCKEX_ERR_TIMEOUT && !bError)
+	while (m_ToStop.Wait(0) == LOCKEX_ERR_TIMEOUT && !bError && m_pCurCall->pFunc->m_pCmdTable != NULL)
 	{
 		JUJU::CLog::debug("--->__IP=%d, mode=%d\n", __IP, m_nWorkMode);
 		JUJU::CLog::debug("--->line %d, code 0x%x\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
@@ -3222,19 +3222,35 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
 	
 	//long index = 1;
 	this->Reset();
-	CFunction* pfn = c->getMethod("create");
+	
+	CFunction* pfn = c;
 	LoadFunction(pfn);
 	printf("==>LoadFunction OK\n");
 	void* pthis = obj;
 	CRef* ref = new CRef("this");
 	ref->setRef(obj);
-	
+
 	AttachParam((BYTE*)&ref, sizeof(long*));
-	
+
 	printf("==>AttachParam OK\n");
-	
-	
+
 	this->Run();
+/*	
+	
+	CFunction* pfn = c->getMethod("create");
+	if (fn != NULL){
+		LoadFunction(pfn);
+		printf("==>LoadFunction OK\n");
+		void* pthis = obj;
+		CRef* ref = new CRef("this");
+		ref->setRef(obj);
+	
+		AttachParam((BYTE*)&ref, sizeof(long*));
+	
+		printf("==>AttachParam OK\n");
+	
+		this->Run();
+	}*/
 	return obj;
 
 }

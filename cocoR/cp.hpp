@@ -128,7 +128,7 @@ class CCompiler;
 // add by jackie juju
 /////////////////////////
 const int MAXSYM = 6;
-const int MAXERROR = 112;
+const int MAXERROR = 111;
 
 class cParser : public CRParser, public CPUtil
 {
@@ -274,15 +274,16 @@ private:
     void Inheritance();
     void Definition();
     void ClassFullName(char* szName);
+    void ClassDef();
+    void Statements();
+    void ClassBody();
     void StorageClass();
     void Type(PTYPEDES type);
-    void FunctionDefinition();
-    void Expression();
-    void ClassDef();
-    void ClassBody();
     void VarList(PTYPEDES type, char* szFirstName);
     void ArraySize();
+    void Expression();
     void ConstExpression();
+    void FunctionDefinition();
     void FunctionHeader();
     void FunctionBody();
     void FormalParamList();

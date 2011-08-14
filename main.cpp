@@ -24,15 +24,16 @@ bool applyOption(char** argv, int number){
 	if (number <= 0)
 		return true;
 	char* p = argv[0];
-//	printf("arg=%s, number=%d",p, number);
+	// printf("arg=%s, number=%d\n",p, number);
 	if (p[0]=='-'){
 		if (strcmp(p+1, "sp")==0){
 			printf("set classpath %s\n", argv[1]);
-			if (--number <= 0)
-				return false;
-			else
+
+			 if (number-1 <= 0) // will eat two arguments
+			 		return false;
+		 	else
 				conf.set("classpath", argv[1]);
-			applyOption(argv+2, number-1);
+			applyOption(argv+2, number-2);
 		}else if(strcmp(p+1, "d")==0){
 			  conf.set("debug","yes");
 			  applyOption(argv+1, number-1);
@@ -136,10 +137,10 @@ return 0;*/
 	bool bOption = false;
 
 	
-	LOG("FDASDF");
+//	LOG("FDASDF");
 	
 
-		LOG("dffff");
+//		LOG("dffff");
 CS* cs;
 	cs = new CS();
 	
@@ -151,12 +152,13 @@ cs->setConf(conf);
 		std::map<std::string, std::string>::iterator it;
 
 		std::map<std::string, std::string> & _map = *(conf.map());
-	/*for ( it=_map.begin() ; it != _map.end(); it++ ){
-		 
-		 	printf("%s=%s\n", (*it).first.c_str(), (*it).second.c_str());
-			}	
 
-*/
+	// for ( it=_map.begin() ; it != _map.end(); it++ ){
+	// 	 
+	// 	 	printf("%s=%s\n", (*it).first.c_str(), (*it).second.c_str());
+	// 		}	
+	// 
+
 
 
 	CConfigure* m_conf = (cs->getConf());
@@ -178,5 +180,9 @@ cs->setConf(conf);
 		 printf("\n");
 			
 //	cs->loadobj("test/test");
-	cs->loadobj(target);
+//		printf("target = %s %d\n", target,  OSstricmp((const char*) &target[strlen(target)-3] ,".cs" ));
+	if (strlen(target)>3 && OSstricmp((const char*) &target[strlen(target)-3] ,".cs" ) == 0)
+		cs->execute(target);
+	else
+		cs->loadobj(target);
 }

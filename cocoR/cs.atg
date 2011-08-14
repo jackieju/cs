@@ -3,7 +3,8 @@ COMPILER C
 /* An attempt to describe a subset of C */
 
 /************** NOTICE ***************
-You cannot use "'" in your comments
+You cannot use "'" in your comments.
+Bug of cocor, you have to keep number of OR factor less than 2, otherwise it generate switch-case with multi-"default"
 **************************************/
 
 /////////////////////////////////
@@ -105,6 +106,24 @@ PRODUCTIONS
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
     
+	// set main function and add to class _global_
+	this->m_pMainFunction = m_pCurClassDes;
+	m_pMainFunction->m_SymbolTable.m_pParser = this;
+	this->m_LoopTree->m_pFunc = m_pMainFunction;
+//	m_pMainFunction->setName("create");
+//	m_pCurClassDes->AddMethod(m_pMainFunction);
+//	m_pMainFunction->setParent(m_pCurClassDes);
+	// add "this" as first parameter to function 
+	PTYPEDES type = new TYPEDES;
+	type->refLevel = 0;
+	type->type = dtGeneral;
+	if (!AllocVar(type, "this"))
+		GENERR(113);
+	else
+		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+	delete type;
+
+	printf("m_pMainFunction1=%x", m_pMainFunction);
     .)
    { Import | LoadLib } [ Inheritance ]
 
@@ -121,6 +140,15 @@ PRODUCTIONS
   //SAFEDELETE(s);
   //fclose(file);
 
+// add return statement
+	ADDCOMMAND0(__ret);
+	
+			   char path[_MAX_PATH];
+				if (strlen(m_szByteCodeFilePath) == 0 )
+					sprintf(path, "%s.%s", this->m_pCurClassDes->GetFullName(),"_self_");
+				else
+					sprintf(path, "%s%s%s.%s", m_szByteCodeFilePath, PATH_SEPARATOR_S, this->m_pCurClassDes->GetFullName(),"_self_");
+	            m_pMainFunction->Output(path);
     .).
 
   Import = "use"(.char szName[_MAX_PATH]= ""; .) ClassFullName<szName>
@@ -173,49 +201,12 @@ PRODUCTIONS
   
 /* Variable and Type Definitions */
 	
+	
  
-  Definition           =
-   (
- (. debug("===>Definition"); .)
-   [ StorageClass ] (. PTYPEDES type = new TYPEDES; .) 
-   [ Type<type> ]
-  
-   /*{ "*" }*/ 
-(. 
-		if (type->type < dtFirstType  || type->type > dtLastType)
-		{
-			GENERR(99);
-		}
-		
-		//指针类型
-		while (Sym == StarSym) 
-		{
-			type->refLevel++;
-			Get();
-		}
-.)
-   
-   identifier
-(.
-	char szName[MAX_IDENTIFIER_LENGTH];
-	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
-	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-.)
-(
-   (
-		FunctionDefinition (./*this->m_pCurClassDes->AddMember(szName, *type);*/.)
-	   /*| (VarList< type,  szName> ";")*/
-	)
-	|
-	( /* this is bug of cocor, you have to keep number of OR factor less than 2, otherwise it generate switch-case with multi-"default"*/
-	   ("=" (.this->m_pCurClassDes->AddMember(szName, *type);.)Expression (./*TODO*/.)";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .))
-	   | ";" (.this->m_pCurClassDes->AddMember(szName, *type); if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .) 
-    ) 
-   )
-   ) 
-   
-   | ClassDef  .
-                            
+  Definition           = (. debug("===>Definition"); .)
+ ClassDef | Statements .
+	
+               
   /* PreProcess = Define | Include .
   
  Define = "#define" identifier macros .
@@ -249,31 +240,69 @@ PRODUCTIONS
 	char *szName = new char[MAX_IDENTIFIER_LENGTH];
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-	
+		printf("m_pMainFunction2=%x", m_pMainFunction);
 	CClassDes * pNewCD = new CClassDes(this);
-	pNewCD->setParent(m_pCurClassDes);
-	 m_pCurClassDes = pNewCD;
+	pNewCD->setParent(m_pMainFunction);
+	m_pMainFunction =  m_pCurClassDes = pNewCD;
 	// std::string className = JUJU::getFileName(curFileName);
 	 m_pCurClassDes->setName(szName);	
 	
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
+	
+
 .) 
 {Inheritance}
 ClassBody	";" .
 	ClassBody			 = 
 	(.
+	debug("===>classbody");
 	// 利用CFunction来存放类成员
-	CFunction* pSaved = this->m_pMainFunction;	// save current function
+/*	CFunction* pSaved = this->m_pMainFunction;	// save current function
 	CFunction function;
 	function.m_SymbolTable.m_pParser = this;
-	this->m_pMainFunction = &function;
-	
+	this->m_pMainFunction = &function;*/
+
+
+//	m_pMainFunction = m_pCurClassDes;
+	m_pMainFunction->m_SymbolTable.m_pParser = this;
+	this->m_LoopTree->m_pFunc = m_pMainFunction;
+	// add "this" as first parameter to function 
+	PTYPEDES type = new TYPEDES;
+	type->refLevel = 0;
+	type->type = dtGeneral;
+	if (!AllocVar(type, "this"))
+		GENERR(113);
+	else
+		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+	delete type;
+		
 	.)
 
 	"{" { Definition} "}" 
 	
 	(.
+	
+	m_pMainFunction = m_pCurClassDes;
+	// call construction function "create"
+	FUNCCALL fn;
+	CFunction* pScript = m_pCurClassDes->getMethod("create");	
+	fn.name = "::create";
+    
+	fn.pVF = pScript;
+	fn.nType = 0;
+	ADDCOMMAND1(__callv, CC, (long)pScript);
+				
+	// add "this" as first parameter
+	printf("add this as parameter for class method\n");
+	ADDCOMMAND1(__paramv, 0xc100, 0);
+	ADDCOMMAND0(__endcallv);
+	m_pCurClassDes->getFuncTable()->ReleaseFunc();
+	
+	ADDCOMMAND0(__ret);
+	m_pMainFunction = m_pMainFunction->getParent();
+	
+		printf("m_pMainFunction3=%x", m_pMainFunction);
 	/*
 	//添加class
 	if (!Error->Errors)
@@ -442,11 +471,13 @@ ArraySize
 		if (m_pMainFunction!=NULL){
 			printf("--->m_pMainFunction221=%x, name=%s\n", m_pMainFunction, m_pMainFunction->name());
 //			delete m_pMainFunction;
-			m_pMainFunction = NULL;
+
+			m_pMainFunction = m_pMainFunction->getParent();
 		}
 	 }
-	 m_pMainFunction = NULL;
+	 m_pMainFunction =m_pMainFunction->getParent();
 	//	printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
+	
   .)
   .
   FunctionHeader       = 
@@ -554,7 +585,8 @@ m_pMainFunction->ClearExpStack();
 
 /* Statements */
 
-  Statement            = { Label }
+  Statement            = (. debug("====>statement"); .)
+{ Label }
                          ( 
                          /*
 (.
@@ -575,7 +607,7 @@ m_pMainFunction->ClearExpStack();
 /* There is no requirement that a switch statement be followed by a compound
    statement.  Actually labels may be even more general */
 
-  AssignmentStatement = Expression ";" (.  if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .).
+  AssignmentStatement = (. debug("===>AssignmentStatement1"); .) Expression ";" (. debug("===>AssignmentStatement2"); if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .).
 
   BreakStatement       = "break"  
   (. 	//recode this command for write back
@@ -602,9 +634,12 @@ m_pMainFunction->ClearExpStack();
 								memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 								Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);
 							.)
- VarList<type, szName>";"  (. delete type; if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
+ (FunctionDefinition | VarList<type, szName>";" ) (. delete type; if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .)
  . 
-  CompoundStatement    = "{" { LocalDeclaration | Statement } "}" .
+
+  CompoundStatement    = "{" Statements "}" .
+
+  Statements = { LocalDeclaration | Statement } (. 	printf("1m_pMainFunction=%x", m_pMainFunction); .).
 
   ContinueStatement    = "continue"  
   (.
@@ -877,7 +912,7 @@ m_pMainFunction->ClearExpStack();
 
   ConstExpression      = Expression .
 
-  Expression           = Conditional { AssignmentOperator Expression
+  Expression           = (. debug("===>Expression"); .)Conditional { AssignmentOperator Expression
   (.
 printf("===>AssignmentOperator\n");
 	if (!doAssign()) 
@@ -1307,7 +1342,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 .)
 } .
 
-  CastExp              = 
+  CastExp              = (. debug("===>CastExp"); .)
   (.
   	//保存一元操作符栈
 	EXPRESSIONOP* pSavedStack = this->m_pExpOpPt;
@@ -1449,7 +1484,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
                          | "(" identifier ")" CastExp .
    but this breaks it badly */
 
-  UnaryExp             = PostFixExp
+  UnaryExp             = (. debug("===>UnaryExp"); .)PostFixExp
                          | ( "++" | "--" ) UnaryExp
                          | UnaryOperator CastExp .
 
@@ -1457,7 +1492,8 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
                          | "sizeof" ( UnaryExp | "(" (. PTYPEDES type = new TYPEDES;.) Type<type> ")" ) .
    but this breaks it badly */
 
-  PostFixExp           = Primary
+  PostFixExp           = (. debug("===>PostFixExp"); .)
+	Primary
                          { "[" Expression "]"
 (.
 {
@@ -2401,6 +2437,7 @@ debug("push number");
 
   FunctionCall<FUNCCALL* pFuncEntry>         = "("  
  (.
+	debug("=====>FunctionCall");
 	// if this is object instance method, attach "this" first.
 	
  .)
@@ -2408,11 +2445,12 @@ debug("push number");
 
  [ ActualParameters<pFuncEntry> ] ")" 
   (.
-
+	debug("======>functioncall2 ");
     //long lParamNum = 0;
 	if (pFuncEntry->nType) // public function
 	{
 
+debug("pub function");
   		//addcommand
 		ADDCOMMAND0(__endcallpub);
 		//save return value
@@ -2432,29 +2470,31 @@ debug("push number");
 	}
 	else // virtual function
 	{
-	// check param number
-	//if (lParamNum != pFuncEntry->pVF->m_iParamNum)
-	//{
-	//	GENERR(123);
-	//}
+		debug("virtual function");
+		// check param number
+		//if (lParamNum != pFuncEntry->pVF->m_iParamNum)
+		//{
+		//	GENERR(123);
+		//}
 
-	//addcommand
-	ADDCOMMAND0(__endcallv);
+		//addcommand
+		ADDCOMMAND0(__endcallv);
 
-	//save return value
-	_typedes(dt, dtLong)
-	if (m_pMainFunction->AddVal(NULL, dt))
-	{
-		long temp;
-		temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
-		ADDCOMMAND2(__mov, DR, temp , _AX);
-		m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, dt);
+		//save return value
+		_typedes(dt, dtLong)
+		if (m_pMainFunction->AddVal(NULL, dt))
+		{
+			long temp;
+			temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
+			ADDCOMMAND2(__mov, DR, temp , _AX);
+			m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, dt);
+		}
+		else
+		{
+			this->GENERR(98);
+		}
 	}
-	else
-	{
-		this->GENERR(98);
-	}
-	}
+		debug("======>functioncall3 ");
   .).
 
   ActualParameters<FUNCCALL* pFuncEntry>     = 

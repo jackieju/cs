@@ -281,8 +281,8 @@ BOOL CCompiler::Compile(char *szFileName)
 			std::string s1 = (*it).first;
 			std::string s2 = (*it).second;
 			 
-		 	m_conf.set("oo", "pp");
-		
+		 //	m_conf.set("oo", "pp");
+		//	m_conf.set(s1, s2);
 		 	//printf("set %s=%s\n", (*it).first.c_str(), (*it).second.c_str());
 		 }
 		// printf("\n");

@@ -21,7 +21,7 @@ public:
 	void setOutput(FILE* file);	
 	CCompiler* getCompiler();
 	
-
+	void execute(std::string s);
 	void loadobj(std::string s);
 
 };

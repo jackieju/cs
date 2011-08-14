@@ -80,33 +80,12 @@ PRODUCTIONS
   
 
 	
+	
  
-  Definition           =
-   (
- 
-   [ StorageClass ]  
-   [ Type<type> ]
-  
-    
-
-   
-   identifier
-
-(
-   (
-		FunctionDefinition 
-	   
-	)
-	|
-	( 
-	   ("=" Expression ";"  )
-	   | ";"  
-    ) 
-   )
-   ) 
-   
-   | ClassDef  .
-                            
+  Definition           = 
+ ClassDef | Statements .
+	
+               
   
   
   Inheritance              = ("inherit"|"<") identifier 
@@ -193,7 +172,8 @@ ArraySize
 
 
 
-  Statement            = { Label }
+  Statement            = 
+{ Label }
                          ( 
                          
 						 AssignmentStatement | BreakStatement
@@ -208,7 +188,7 @@ ArraySize
 
 
 
-  AssignmentStatement = Expression ";" .
+  AssignmentStatement =  Expression ";" .
 
   BreakStatement       = "break"  
   
@@ -223,9 +203,12 @@ ArraySize
   } 
   
   identifier				
- VarList<type, szName>";"  
+ (FunctionDefinition | VarList<type, szName>";" ) 
  . 
-  CompoundStatement    = "{" { LocalDeclaration | Statement } "}" .
+
+  CompoundStatement    = "{" Statements "}" .
+
+  Statements = { LocalDeclaration | Statement } .
 
   ContinueStatement    = "continue"  
   
@@ -383,7 +366,8 @@ MultExp     { ( "+"  | "-"  ) MultExp
 
 
 
-  PostFixExp           = Primary
+  PostFixExp           = 
+	Primary
                          { "[" Expression "]"
 
                           | 
