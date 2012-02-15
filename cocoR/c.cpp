@@ -36,7 +36,7 @@
 static FILE *lst;
 static int Listinfo = 0;
 static char SourceName[256];
-
+/*
 class MyError : public CRError {
   public:
     MyError(char *name, AbsScanner *S) : CRError(name, S, MAXERROR) {};
@@ -62,7 +62,7 @@ char *MyError::GetUserErrorMsg(int n)
       return "Unknown error or conflicting error numbers used";
   }
 }
-
+*/
 void SourceListing(CRError *Error, CRScanner *Scanner)
 // generate the source listing
 { char ListName[256];
@@ -105,7 +105,7 @@ static void param_options(int argc, char *argv[])
     } else strcpy(SourceName,s);
   }
 }
-
+#if 0
 int main(int argc, char *argv[])
 { int S_src;
   cScanner   *Scanner;
@@ -148,3 +148,4 @@ int main(int argc, char *argv[])
   return (EXIT_SUCCESS);
 }
 
+#endif

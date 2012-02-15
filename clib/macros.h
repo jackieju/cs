@@ -1,9 +1,8 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 
-#ifndef _MAX_PATH
-#define _MAX_PATH 256
-#endif
+
+
 //#define BOOL int
 #ifdef WIN32 // FOR win32
 #ifndef snprintf
@@ -179,8 +178,12 @@ typedef unsigned char OS_UC;
  //#define TCP_NODELAY			1
  #define closesocket(p)				close( (p) )
  #define Sleep(p)					usleep( (p) * 1000)
+#ifndef MAX_PATH
  #define MAX_PATH				260
+#endif
+#ifndef _MAX_PATH
  #define _MAX_PATH				MAX_PATH
+#endif
 // #define FAR 						far
 
  // signal related

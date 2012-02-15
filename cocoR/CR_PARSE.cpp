@@ -11,7 +11,7 @@
 #include "cr_parse.hpp"
 #include "cr_error.hpp"
 #include <stdio.h>
-#include "clib/log.h"
+#include "log.h"
 
 const int NSETBITS = 16;
 

@@ -43,29 +43,29 @@ public:
 		
 		//for ( it=tables.begin() ; it != tables.end(); it++ ){
 			it=tables.begin() ;
-			printf("%s==>%x\n", (*it).first,  (*it).second);
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 			printf("====dfaf\n");
 			//it=tables.end();
 			//printf("====dfaf\n");
 			//printf("%d\n", it==tables.end());
 			//printf("%s=>%x\n", (*it).first,  (*it).second);
 			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 				it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);			it++;
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 			it++;
-			printf("%s==>%x\n", (*it).first,  (*it).second);
+			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 		//	printf("%s=>%x\n", (*it).first,  (*it).second);
 		//}
 			printf("this=%x, %x\n", this, tables["test/test"]);
