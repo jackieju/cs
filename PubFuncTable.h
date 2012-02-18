@@ -31,8 +31,8 @@ class CPubFuncTable
 {
 	int m_iFuncNum;
 	int m_iMaxFuncNum;
-	std::map<std::string, long>	m_libs;
-
+	std::map<std::string, long>	m_libs; // map to store li handle, to void load one lib repeatedly
+	std::map<long, int>	m_map; // map from func address to function
 
 public:
 	CPubFuncTable();
@@ -40,6 +40,8 @@ public:
 	FUNCTIONENTRY *m_FuncTable;	
 	
 	int FindFuncByName(char* szName);
+	int FindFuncByAddress(long address);
+    FUNCTIONENTRY *GetFunction(int n);
 	BOOL AddFunction(void* pfn, char* szName, char cParamNum);
 	BOOL AddPubFunction(HMODULE hDll, char* fnName, char* szName, char cParamNum);
 	long LoadLib(char *szDLLName, char* szFileName);

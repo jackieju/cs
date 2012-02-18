@@ -13,7 +13,7 @@
 CConfigure conf;
 CCompiler c;
 CVirtualMachine vm;
-CPubFuncTable g_PubFuncTable;
+//CPubFuncTable g_PubFuncTable;
 
 ///////////////////////////////////////
 // function for external lib function
@@ -31,19 +31,21 @@ bool applyOption(char** argv, int number){
 
 			 if (number-1 <= 0) // will eat two arguments
 			 		return false;
-		 	else
+             else{
 				conf.set("classpath", argv[1]);
-			applyOption(argv+2, number-2);
+//                printf("set classpath to %s\n", conf.get("classpath").c_str());
+             }
+			return applyOption(argv+2, number-2);
 		}else if(strcmp(p+1, "d")==0){
 			  conf.set("debug","yes");
-			  applyOption(argv+1, number-1);
+			  return applyOption(argv+1, number-1);
 		}else{
 			printf("unknow option %s", p);
 			return false;
 		}
 	}else{
 		target = argv[0];
-		applyOption(argv+1, number-1);
+		return applyOption(argv+1, number-1);
 	}
 }
 /*struct eqstr
@@ -122,14 +124,14 @@ return 0;*/
 	//Delete(files);
 	//getchar();
 #endif
-	if (num == 1 || !applyOption(args+1, num-1)){
+	if (num == 1 || !applyOption(args+1, num-1) || target == NULL){
 	
 		printf("New C Script 0.0.1 Deveopled by jackie.ju@gmail.com\n");
 		printf("New C Script is C-style programming script language.\n");
 		printf("Usage: mse {options} (class_name)\n");
 		printf("Options:\n");
 		printf("-sp \tsource path separated with ':'\n e.g. -sp /usr/local/mse:/root/mse\n");
-		printf("-d  \ttoggle debug mode");
+		printf("-d  \ttoggle debug mode\n");
 		printf("www.cs-soft.com\n");
 		return 0;
 	}
@@ -151,7 +153,7 @@ CS* cs;
 cs->setConf(conf);
 		std::map<std::string, std::string>::iterator it;
 
-		std::map<std::string, std::string> & _map = *(conf.map());
+//		std::map<std::string, std::string> & _map1 = *(conf.map());
 
 	// for ( it=_map.begin() ; it != _map.end(); it++ ){
 	// 	 
@@ -159,11 +161,11 @@ cs->setConf(conf);
 	// 		}	
 	// 
 
-
+               printf("set classpath to %s\n", conf.get("classpath").c_str());
 
 	CConfigure* m_conf = (cs->getConf());
-		 _map = *(m_conf->map());
-
+		std::map<std::string, std::string> &  _map = *(m_conf->map());
+  printf("set classpath to %s\n", m_conf->get("classpath").c_str());
 	 printf("\n[Compiler options]:\n");
 	
 		for ( it=_map.begin() ; it != _map.end(); it++ ){

@@ -1,2 +1,2 @@
 #/bin/sh
-cd bin && ./mse test/test
+make $1 && cd bin && ./mse -sp ../test:../lib/ test 

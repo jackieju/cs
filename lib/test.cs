@@ -9,7 +9,7 @@ use a::testobj;
 */
 // load dynamic link library
 load baselib; 
-
+load nanohttp;
 
 //inherit object;
 int a;
@@ -22,6 +22,7 @@ void main( j,  p)
 	my a = "ha";
 //	main("","");
 	//var t = new a::testobj();
+
 }
 
 void puts(s){
@@ -200,6 +201,7 @@ test_magic();
        set("cost", 1);*/
          //setup();
 
+	create_server(9000);
       
 }
 

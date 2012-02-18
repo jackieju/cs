@@ -49,7 +49,7 @@ BOOL CPubFuncTable::AddFunction(void* pfn, char *szName, char cParamNum)
 		return FALSE;
 
 	// modified on 20030328 by weihua ju
-	long lIndex = FindFuncByName(szName) ;
+	int lIndex = FindFuncByName(szName) ;
 	if (lIndex >= 0)
 	{
 		snprintf(sMsg, 200, "SE::Warning: The pub fucntion '%s' overloaded", szName);
@@ -59,7 +59,9 @@ BOOL CPubFuncTable::AddFunction(void* pfn, char *szName, char cParamNum)
 		m_FuncTable[lIndex].pfn  = pfn;
 		strcpy(m_FuncTable[lIndex].szName, szName); 
 		m_FuncTable[lIndex].cParamNum = cParamNum;
-
+		m_map[(long)pfn] = lIndex;
+      
+        LOG2p("funtion map[%lx]=%d", pfn, lIndex);
 	}
 	else
 	{
@@ -88,8 +90,12 @@ BOOL CPubFuncTable::AddFunction(void* pfn, char *szName, char cParamNum)
 		*/
 		this->m_FuncTable[m_iFuncNum].cParamNum = cParamNum;
 		//	printf("function address is %lx\n", this->m_FuncTable[m_iFuncNum].pfn);
+		
+		m_map[(long)pfn] = m_iFuncNum;
+		      LOG2p("funtion map[%lx]=%d", pfn, m_iFuncNum);
 		m_iFuncNum++;
 	}
+
 
 	return TRUE;
 }
@@ -281,4 +287,11 @@ long CPubFuncTable::LoadLib(char *szDLLName, char* szFileName)
 	printf(szMsg);
 	printf("\n");
 	return 0;
+}
+	int CPubFuncTable::FindFuncByAddress(long address){
+		return m_map[address];
+		
+	}
+FUNCTIONENTRY *CPubFuncTable::GetFunction(int n){
+    return  &m_FuncTable[n];
 }

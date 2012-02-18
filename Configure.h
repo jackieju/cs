@@ -13,7 +13,11 @@ public:
 	}
 	
 	std::string set(std::string p, std::string v){
-		return _map[p] = v;
+        printf("set v=%s\n", v.c_str());
+		 _map[p] = v;
+         printf("set v=%s\n", _map[p].c_str());
+        return _map[p];
+        
 	}
 	
 	std::map<std::string, std::string>* map(){

@@ -46,6 +46,12 @@
             ReferencedContainer = "container:cscript.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-sp /Users/juweihua/studio/projects/jsf/cs/lib:../lib test"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

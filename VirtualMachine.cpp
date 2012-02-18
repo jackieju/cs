@@ -101,6 +101,7 @@
 #include "VirtualMachine.h"
 #include "VMManager.h"
 
+
 #include "compiler.h"
 //#include "sym_engine.h"
 
@@ -312,7 +313,7 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 #endif	
 #endif
 
-		printf("====>call pub function ok\n");
+	LOG2p("====>call pub function %s(%lx) ok\n", CCompiler::m_PubFuncTable.GetFunction(CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn))->szName, CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn));
 	return TRUE;
 }
 #include "opcode.h"
