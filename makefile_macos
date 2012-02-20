@@ -212,3 +212,5 @@ $(CGI): $(CGI_OBJ)
 #	$(DLLWRAP) -shared -Wl,-soname,$(MODSOBIN)  $(MODCS_OBJ)  -o ./modcs/$(APACHE_MOD) -lc
 
 
+install:
+	sudo cp -fr bin/libCS.so.1.0 /usr/lib

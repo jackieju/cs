@@ -9,10 +9,11 @@
 #include "os/osutils.h"
 #include "Configure.h"
 #include "cscript.h"
+#include "thread.h"
 
 CConfigure conf;
-CCompiler c;
-CVirtualMachine vm;
+//CCompiler c;
+//CVirtualMachine vm;
 //CPubFuncTable g_PubFuncTable;
 
 ///////////////////////////////////////
@@ -56,6 +57,7 @@ bool applyOption(char** argv, int number){
   }
 };
 */
+extern long g_nThreadNum;
 int main(int num, char** args){
 	// test std::string
 /*	std::string r ="";
@@ -187,4 +189,8 @@ cs->setConf(conf);
 		cs->execute(target);
 	else
 		cs->loadobj(target);
+		
+	while (g_nThreadNum>0){
+		JUJU::sleep(100);
+	}
 }

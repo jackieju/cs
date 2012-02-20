@@ -201,7 +201,13 @@ test_magic();
        set("cost", 1);*/
          //setup();
 
-	create_server(9000);
+	int server = create_server(9000);
+	//putl(server);
+	//server = testre();
+	//server = 908990;
+	int l = server;
+	putl(server);
+	addHandler(server, "*", "http/http");
       
 }
 

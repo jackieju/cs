@@ -496,12 +496,12 @@ int OSReadLineFromSocket(int fd, char *line, int max)
     if (line == start)
         return 0;
 
-    if (line[-1] == '\n')
+   /* if (line[-1] == '\n')
         --line;
     if (line[-1] == '\r')
         --line;
     *line = '\0';
-
+*/
     return line - start;
 }
 

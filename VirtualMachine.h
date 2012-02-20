@@ -241,7 +241,7 @@ public:
 	// for class$object loading
 	CClassTable m_classTable;  // loaded class instance
 	CObjTable m_objTable;		// loaded Objects
-	CObjectInst*  LoadObject(CClassDes* c);
+	CObjectInst*  LoadObject(CClassDes* c, void *p = NULL);
 	CObjectInst*  LoadObject(char* name);
 	CClass* loadClass(char* name);
 	CObjectInst* createObject(char* className);

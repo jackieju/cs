@@ -3212,14 +3212,14 @@ CObjectInst* CVirtualMachine::createObject(char* className){
 }
 	
 // create new object and execute it's constructor
-CObjectInst* CVirtualMachine::LoadObject(CClassDes* c){
+CObjectInst* CVirtualMachine::LoadObject(CClassDes* c, void* p){
 	printf("==>LoadObject %x\n", c);
 	
 	CObjectInst* obj = createObject(c->GetFullName());
 
 	printf("==>create instance %x OK\n", obj);
 	
-	// load "create" method
+	// not need to load "create" method, because class is also a function which will call its "create" method
 	
 	//long index = 1;
 	this->Reset();

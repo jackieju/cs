@@ -71,5 +71,8 @@ float __stdcall AToF(char* string)
 	return ret;
 }
 
+long __stdcall testre(){
+	return 92;
+}
 }
 

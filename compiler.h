@@ -58,7 +58,7 @@ static long g_lActiveScriptTable;
 	char* getCurSrcFile(){
 		return m_szSourceFile;
 	}
-	CConfigure* getConf(){
+	static CConfigure* getConf(){
 		return& m_conf;
 	}
 	void setConf(CConfigure& conf);
@@ -78,8 +78,8 @@ private:
 	static char m_szErrMsg[1024];
 	static char m_szErrFile[_MAX_PATH];
 	char m_szSourceFile[_MAX_PATH];
-	CConfigure m_conf;
-	std::vector<std::string> class_path;
+	static CConfigure m_conf;
+	static std::vector<std::string> class_path;
 };
 
 

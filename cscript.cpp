@@ -12,11 +12,14 @@
 #include "mem.h"
 #include "VirtualMachine.h"
 #include "os/osutils.h"
-#include "Configure.h"
+
 
 
 #include "cscript.h"
 
+/*
+ * compile one cscript source file and execute the global method "main"
+ */
 void CS::execute(std::string s){
 	CClassDes* pc = NULL;
 
@@ -36,8 +39,10 @@ void CS::execute(std::string s){
 	vm->LoadObject(pc);
 	return;
 }
-
-void CS::loadobj(std::string s){
+/*
+ * load a class from clas name
+ */
+void CS::loadobj(std::string s, void* p){
 	CClassDes* pc = NULL;
 	pc = CCompiler::classDesTable.getClass((char*)(s.c_str()));
 	if (pc == NULL){
@@ -56,7 +61,7 @@ void CS::loadobj(std::string s){
 		ERR1p("Cannnot load class %s", s.c_str());
 		return;
 	}
-	vm->LoadObject(pc);
+	vm->LoadObject(pc, p);
 	return;
 };
 CS::CS(){

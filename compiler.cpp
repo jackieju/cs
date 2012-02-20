@@ -23,7 +23,8 @@ static FILE *output = stderr;
 static int Listinfo = 0;
 char CCompiler::m_szErrMsg[1024] = "";
 char CCompiler::m_szErrFile[_MAX_PATH] = "";
-
+CConfigure CCompiler::m_conf;
+std::vector<std::string> CCompiler::class_path;
 
 char *MyError::ErrorMsg[] = {
 #include "cocoR/ce.hpp"
@@ -168,7 +169,7 @@ BOOL CCompiler::Compile(char *szFileName)
 	MyError m_Error(szFileName, &m_Scanner);	
 //	m_Error.SetOutput(output);
 	cParser m_Parser(this, &m_Scanner, &m_Error);
-	m_Parser.init(&CCompiler::classDesTable, &CCompiler::m_PubFuncTable, &m_conf);
+	m_Parser.init(&CCompiler::classDesTable, &CCompiler::m_PubFuncTable, &CCompiler::m_conf);
 //	m_Parser.setConfig(&m_conf);
 	m_Parser.setSourceFileName(szFileName);
 	//m_Error.Init(szFileName);

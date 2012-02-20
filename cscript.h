@@ -1,10 +1,11 @@
 #ifndef __CS_H__
 #define __CS_H__
 
+
 class CCompiler;
 class CPubFuncTable;
 class CVirtualMachine;
-
+class CConfigure;
 class CS{
 public:
 	
@@ -22,7 +23,7 @@ public:
 	CCompiler* getCompiler();
 	
 	void execute(std::string s);
-	void loadobj(std::string s);
+	void loadobj(std::string s, void* p = NULL);
 
 };
 #endif
