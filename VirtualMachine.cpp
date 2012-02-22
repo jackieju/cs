@@ -221,13 +221,17 @@ void test1(long l){
 }
 BOOL __stdcall CallPubFunc(long lParamSize, void* pfn, void* pParam, long* pRet, int paramNum)
 {
+	LOG2p("====>call pub function %s(%lx) ...\n", CCompiler::m_PubFuncTable.GetFunction(CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn))->szName, CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn));
+
 //	pfn = (void*)test1;
-	printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx\n", lParamSize,pfn,pParam,pRet);
+	//printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx\n", lParamSize,pfn,pParam,pRet);
 	// debug code
-	//printf("CallPub: ParamBlockSize = %d, pData[0]: %x\n", lParamSize, *(long*)pParam);		
-		void* p = alloca(lParamSize+16/*_SCRATCH_SIZE*/);
-			printf("==>p=%lx\n", p);
-	memset(p, 0, lParamSize+16);	
+	//printf("CallPub: ParamBlockSize = %d, pData[0]: %x\n", lParamSize, *(long*)pParam);	
+	int n = lParamSize % 16;
+
+		void* p = alloca(lParamSize+n/*_SCRATCH_SIZE*/);
+	//		printf("==>p=%lx\n", p);
+	memset(p, 0, lParamSize+n);	
 	
 	memcpy(p, (void*)pParam, lParamSize);
 printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%d\n", lParamSize,pfn,p,pRet,paramNum);
@@ -247,7 +251,7 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 	if (paramNum>=1)
 	  p1 = *(long*)pp;
 	if (paramNum>=2)
-	  p2 = *(++pp);
+	  p2 = *(long*)(++pp);
 	if (paramNum>=3)
 	  p3 = *(long*)(++pp);
 	if (paramNum>=4)
@@ -256,13 +260,17 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 	  p5 = *(long*)(++pp);
 	if (paramNum>=6)
 	  p6 = *(long*)(++pp);
-	if (paramNum>=7){
-		p = ++pp;
-		lParamSize -= 6*8; // 64 bit OS 
+	if (paramNum>=7){ // not allowed
+	//	printf("paramNum=%d\n", paramNum);
+	//	p = ++pp;
+	//	lParamSize -= 48; // 64 bit OS 
 	}
-	else
-		lParamSize =0;
-	printf("===>CallPubFunc %x %d %d %d %d %d\n", p1, p2, p3, p4, p5, p6);
+	else{
+	//	lParamSize = 0;
+		lParamSize+=n;
+	}
+lParamSize = 0;
+	printf("===>CallPubFunc %d %x %d %d %d %d %d\n", lParamSize, p1, p2, p3, p4, p5, p6);
 	//_HGDispatchCall(pRet, (void*)pfn, p, lParamSize);
 	
 			__asm__ __volatile__ (
@@ -272,7 +280,8 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 			//"pushl	%3;"		
 			
 		//	"pushq %3;"
-		//	"pushq %%rsp;"
+	//		"movq %%rsp, %%r12\n\t"
+		// calling convention of am64 arch is at http://www.x86-64.org/documentation/abi.pdf
 			"movq %4, %%rdi\n\t"	// p1					=>mov    %rsi,%rdi // %4 实际是rcx
 			"movq %5, %%rsi\n\t"	// p2					=>mov    %r11,%rsi // %5 实际是r11
 			"movq %2, %%r11\n\t"	// r11 = pfn			=>mov    %rdx,%r11 // 提到前面，因为%2就是rdx, rdx后面会被用掉	
@@ -283,16 +292,22 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 			"movq %9, %%r9\n\t"		// p6					=>mov    %rbx,%r9		
 		//	"movq %1, %%rcx\n\t"	// ecx = p 				=>mov    %r13,%rcx
 		//	"movq %0, %%rdx\n\t"	// edx = lParamSize  	=>mov    %r15,%rdx
-			"addq %0, %1;"			// ecx = p + lParamsize = Scrach erea	=>add    %rax,%r13
-			"movq %%r10,(%1);"		// scrach = return address;
-			"subq %0, %1;"			// ecx = ecx - lParasize = p;
-			"movq %1, %%rsp\n\t"		// move stack point to p
+		
+		//	"addq %0, %1;"			// ecx = p + lParamsize = Scrach erea	=>add    %rax,%r13
+		//	"movq %%r10,(%1);"		// scrach =  address of return value;
+		//	"subq %0, %1;"			// ecx = ecx - lParamsize = p;
+		//	"movq %1, %%rsp\n\t"		// move stack point to p
+			"pushq %%r10\n\t"
 			"call %%r11\n\t"			// call function
-		//	"popq %%rsp;"
-			"movq (%%rsp), %%r10;"
-			"movq %%rax,(%%r10)\n\t"	: 	:"r"(lParamSize) , "r"(p) , "r"(pfn) , "r"(pRet), "r"(p1), "r"(p2), "r"(p3), "r"(p4), "r"(p5), "r"(p6)
+		
+			"movq (%%rsp), %%r10\n\t"
+	//			"popq %%rsp;"
+	//		"movq %%r12, %%rsp\n\t"
+			"movq %%rax,(%%r10)\n\t"   //rax contains result, mov result value to address which is the value of r10
+		//	"popq %%r10\n\t"
+				: 	:"r"(lParamSize) , "r"(p) , "r"(pfn) , "r"(pRet), "r"(p1), "r"(p2), "r"(p3), "r"(p4), "r"(p5), "r"(p6)
 			);	
-#endif
+#endif // _64
 #else
 			__asm__ __volatile__ (
 			//"pushl	%0;"
@@ -310,8 +325,8 @@ printf("==>pub functon lParamSize=%ld, pfn=%lx, pParam=%lx, pRet=%lx, paramNum=%
 			"call %%eax;"			// call function
 			"movl %%eax,(%%ebx);"	: 	:"r"(lParamSize) , "r"(p) , "r"(pfn) , "r"(pRet)
 			);	
-#endif	
-#endif
+#endif	// _MACOS
+#endif  // WIN32
 
 	LOG2p("====>call pub function %s(%lx) ok\n", CCompiler::m_PubFuncTable.GetFunction(CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn))->szName, CCompiler::m_PubFuncTable.FindFuncByAddress((long)pfn));
 	return TRUE;

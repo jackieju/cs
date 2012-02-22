@@ -851,6 +851,7 @@ void cParser::SetByteCodeFilePath(char* szPath)
 	m_szByteCodeFilePath[0] = 0;
     m_pCurClassDes = NULL;
     memset(curFileName, 0, _MAX_PATH);
+ 	memset(curPackageName, 0, _MAX_PATH);
 
     this->c = c;
 }

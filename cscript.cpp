@@ -55,8 +55,10 @@ void CS::loadobj(std::string s, void* p){
 			}
 			pc = CCompiler::classDesTable.getClass((char*)(s.c_str()));
 			printf("-->pc=%x",pc);
+		
+			
 	}
-	
+		CCompiler::classDesTable.dump();
 	if (pc == NULL){
 		ERR1p("Cannnot load class %s", s.c_str());
 		return;

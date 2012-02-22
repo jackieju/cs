@@ -56,6 +56,7 @@ TOKENS
  /* string2 = "==" [ strings1 ] .*/
   char1       = "'" [ "\\" ] chars "'" .
   library    = "<" files { files } ">" .
+  module =  [letter] { "/"  } .
 
 PRAGMAS
 
@@ -125,7 +126,7 @@ PRODUCTIONS
 
 	printf("m_pMainFunction1=%x", m_pMainFunction);
     .)
-   { Import | LoadLib } [ Inheritance ]
+   [ Package ] { Import | LoadLib } [ Inheritance ] 
 
     { Definition } EOF (. 
 /*
@@ -213,6 +214,16 @@ PRODUCTIONS
   
   Include = "#include" files .*/
   
+  Package = "package" identifier 
+	(.
+	char *szName = new char[MAX_IDENTIFIER_LENGTH];
+	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
+	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+		printf("package=%x", szName);
+		strcpy(curPackageName, szName);
+	
+	.)  ";" .
+ 
   Inheritance              = ("inherit"|"<") identifier 
   (.
   
@@ -245,7 +256,10 @@ PRODUCTIONS
 	pNewCD->setParent(m_pMainFunction);
 	m_pMainFunction =  m_pCurClassDes = pNewCD;
 	// std::string className = JUJU::getFileName(curFileName);
-	 m_pCurClassDes->setName(szName);	
+	char fullName[1024] = "";
+	strcpy(fullName, curPackageName);
+	strcat(fullName, szName);
+	 m_pCurClassDes->setName(fullName);
 	
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);

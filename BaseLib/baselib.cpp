@@ -7,6 +7,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "baselib_version.h"
+#include "baselib.h"
 
 #ifdef _MACOS
 #define __stdcall 
@@ -73,6 +74,18 @@ float __stdcall AToF(char* string)
 
 long __stdcall testre(){
 	return 92;
+}
+testa tt;
+long __stdcall creatett(){
+	return (long)new testa();
+}
+long __stdcall testtt(testa* tt){
+	tt->go();
+}
+long __stdcall test3p(char* p1, char* p2, char * p3){
+	printf("********** p1=%s, p2=%s, p3=%s *******", p1, p2, p3);
+	tt.go();
+	
 }
 }
 

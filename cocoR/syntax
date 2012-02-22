@@ -53,6 +53,7 @@ TOKENS
  
   char1       = "'" [ "\\" ] chars "'" .
   library    = "<" files { files } ">" .
+  module =  "[]"[letter] { "/" [ letter ] } .
 
 PRAGMAS
 
@@ -67,7 +68,7 @@ PRODUCTIONS
 
 
     C                    =      
-   { Import | LoadLib } [ Inheritance ]
+   [ Package ] { Import | LoadLib } [ Inheritance ] 
 
     { Definition } EOF .
 
@@ -88,6 +89,9 @@ PRODUCTIONS
                
   
   
+  Package = "package" identifier 
+	  ";" .
+ 
   Inheritance              = ("inherit"|"<") identifier 
    ";" .
   

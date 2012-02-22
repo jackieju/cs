@@ -206,7 +206,7 @@ private:
 	//long GetClassIdByName(char *szName);
 
     char curFileName[_MAX_PATH];  // current source file name
-
+	char curPackageName[_MAX_PATH];
 	CConfigure* m_conf; // options
 
 	//一元操作符栈

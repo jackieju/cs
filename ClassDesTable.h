@@ -24,7 +24,7 @@ public:
 			ERR(msg);			
 		}
 		tables[szName] = ccd;
-		printf("add class %s, %x\n", szName, ccd);
+		printf("add class %s, %x to destable(0x%x)\n", szName, ccd, this);
 	//	printf("this=%x, %x\n", this, tables[szName]);
 	//	tables["123"] = (CClassDes* )0x123456;
 	//	char m[100]="";
@@ -41,10 +41,10 @@ public:
 		printf("table size %d\n", tables.size());
 		hash_map<std::string, CClassDes*, str_hash>::iterator it;
 		
-		//for ( it=tables.begin() ; it != tables.end(); it++ ){
-			it=tables.begin() ;
+		for ( it=tables.begin() ; it != tables.end(); it++ ){
+		//	it=tables.begin() ;
 			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
-			printf("====dfaf\n");
+		/*	printf("====dfaf\n");
 			//it=tables.end();
 			//printf("====dfaf\n");
 			//printf("%d\n", it==tables.end());
@@ -66,8 +66,8 @@ public:
 			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
 			it++;
 			printf("%s==>%x\n", (*it).first.c_str(),  (*it).second);
-		//	printf("%s=>%x\n", (*it).first,  (*it).second);
-		//}
+		//	printf("%s=>%x\n", (*it).first,  (*it).second);*/
+		}
 			printf("this=%x, %x\n", this, tables["test/test"]);
 		printf("==============================\n");
 	}

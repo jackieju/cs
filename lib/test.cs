@@ -1,3 +1,4 @@
+package test/test;
 // this source is to test the grammer and vm(interpretor)
 //#include "test.h"
 //
@@ -172,7 +173,7 @@ void create()
 //test3();
 
 //test_hash();
-test_magic();
+//test_magic();
 
 
 
@@ -200,13 +201,20 @@ test_magic();
 
        set("cost", 1);*/
          //setup();
-
+	puts("0000fsfds000");
+	put("dfsf %s\n", "77dd7");
+/*	int a = creatett();
+	testtt(a);
+*/
+put_str("fffff");
 	int server = create_server(9000);
 	//putl(server);
 	//server = testre();
 	//server = 908990;
-	int l = server;
+//	int l = server;
 	putl(server);
+
+	//test3p("aaaaaa", "bbbbbb", "ccccccc");
 	addHandler(server, "*", "http/http");
       
 }

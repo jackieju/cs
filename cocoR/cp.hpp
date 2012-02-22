@@ -128,7 +128,7 @@ class CCompiler;
 // add by jackie juju
 /////////////////////////
 const int MAXSYM = 6;
-const int MAXERROR = 111;
+const int MAXERROR = 113;
 
 class cParser : public CRParser, public CPUtil
 {
@@ -206,7 +206,7 @@ private:
 	//long GetClassIdByName(char *szName);
 
     char curFileName[_MAX_PATH];  // current source file name
-
+	char curPackageName[_MAX_PATH];
 	CConfigure* m_conf; // options
 
 	//一元操作符栈
@@ -269,6 +269,7 @@ private:
 	*/
   private:
     void C();
+    void Package();
     void Import();
     void LoadLib();
     void Inheritance();

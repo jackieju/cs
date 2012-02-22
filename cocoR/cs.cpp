@@ -29,10 +29,10 @@
 #define Scan_NextLen   NextSym.Len
 
 int cScanner::STATE0[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                  0,0,0,54,24,33,70,64,50,26,44,45,46,61,41,62,67,63,35,2,2,2,2,2,2,2,2,2,47,37,
-                  30,40,56,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                  1,42,0,43,52,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                  1,1,1,38,48,39,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                  0,0,0,57,24,37,73,67,53,26,47,48,49,64,45,65,70,66,39,2,2,2,2,2,2,2,2,2,50,41,
+                  30,44,59,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                  1,33,0,46,55,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                  1,1,1,42,51,43,84,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -80,6 +80,9 @@ int cScanner::CheckLiteral(int id)
   		break;
   	case 'n':
   		if (EqualStr("new")) return newSym;
+  		break;
+  	case 'p':
+  		if (EqualStr("package")) return packageSym;
   		break;
   	case 'r':
   		if (EqualStr("return")) return returnSym;
@@ -177,34 +180,34 @@ int cScanner::Get()
           Scan_Ch == '_' ||
           Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 1; else
       	if (Scan_Ch >= '1' && Scan_Ch <= '9') state = 2; else
-      	if (Scan_Ch == '0') state = 35; else
+      	if (Scan_Ch == '0') state = 39; else
       	if (Scan_Ch == '"') state = 24; else
       	if (Scan_Ch == 39) state = 26; else
       	if (Scan_Ch == '<') state = 30; else
-      	if (Scan_Ch == '#') state = 33; else
-      	if (Scan_Ch == ';') state = 37; else
-      	if (Scan_Ch == '{') state = 38; else
-      	if (Scan_Ch == '}') state = 39; else
-      	if (Scan_Ch == '=') state = 40; else
-      	if (Scan_Ch == ',') state = 41; else
-      	if (Scan_Ch == '[') state = 42; else
-      	if (Scan_Ch == ']') state = 43; else
-      	if (Scan_Ch == '(') state = 44; else
-      	if (Scan_Ch == ')') state = 45; else
-      	if (Scan_Ch == '*') state = 46; else
-      	if (Scan_Ch == ':') state = 47; else
-      	if (Scan_Ch == '|') state = 48; else
-      	if (Scan_Ch == '&') state = 50; else
-      	if (Scan_Ch == '^') state = 52; else
-      	if (Scan_Ch == '!') state = 54; else
-      	if (Scan_Ch == '>') state = 56; else
-      	if (Scan_Ch == '+') state = 61; else
-      	if (Scan_Ch == '-') state = 62; else
-      	if (Scan_Ch == '/') state = 63; else
-      	if (Scan_Ch == '%') state = 64; else
-      	if (Scan_Ch == '.') state = 67; else
-      	if (Scan_Ch == '$') state = 70; else
-      	if (Scan_Ch == '~') state = 81; else
+      	if (Scan_Ch == '[') state = 33; else
+      	if (Scan_Ch == '#') state = 37; else
+      	if (Scan_Ch == ';') state = 41; else
+      	if (Scan_Ch == '{') state = 42; else
+      	if (Scan_Ch == '}') state = 43; else
+      	if (Scan_Ch == '=') state = 44; else
+      	if (Scan_Ch == ',') state = 45; else
+      	if (Scan_Ch == ']') state = 46; else
+      	if (Scan_Ch == '(') state = 47; else
+      	if (Scan_Ch == ')') state = 48; else
+      	if (Scan_Ch == '*') state = 49; else
+      	if (Scan_Ch == ':') state = 50; else
+      	if (Scan_Ch == '|') state = 51; else
+      	if (Scan_Ch == '&') state = 53; else
+      	if (Scan_Ch == '^') state = 55; else
+      	if (Scan_Ch == '!') state = 57; else
+      	if (Scan_Ch == '>') state = 59; else
+      	if (Scan_Ch == '+') state = 64; else
+      	if (Scan_Ch == '-') state = 65; else
+      	if (Scan_Ch == '/') state = 66; else
+      	if (Scan_Ch == '%') state = 67; else
+      	if (Scan_Ch == '.') state = 70; else
+      	if (Scan_Ch == '$') state = 73; else
+      	if (Scan_Ch == '~') state = 84; else
       	return No_Sym;
       	break;
        --------- End State0 --------- */
@@ -284,7 +287,7 @@ int cScanner::Get()
       	if (Scan_Ch >= ' ' && Scan_Ch <= '&' ||
       	    Scan_Ch >= '(' && Scan_Ch <= '[' ||
       	    Scan_Ch >= ']' && Scan_Ch <= 255) state = 28; else
-      	if (Scan_Ch == 92) state = 36; else
+      	if (Scan_Ch == 92) state = 40; else
       	return No_Sym;
       	break;
       case 28:
@@ -299,8 +302,8 @@ int cScanner::Get()
       	    Scan_Ch >= 'A' && Scan_Ch <= 'Z' ||
       	    Scan_Ch == 92 ||
       	    Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 31; else
-      	if (Scan_Ch == '=') state = 57; else
-      	if (Scan_Ch == '<') state = 59; else
+      	if (Scan_Ch == '=') state = 60; else
+      	if (Scan_Ch == '<') state = 62; else
       	return LessSym;
       	break;
       case 31:
@@ -315,13 +318,33 @@ int cScanner::Get()
       case 32:
       	return librarySym;
       case 33:
-      	if (Scan_Ch >= 'A' && Scan_Ch <= 'Z' ||
-      	    Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 34; else
-      	return No_Sym;
+      	if (Scan_Ch == ']') state = 34; else
+      	return LbrackSym;
       	break;
       case 34:
-      	return PreProcessorSym;
+      	if (Scan_Ch == '/') state = 36; else
+      	if (Scan_Ch >= 'A' && Scan_Ch <= 'Z' ||
+      	    Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 35; else
+      	return moduleSym;
+      	break;
       case 35:
+      	if (Scan_Ch == '/') state = 36; else
+      	return moduleSym;
+      	break;
+      case 36:
+      	if (Scan_Ch == '/') /*same state*/; else
+      	if (Scan_Ch >= 'A' && Scan_Ch <= 'Z' ||
+      	    Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 35; else
+      	return moduleSym;
+      	break;
+      case 37:
+      	if (Scan_Ch >= 'A' && Scan_Ch <= 'Z' ||
+      	    Scan_Ch >= 'a' && Scan_Ch <= 'z') state = 38; else
+      	return No_Sym;
+      	break;
+      case 38:
+      	return PreProcessorSym;
+      case 39:
       	if (Scan_Ch == 'U') state = 5; else
       	if (Scan_Ch == 'u') state = 6; else
       	if (Scan_Ch == 'L') state = 7; else
@@ -332,135 +355,133 @@ int cScanner::Get()
       	    Scan_Ch == 'x') state = 18; else
       	return numberSym;
       	break;
-      case 36:
+      case 40:
       	if (Scan_Ch >= ' ' && Scan_Ch <= '&' ||
       	    Scan_Ch >= '(' && Scan_Ch <= 255) state = 28; else
       	if (Scan_Ch == 39) state = 29; else
       	return No_Sym;
       	break;
-      case 37:
+      case 41:
       	return SemicolonSym;
-      case 38:
+      case 42:
       	return LbraceSym;
-      case 39:
+      case 43:
       	return RbraceSym;
-      case 40:
-      	if (Scan_Ch == '=') state = 53; else
+      case 44:
+      	if (Scan_Ch == '=') state = 56; else
       	return EqualSym;
       	break;
-      case 41:
-      	return CommaSym;
-      case 42:
-      	return LbrackSym;
-      case 43:
-      	return RbrackSym;
-      case 44:
-      	return LparenSym;
       case 45:
-      	return RparenSym;
+      	return CommaSym;
       case 46:
-      	if (Scan_Ch == '=') state = 71; else
+      	return RbrackSym;
+      case 47:
+      	return LparenSym;
+      case 48:
+      	return RparenSym;
+      case 49:
+      	if (Scan_Ch == '=') state = 74; else
       	return StarSym;
       	break;
-      case 47:
-      	if (Scan_Ch == ':') state = 69; else
+      case 50:
+      	if (Scan_Ch == ':') state = 72; else
       	return ColonSym;
       	break;
-      case 48:
-      	if (Scan_Ch == '|') state = 49; else
-      	if (Scan_Ch == '=') state = 78; else
+      case 51:
+      	if (Scan_Ch == '|') state = 52; else
+      	if (Scan_Ch == '=') state = 81; else
       	return BarSym;
       	break;
-      case 49:
+      case 52:
       	return BarBarSym;
-      case 50:
-      	if (Scan_Ch == '&') state = 51; else
-      	if (Scan_Ch == '=') state = 76; else
+      case 53:
+      	if (Scan_Ch == '&') state = 54; else
+      	if (Scan_Ch == '=') state = 79; else
       	return AndSym;
       	break;
-      case 51:
+      case 54:
       	return AndAndSym;
-      case 52:
-      	if (Scan_Ch == '=') state = 77; else
+      case 55:
+      	if (Scan_Ch == '=') state = 80; else
       	return UparrowSym;
       	break;
-      case 53:
+      case 56:
       	return EqualEqualSym;
-      case 54:
-      	if (Scan_Ch == '=') state = 55; else
+      case 57:
+      	if (Scan_Ch == '=') state = 58; else
       	return BangSym;
       	break;
-      case 55:
+      case 58:
       	return BangEqualSym;
-      case 56:
-      	if (Scan_Ch == '=') state = 58; else
-      	if (Scan_Ch == '>') state = 60; else
+      case 59:
+      	if (Scan_Ch == '=') state = 61; else
+      	if (Scan_Ch == '>') state = 63; else
       	return GreaterSym;
       	break;
-      case 57:
+      case 60:
       	return LessEqualSym;
-      case 58:
+      case 61:
       	return GreaterEqualSym;
-      case 59:
-      	if (Scan_Ch == '=') state = 79; else
+      case 62:
+      	if (Scan_Ch == '=') state = 82; else
       	return LessLessSym;
       	break;
-      case 60:
-      	if (Scan_Ch == '=') state = 80; else
+      case 63:
+      	if (Scan_Ch == '=') state = 83; else
       	return GreaterGreaterSym;
       	break;
-      case 61:
-      	if (Scan_Ch == '+') state = 65; else
-      	if (Scan_Ch == '=') state = 74; else
+      case 64:
+      	if (Scan_Ch == '+') state = 68; else
+      	if (Scan_Ch == '=') state = 77; else
       	return PlusSym;
       	break;
-      case 62:
-      	if (Scan_Ch == '-') state = 66; else
-      	if (Scan_Ch == '>') state = 68; else
-      	if (Scan_Ch == '=') state = 75; else
+      case 65:
+      	if (Scan_Ch == '-') state = 69; else
+      	if (Scan_Ch == '>') state = 71; else
+      	if (Scan_Ch == '=') state = 78; else
       	return MinusSym;
       	break;
-      case 63:
-      	if (Scan_Ch == '=') state = 72; else
+      case 66:
+      	if (Scan_Ch == '=') state = 75; else
       	return SlashSym;
       	break;
-      case 64:
-      	if (Scan_Ch == '=') state = 73; else
+      case 67:
+      	if (Scan_Ch == '=') state = 76; else
       	return PercentSym;
       	break;
-      case 65:
-      	return PlusPlusSym;
-      case 66:
-      	return MinusMinusSym;
-      case 67:
-      	return PointSym;
       case 68:
-      	return MinusGreaterSym;
+      	return PlusPlusSym;
       case 69:
-      	return ColonColonSym;
+      	return MinusMinusSym;
       case 70:
-      	return DollarSym;
+      	return PointSym;
       case 71:
-      	return StarEqualSym;
+      	return MinusGreaterSym;
       case 72:
-      	return SlashEqualSym;
+      	return ColonColonSym;
       case 73:
-      	return PercentEqualSym;
+      	return DollarSym;
       case 74:
-      	return PlusEqualSym;
+      	return StarEqualSym;
       case 75:
-      	return MinusEqualSym;
+      	return SlashEqualSym;
       case 76:
-      	return AndEqualSym;
+      	return PercentEqualSym;
       case 77:
-      	return UparrowEqualSym;
+      	return PlusEqualSym;
       case 78:
-      	return BarEqualSym;
+      	return MinusEqualSym;
       case 79:
-      	return LessLessEqualSym;
+      	return AndEqualSym;
       case 80:
-      	return GreaterGreaterEqualSym;
+      	return UparrowEqualSym;
       case 81:
+      	return BarEqualSym;
+      case 82:
+      	return LessLessEqualSym;
+      case 83:
+      	return GreaterGreaterEqualSym;
+      case 84:
       	return TildeSym;
       
       default: return No_Sym; /* Scan_NextCh already done */

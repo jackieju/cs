@@ -44,10 +44,10 @@ public:
 	
 	void dump(){
 		printf("====== dump class table ======\n");
-		HASH_MAP_IT it;
-	//	for ( it=m_table.begin() ; it != m_table.end(); it++ ){
-	//		printf("%s=>%x\n", (*it).first,  (*it).second);
-	//	}
+		hash_map<char*, CClass*>::iterator it;
+		for ( it=m_table.begin() ; it != m_table.end(); it++ ){
+			printf("%s=>%x\n", (*it).first,  (*it).second);
+		}
 		printf("==============================\n");
 	}
 	
