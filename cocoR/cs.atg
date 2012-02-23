@@ -56,7 +56,7 @@ TOKENS
  /* string2 = "==" [ strings1 ] .*/
   char1       = "'" [ "\\" ] chars "'" .
   library    = "<" files { files } ">" .
-  module =  [letter] { "/"  } .
+  /*module =  [letter] { "/" [ letter ] } .*/
 
 PRAGMAS
 
@@ -215,14 +215,22 @@ PRODUCTIONS
   Include = "#include" files .*/
   
   Package = "package" identifier 
-	(.
-	char *szName = new char[MAX_IDENTIFIER_LENGTH];
+(. char *szName = new char[MAX_IDENTIFIER_LENGTH];
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-		printf("package=%x", szName);
+		printf("package=%s", szName);
 		strcpy(curPackageName, szName);
+	.)
+		{"/"identifier
+	(.
+
+	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
+	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+		printf("package=%s", szName);
+		strcat(curPackageName, "/");
+		strcat(curPackageName, szName);
 	
-	.)  ";" .
+	.)  }";" .
  
   Inheritance              = ("inherit"|"<") identifier 
   (.
@@ -251,18 +259,24 @@ PRODUCTIONS
 	char *szName = new char[MAX_IDENTIFIER_LENGTH];
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-		printf("m_pMainFunction2=%x", m_pMainFunction);
+		printf("szName=%s", szName);
+	printf("m_pMainFunction2=%x", m_pMainFunction);
 	CClassDes * pNewCD = new CClassDes(this);
 	pNewCD->setParent(m_pMainFunction);
 	m_pMainFunction =  m_pCurClassDes = pNewCD;
 	// std::string className = JUJU::getFileName(curFileName);
 	char fullName[1024] = "";
-	strcpy(fullName, curPackageName);
+	if (strlen(curPackageName)>0){
+		strcpy(fullName, curPackageName);
+		strcat(fullName, "/");
+	}
+	printf("package=%s", fullName);
 	strcat(fullName, szName);
 	 m_pCurClassDes->setName(fullName);
 	
 	// add class def first because it maybe referenced by its own code
 	 m_classTable->addClass(m_pCurClassDes);
+	printf("fullname=%s", fullName);
 	
 
 .) 
@@ -2459,7 +2473,7 @@ debug("push number");
 
  [ ActualParameters<pFuncEntry> ] ")" 
   (.
-	debug("======>functioncall2 ");
+//	debug("======>functioncall2 ");
     //long lParamNum = 0;
 	if (pFuncEntry->nType) // public function
 	{
@@ -2507,7 +2521,7 @@ debug("pub function");
 		{
 			this->GENERR(98);
 		}
-	}
+	}//
 		debug("======>functioncall3 ");
   .).
 
@@ -2628,12 +2642,13 @@ debug("pub function");
   .)
   } 
   (.
-  		// code added on 20030331 weihua ju
+
+  	/*	// code added on 20030331 weihua ju
 		if ((pFuncEntry->nType!=0) && cParamNum != pFuncEntry->pfn->cParamNum)
 		{
 
 			GENERR(106);
-		}
+		}*/
 	//lParamNum = cParamNum;
   .)
   .
