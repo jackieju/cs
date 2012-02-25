@@ -20,7 +20,7 @@
 /*
  * compile one cscript source file and execute the global method "main"
  */
-void CS::execute(std::string s){
+void CS::executeFile(std::string s){
 	CClassDes* pc = NULL;
 
 	BOOL ret = c->Compile((char*)(s).c_str());
@@ -39,6 +39,12 @@ void CS::execute(std::string s){
 	vm->LoadObject(pc);
 	return;
 }
+
+void CS::execFunction(std::string s, void* p){
+	vm->execFunction((char*)s.c_str(), p);
+	return;
+}
+
 /*
  * load a class from clas name
  */
@@ -47,7 +53,9 @@ void CS::loadobj(std::string s, void* p){
 	pc = CCompiler::classDesTable.getClass((char*)(s.c_str()));
 	if (pc == NULL){
 		 //	BOOL ret = c.Compile("test/test.cs");
+		//printf("-------->1\n");
 			BOOL ret = c->Compile((char*)(s+".cs").c_str());
+		//			printf("-------->2\n");
 			if (!ret){
 					printf("==== compile failed ===\n");
 			//		return "==== compiler error ===\n";

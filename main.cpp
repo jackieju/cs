@@ -10,6 +10,7 @@
 #include "Configure.h"
 #include "cscript.h"
 #include "thread.h"
+#include <signal.h>
 
 CConfigure conf;
 //CCompiler c;
@@ -19,7 +20,8 @@ CConfigure conf;
 ///////////////////////////////////////
 // function for external lib function
 ///////////////////////////////////////
-
+CS* cs;
+bool b_exit = false;
 	char* target = NULL;
 bool applyOption(char** argv, int number){
 	if (number <= 0)
@@ -57,8 +59,34 @@ bool applyOption(char** argv, int number){
   }
 };
 */
+
+void doAbort(int i){
+	fprintf(stderr, "abort ...\n");
+	cs->execFunction("test::onExit");
+}
+
+void doTerminate(int sig){
+	fprintf(stderr, "terminate ...\n");
+	cs->execFunction("test::onExit");
+
+	return;
+}
+
+void sighandler(int arg){
+		fprintf(stderr, "handle sig %d ...\n", arg);
+	cs->execFunction("test::onExit");	
+		b_exit = true;
+	//exit(9); 
+	//abort();
+	//raise(9);
+		fprintf(stderr, "run function %s ok!\n", "test::okexit");
+}
 extern long g_nThreadNum;
 int main(int num, char** args){
+//	signal(SIGABRT, &doAbort);//If program aborts go to assigned function "doAbort".
+  //  signal(SIGTERM, &doTerminate);//If program terminates go to assigned function "doTerminate".
+	signal(SIGINT, &sighandler);
+
 	// test std::string
 /*	std::string r ="";
 	r += "1111";
@@ -145,7 +173,7 @@ return 0;*/
 	
 
 //		LOG("dffff");
-CS* cs;
+
 	cs = new CS();
 	
     cs->setOutput(stdout);
@@ -186,11 +214,17 @@ cs->setConf(conf);
 //	cs->loadobj("test/test");
 //		printf("target = %s %d\n", target,  OSstricmp((const char*) &target[strlen(target)-3] ,".cs" ));
 	if (strlen(target)>3 && OSstricmp((const char*) &target[strlen(target)-3] ,".cs" ) == 0)
-		cs->execute(target);
+		cs->executeFile(target);
+	else if (strlen(target)>2 && strchr(target, ':') != NULL)
+		cs->execFunction(target);
 	else
 		cs->loadobj(target);
-		
-	while (g_nThreadNum>0){
+	
+	while (g_nThreadNum>0 && !b_exit){
 		JUJU::sleep(100);
 	}
+	
+	fprintf(stderr, "main exited\n");
 }
+
+

@@ -136,7 +136,22 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 // #define AMODE_OBJ      5 // address mode for object, the content of the address of oprand 0 is physical of object, 
 						 // dest =  (CObjectInst**)&(m_pCurCall->DataSeg[cmd->op[0]]) 
 #define LAST_ADDRESS_MODE 0xf3
-
+#ifdef _64
+#define DD 0xc1c1	// AMODE_MEM, AMODE_MEM
+#define CC 0xc0c0   // direct, direct
+#define CD 0xc0c1
+#define CR 0xc0c2
+#define DR 0xc1c2
+#define RD 0xc2c1
+#define RR 0xc2c2
+#define RC 0xc2c0
+#define RS 0xc2c3
+#define DC 0Xc1c0
+#define DS 0xc1c3
+#define DA 0xc1c4
+#define AR 0xc4c2
+#define O0 0xc500
+#else
 #define DD 0x8181	// AMODE_MEM, AMODE_MEM
 #define CC 0x8080   // direct, direct
 #define CD 0x8081
@@ -151,6 +166,7 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 #define DA 0x8184
 #define AR 0x8482
 #define O0 0x8500
+#endif
 
 #endif
 

@@ -33,10 +33,13 @@ public:
 			REPORT_ERROR("ReadLock failed", 9);
 			return NULL;
 		}
+		
 		CFunction* ret = this->table[index];
+//		fprintf(stderr, "readlock ok for getting function by index %d(%s)", index, ret->name());
 		ReadUnlock();
 		return ret;
 	};
+	void dump();
 	bool AddFunction(CFunction* pfn);
 	CScriptFuncTable();
 	virtual ~CScriptFuncTable();

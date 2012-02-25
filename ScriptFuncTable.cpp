@@ -23,11 +23,13 @@ CScriptFuncTable::CScriptFuncTable()
 
 CScriptFuncTable::~CScriptFuncTable()
 {	
+	dump();
 	for (int i = 0; i < this->m_FuncNum; i ++)
 	{
 		if (table[i] != NULL)
 		{
-			delete table[i];
+			printf("===>%lx=>%s\n", table[i], table[i]->name());
+			delete (CFunction*)(table[i]);
 			table[i] = NULL;
 		}
 	}
@@ -62,7 +64,8 @@ bool CScriptFuncTable::AddFunction(CFunction *pfn)
 		REPORT_ERROR("WriteLock failed", 50);
 		return false;
 	}
-	sprintf(szMsg, "scipt table write lock ok");
+	
+	sprintf(szMsg, "scipt table write lock ok for adding function %s", pfn->name());
 	nLOG(szMsg, 200);
 
 	int index = 0;
@@ -102,8 +105,12 @@ bool CScriptFuncTable::AddFunction(CFunction *pfn)
 		}
 	}
 
-	if (bFound)
+	if (bFound )
 	{
+		if ( table[index] == pfn){
+			WriteUnlock();
+			return true;
+		}	
 		if (m_bOverWrite)
 		{
 			//write over the function
@@ -189,7 +196,10 @@ bool CScriptFuncTable::AddFunction(CFunction *pfn)
 	printf("------------------------------\n");
 	////////////////////////////////////////////////
 */
+
+	dump();
 	return true;
+	
 }
 
 DWORD CScriptFuncTable::ReadLock()
@@ -236,9 +246,11 @@ CFunction* CScriptFuncTable::GetFunction(char *szID, long* index)
 	//lock
 	if (ReadLock() != LOCKEX_ERR_OK)
 	{
+		fprintf(stderr, "readlock failed for getting function %s\n", szID);
 		REPORT_ERROR("ReadLock failed", 9);
 		return NULL;
 	}
+	fprintf(stderr, "readlock successfully for getting function %s\n", szID);
 	while (i <= j)
 	{
 		//printf("k=%d l=%d j=%d i=%d\n", k, l, j, i);
@@ -252,7 +264,12 @@ CFunction* CScriptFuncTable::GetFunction(char *szID, long* index)
 		if (l == 0)
 		{
 			*index = k;
-			return table[k];
+			// should unlock ?
+			CFunction* fpn =  table[k];
+			ReadUnlock();
+			printf("return %dth function %lx, %lx\n", k, table[k], fpn);
+			fprintf(stderr, "readunlock successfully for getting function %s\n", szID);
+			return fpn;
 		}
 		else
 		{
@@ -265,6 +282,7 @@ CFunction* CScriptFuncTable::GetFunction(char *szID, long* index)
 	}
 	//unlock
 	ReadUnlock();
+			fprintf(stderr, "readunlock successfully for getting function %s\n", szID);
 	return NULL;
 }
 
@@ -337,3 +355,18 @@ bool CScriptFuncTable::Clear(long lTime)
 	return true;
 }
 
+	void CScriptFuncTable::dump(){
+			if (ReadLock() != LOCKEX_ERR_OK)
+		{
+			REPORT_ERROR("ReadLock failed", 9);
+			return;
+		}
+		printf("========>dump of script table %lx(size=%d)<=====\n", table, m_FuncNum);
+		if (table)
+		for (int i = 0; i< m_FuncNum; i++){
+			if (table[i])
+				printf("===>%lx=>%s\n", table[i], table[i]->name());
+		}
+		printf("========>end dump of script table <=====\n");
+		ReadUnlock();
+	}

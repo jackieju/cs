@@ -187,7 +187,12 @@ BOOL CPubFuncTable::AddPubFunction(HMODULE hDll, char* fnName, char* szName, cha
 long CPubFuncTable::LoadLib(char *szDLLName, char* szFileName)
 {
 	//if (g_pPubFuncTable == NULL)
-
+	#ifdef 	WIN32
+	    std::string libfile = std::string(szDLLName)+".dll";
+	#else
+		std::string libfile = std::string("lib")+szDLLName+".so";
+	#endif
+	
 	if (szDLLName == NULL || szFileName == NULL)
 		return -1;
 
@@ -201,16 +206,16 @@ long CPubFuncTable::LoadLib(char *szDLLName, char* szFileName)
 		
 			snprintf(szMsg, 300, "SE:: lib %s already loaded, skip", szDLLName);
 			nLOG(szMsg, 100);
-			return h;
-	
+			//return h;
+			return 0;
 	}
 	
 	HMODULE	hDll = NULL;			// dll句柄
 #ifndef WIN32
-	printf("loading so %s ...\n",szDLLName);
-	hDll = (HMODULE)dlopen(szDLLName, RTLD_NOW/*RTLD_LAZY*/);
+	printf("loading so %s ...\n",libfile.c_str());
+	hDll = (HMODULE)dlopen(libfile.c_str(), RTLD_NOW/*RTLD_LAZY*/);
 #else
-	hDll = LoadLibrary(szDLLName);
+	hDll = LoadLibrary(libfile);
 #endif
 	if (hDll == NULL)
 	{
@@ -265,9 +270,13 @@ long CPubFuncTable::LoadLib(char *szDLLName, char* szFileName)
 			break;
 		if (strlen(fnname) <= 0 || paramnum < 0)
 			break;
-		if (AddPubFunction(hDll, (char*)fnname, (char*)fnname, (char)paramnum))
+		char fullName[256] = "";
+		strcpy(fullName, szDLLName);
+		strcat(fullName, "#");
+		strcat(fullName, fnname);
+		if (AddPubFunction(hDll, (char*)fnname, (char*)fullName, (char)paramnum))
 		{
-			snprintf(szMsg, 300,"PS:: Add external function '%s' successfully.", fnname);
+			snprintf(szMsg, 300,"PS:: Add external function '%s' as script function '%s' successfully.", fnname, fullName);
 			nLOG(szMsg, 9);
 			index++;
 		}

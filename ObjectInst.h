@@ -77,6 +77,7 @@ public:
 		char* getName(){
 			return (char*)name.c_str();
 		}
+		// set value, value is address of the value needs to be set
 		void setValue(int type, void* value){
 			printf("==>setValue, type=%d, value=%d, dtUlong=%d, dtLong=%d, v=%x\n", type, *(long*)value, dtULong, dtLong, v.s);
 		switch(type){

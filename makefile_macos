@@ -213,4 +213,4 @@ $(CGI): $(CGI_OBJ)
 
 
 install:
-	sudo cp -fr bin/libCS.so.1.0 /usr/lib
+	cp -fr bin/libCS.so.1.0 /usr/lib

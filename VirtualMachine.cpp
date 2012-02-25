@@ -474,7 +474,7 @@ void CVirtualMachine::LoadFunction(CFunction *pFunc)
 */
 void CVirtualMachine::_LoadFunc(CFunction *pFunc)
 {
-	printf("call virtual function %s\n", pFunc->name());
+	printf("call virtual function %s(%lx)\n", pFunc->name(), pFunc);
 	if (pFunc == NULL)
 		throw new CVMMException("input CFuntion is null");	
 	
@@ -566,7 +566,7 @@ BOOL CVirtualMachine::_mov(PCOMMAND cmd)
 	case 2:	memcpy(dest, src, 4);break;
 	case 3:	memcpy(dest, src, 8);break;
 	}
-	printf("*dest=%x", *(long*)dest);
+	printf("*dest=%x\n", *(long*)dest);
 	__IP++;
 	return TRUE;
 }
@@ -2362,7 +2362,7 @@ BOOL CVirtualMachine::OutputMemToFile(char* szFileName)
 
 /*
 函数名称     : CVirtualMachine::AttachParam
-函数功能	    : 
+函数功能	    : attach parameters for script function call
 BYTE *pParam:  参数的地址, 注意不是参数的内容
 int size_t  :  参数内容的长度
 变量说明     : 
@@ -2390,8 +2390,14 @@ long CVirtualMachine::AttachParam(BYTE *pParam, int size_t)
 		snprintf(sMsg, 200, "SE::AttachParam: input parameter block size(%d) is not equal to function total parameters size(%d), script: %s", size_t, m_pCurCall->pFunc->m_iParamTotalSize, m_pCurCall->pFunc->m_szName);
 		nLOG(sMsg, 9);
 	//	return REQERR_PARAMNUMERROR;
+
 	}
-	memcpy(m_pCurCall->DataSeg, pParam, size_t);
+/*	if (size_t > m_pCurCall->pFunc->m_iParamTotalSize)
+	{
+		memcpy(m_pCurCall->DataSeg, pParam, m_pCurCall->pFunc->m_iParamTotalSize);
+	}
+	else*/// not check param size, this give flexibility to function call, but also bring risk.
+		memcpy(m_pCurCall->DataSeg, pParam, size_t);
 	return REQERR_NOERROR;
 }
 
@@ -3194,10 +3200,51 @@ CObjectInst* CVirtualMachine::LoadObject(char* name){
 	CClassDes* pc = NULL;
 	pc = getClassDes(name);
 	if (pc == NULL){
-		fprintf(stderr, "Load Object for %s failed!");
+		fprintf(stderr, "Load Object for %s failed!", name);
 		return NULL;
 	}
 	return LoadObject(pc);
+}
+
+void CVirtualMachine::execFunction(char* name, void*pParam){
+	char szName[256] = "";
+	strcpy(szName, name);
+	char* p = strchr(szName, ':');
+	
+	char* className = "_global_";
+	if (p){
+			fprintf(stderr, "p=%s\n", p);
+		*p = 0;
+		p++;
+		className = szName;
+	}
+	CClassDes* pc = NULL;
+	fprintf(stderr, "class=%s\n", className);
+	pc = getClassDes(className);
+	if (pc == NULL){
+		fprintf(stderr, "Load class for %s failed!", className);
+		return;
+	}	
+	fprintf(stderr, "Load class for %s OK!", className);
+	char* functionName = szName;
+	if (p){
+		while (*p == ':')
+			p++;
+		functionName = p;
+	}
+	fprintf(stderr, "method=%s\n", functionName);
+	CFunction* pFunc = pc->getMethod(functionName);
+	if (pFunc == NULL){
+		fprintf(stderr, "Load function for %s failed!", functionName);
+		return;
+	}
+	LoadFunction(pFunc);
+	if (p){
+		long param = (long)p;
+		AttachParam((BYTE*)&param, sizeof(long));
+	}
+	Run();
+		
 }
 
 CClass* CVirtualMachine::loadClass(char* name){
@@ -3228,7 +3275,7 @@ CObjectInst* CVirtualMachine::createObject(char* className){
 	
 // create new object and execute it's constructor
 CObjectInst* CVirtualMachine::LoadObject(CClassDes* c, void* p){
-	printf("==>LoadObject %x\n", c);
+	printf("==>LoadObject %x, %x \n", c, p);
 	
 	CObjectInst* obj = createObject(c->GetFullName());
 
@@ -3239,34 +3286,54 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c, void* p){
 	//long index = 1;
 	this->Reset();
 	
-	CFunction* pfn = c;
-	LoadFunction(pfn);
-	printf("==>LoadFunction OK\n");
-	void* pthis = obj;
-	CRef* ref = new CRef("this");
-	ref->setRef(obj);
-
-	AttachParam((BYTE*)&ref, sizeof(long*));
-
-	printf("==>AttachParam OK\n");
-
-	this->Run();
-/*	
+/*	//CFunction* pfn = c;
+//	LoadFunction(pfn);
+//	printf("==>LoadFunction OK\n");
+//	void* pthis = obj;
+//	CRef* ref = new CRef("this");
+//	ref->setRef(obj);
 	
+	CRef* ref_p = new CRef("p");
+	CAttribute *attr = new CAttribute();
+	attr->setValue(dtLong, &p);
+	ref_p->setRef(attr);
+	long** buf_param = new long*[2];
+	memset(buf_param, 0, 2*sizeof(long*));
+	buf_param[0] = (long*)&ref;
+	buf_param[1] = (long*)&ref_p;
+//	AttachParam((BYTE*)&ref, sizeof(long*));
+	AttachParam((BYTE*)buf_param, sizeof(long*)*2);
+	printf("==>AttachParam OK\n");
+	this->Run();
+	delete buf_param;
+*/
+	c->getFuncTable()->dump();
 	CFunction* pfn = c->getMethod("create");
-	if (fn != NULL){
+		printf("==>LoadFunction... %lx'%s'\n", pfn, pfn->name());
+	if (pfn != NULL){
 		LoadFunction(pfn);
-		printf("==>LoadFunction OK\n");
+		printf("==>LoadFunction '%s' OK\n", pfn->name());
 		void* pthis = obj;
 		CRef* ref = new CRef("this");
 		ref->setRef(obj);
 	
-		AttachParam((BYTE*)&ref, sizeof(long*));
-	
-		printf("==>AttachParam OK\n");
+	//	AttachParam((BYTE*)&ref, sizeof(long*));
+		CRef* ref_p = new CRef("p");
+		CAttribute *attr = new CAttribute();
+		attr->setValue(dtLong, &p);
+		ref_p->setRef(attr);
+		
+		long** buf_param = new long*[2];
+		memset(buf_param, 0, 2*sizeof(long*));
+		buf_param[0] = (long*)ref_p;
+		buf_param[1] = (long*)ref_p;
+	//	AttachParam((BYTE*)&ref, sizeof(long*));
+		AttachParam((BYTE*)buf_param, sizeof(long*)*2);
+		printf("==>AttachParam for '%s' OK\n", pfn->name());
 	
 		this->Run();
-	}*/
+		delete buf_param;
+	}
 	return obj;
 
 }

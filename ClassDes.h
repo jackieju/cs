@@ -36,8 +36,11 @@ public:
 	}
 	CFunction* getMethod(char* szName){
 		long index;
-		return fnTable.GetFunction(szName, &index);
-
+		CFunction *pfn = fnTable.GetFunction(szName, &index);
+		printf("pfn = %lx\n", pfn);
+		if (pfn == NULL && getParent() != NULL)
+			return ((CClassDes*)getParent())->getMethod(szName);
+		return pfn;
 	}
 	char* GetFullName(){
 		return m_szName;

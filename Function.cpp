@@ -43,6 +43,8 @@ CFunction::CFunction()
 
 CFunction::~CFunction()
 {
+	printf("~CFunction()\n");
+	printf("~CFunction()--->%x,%x", m_pCmdTable, m_staticSegment);
 	if (m_pCmdTable != NULL)
 		delete this->m_pCmdTable;
 	if (this->m_staticSegment != NULL)
@@ -61,6 +63,7 @@ CFunction::~CFunction()
 */
 bool CFunction::AddVal(char* szName, TYPEDES type)
 {
+	printf("addvalue %s to function %s\n", szName, name());
 	return m_SymbolTable.AddSymbol(szName, type);	
 }
 int CFunction::AddStaticData(int size_t, BYTE* pData)

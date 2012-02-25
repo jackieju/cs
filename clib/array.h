@@ -13,7 +13,7 @@ public:
 	int used;
 	int _enlarge_size;
 	void enlarge(){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!?????enlarge?????////////////\n");
 			fprintf(stderr, "-----dd25\n");
 		void** new_data = new void*[_size+_enlarge_size];
 		memset(new_data, 0, (_size+_enlarge_size)*sizeof(void*));
@@ -25,7 +25,7 @@ public:
 		_size += _enlarge_size;
 	}
 	void enlargeTo(int s){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!?????enlargeto?????////////////\n");
 		if (s <= _size)
 			return;
 		if (s - _size < _enlarge_size)
@@ -44,24 +44,24 @@ public:
 	void add(void *p);
 	
 	void setEnlargeSize(int s){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!?????setEnlargeSize?????////////////\n");
 		_enlarge_size = s;
 	}
 	
 	
 	int size(){
-				printf("call size()\n");
+			printf("///////!!!!!!!!!????size()??????////////////\n");
 		return used;
 	}
 	
 	void* get(int i){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!????get??????////////////\n");
 		if (i >= _size)
 			return NULL;
 		return data[i];
 	}
 	void set(int i, void* p){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!????set??????////////////\n");
 	    if (i > _size){
 			enlargeTo(i+1);
 		}
@@ -89,7 +89,7 @@ public:
 		_enlarge_size = 1024;
 	};
 	Array(int size){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!?????()?????////////////\n");
 		data = new void *[size];
 		memset(data, 0, (sizeof(void*))*size);
 		used = 0;
@@ -97,8 +97,9 @@ public:
 		
 	}
 	~Array(){
-				printf("///////!!!!!!!!!??????????////////////\n");
+				printf("///////!!!!!!!!!??????~????////////////\n");
 		for (int i = 0; i<used; i++){
+			printf("===]]>%d\n",i);
 			if (data[i]){
 				delete data[i];
 				data[i]=NULL;

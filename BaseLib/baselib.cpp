@@ -47,6 +47,7 @@ void __stdcall putf(float f)
 }
 void __stdcall put(char* format, long data)
 {
+//	printf("==>putf(): %s, %x\n", format, data);
 	printf(format, data);
 	return;
 }

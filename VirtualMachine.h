@@ -245,6 +245,7 @@ public:
 	CObjectInst*  LoadObject(char* name);
 	CClass* loadClass(char* name);
 	CObjectInst* createObject(char* className);
+	void execFunction(char* name, void* pParam = NULL);
 
 	//以下成员用于调试
 	void SetWorkMode(int mode);

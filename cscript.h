@@ -22,7 +22,8 @@ public:
 	void setOutput(FILE* file);	
 	CCompiler* getCompiler();
 	
-	void execute(std::string s);
+	void executeFile(std::string s);
+	void execFunction(std::string s, void* p = NULL);
 	void loadobj(std::string s, void* p = NULL);
 
 };

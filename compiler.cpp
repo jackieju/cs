@@ -25,7 +25,11 @@ char CCompiler::m_szErrMsg[1024] = "";
 char CCompiler::m_szErrFile[_MAX_PATH] = "";
 CConfigure CCompiler::m_conf;
 std::vector<std::string> CCompiler::class_path;
-
+#ifdef WIN32
+stdext::hash_map<std::string, long> CCompiler::file_list;
+#else
+__gnu_cxx::hash_map<std::string, long> CCompiler::file_list;
+#endif
 char *MyError::ErrorMsg[] = {
 #include "cocoR/ce.hpp"
 	"User error number clash",
@@ -147,7 +151,7 @@ BOOL CCompiler::Compile(char *szFileName)
 		return FALSE;
 	}
 
-	
+
 	// open the source file S_src
 	std::string path = findSrc(szFileName);
 	if (path.empty()){
@@ -156,6 +160,11 @@ BOOL CCompiler::Compile(char *szFileName)
 		return FALSE;
 	}
 	else {
+		
+			// record file compile time
+	struct stat sb;
+	stat(path.c_str(), &sb);
+	CCompiler::file_list[path, sb.st_ctime];
 			strcpy(this->m_szSourceFile, path.c_str());
 #ifdef _MACOS	// binary and text files has no difference in unix
 		int mode = O_RDONLY;

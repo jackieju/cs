@@ -690,6 +690,8 @@ int CSS_SingleWriteMultiRead::DoneWriting()
  */
 int CSS_SingleWriteMultiRead::WaitToRead(unsigned int nMillionSeconds)
 {
+	printf("m_iInit=%d  writer=%d, reader=%d\n", m_iInit, m_bWriting, m_nReading);
+	printf("writer=%d, reader=%d\n", m_bWriting, m_nReading);
 	if (m_iInit <= 0)
 		return LOCKEX_ERR_EINVAL;
 #ifndef WIN32
@@ -706,7 +708,7 @@ int CSS_SingleWriteMultiRead::WaitToRead(unsigned int nMillionSeconds)
 		endtime.tv_sec = timenow.time+nMillionSeconds/1000+(timenow.millitm+nMillionSeconds%1000)/1000;
 		endtime.tv_nsec = LOCKEX_NANOSEC_PER_MILLISEC*((timenow.millitm+nMillionSeconds%1000)%1000);
 	}
-
+	printf("2 writer=%d, reader=%d\n", m_bWriting, m_nReading);
 	int nret;
 	while(true)
 	{

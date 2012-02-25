@@ -1,4 +1,4 @@
-package test/test;
+
 // this source is to test the grammer and vm(interpretor)
 //#include "test.h"
 //
@@ -8,15 +8,17 @@ package test/test;
 use object;
 use a::testobj;
 */
+use baselib;
+
 // load dynamic link library
-load baselib; 
+//load baselib; 
 load nanohttp;
 
 //inherit object;
 int a;
 class test{
 /*test comments*/
-void main( j,  p)
+/*void main( j,  p)
 {
 	// b;
 	var b = "daff";
@@ -60,11 +62,11 @@ void set(var name, var obj){
 //	puts("#{name}=#{value}\r\n"");
 
 }
-
+*/
 /********* NOTICE ********************
  * test test1 test0 is pubfunction
 *************************************/
-void test_1(){
+/*void test_1(){
 //var a = "adfafafasfas";
 //puts(a);
 //puts("sssssssssss");
@@ -162,7 +164,7 @@ a.{b} = "9999999999";
 a.{b2} = "8888888888";
 puts(a.{3*3}); // 8888888888
 puts(a.aa); // 9999999999
-}
+}*/
 void create()
 {
 //testobj();
@@ -201,24 +203,28 @@ void create()
 
        set("cost", 1);*/
          //setup();
-	puts("0000fsfds000");
-	put("dfsf %s\n", "77dd7");
+//	puts("0000fsfds000");
+//	put("dfsf %s\n", "77dd7");
 /*	int a = creatett();
 	testtt(a);
 */
-put_str("fffff");
-	int server = create_server(9000);
+//baselib##put_str("fffff");
+	int server = nanohttp##create_server(9000);
 	//putl(server);
 	//server = testre();
 	//server = 908990;
 //	int l = server;
-	putl(server);
-
+//	baselib##putl(server);
+	_global_::p("server %lx created\n", server);
 	//test3p("aaaaaa", "bbbbbb", "ccccccc");
-	addHandler(server, "*", "http/http");
-      
+	nanohttp##addHandler(server, "*", "http/http");
+	//test3();
+      //	destroy_server(0);
 }
 
-
+void onExit(){
+	nanohttp##destroy_server(0);
+	baselib##put_str("cs script engine exit\n");
+}
 
 };

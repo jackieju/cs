@@ -7,7 +7,11 @@
 #include "cocoR/cp.hpp"
 #include "Configure.h"
 #include "fcntl.h"
-
+#ifdef WIN32
+#include <hash_map>
+#else
+#include <ext/hash_map>
+#endif
 #define SCRIPT_EXT ".cs"
 
 #define SCRIPTTABLE_NUM 10
@@ -80,6 +84,12 @@ private:
 	char m_szSourceFile[_MAX_PATH];
 	static CConfigure m_conf;
 	static std::vector<std::string> class_path;
+
+#ifdef WIN32
+	static stdext::hash_map<std::string, long> file_list;
+#else
+	static hash_map<std::string, long> file_list;
+#endif
 };
 
 
