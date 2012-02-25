@@ -54,6 +54,7 @@ TOKENS
   char1       = "'" [ "\\" ] chars "'" .
   library    = "<" files { files } ">" .
   
+  
 
 PRAGMAS
 
@@ -368,12 +369,13 @@ MultExp     { ( "+"  | "-"  ) MultExp
 
   UnaryExp             = PostFixExp
                          | ( "++" | "--" ) UnaryExp
-                         | UnaryOperator CastExp .
+                         | UnaryOperator CastExp 	
+					.
 
 
 
   PostFixExp           = 
-	Primary
+	Primary<fullName>
                          { "[" Expression "]"
 
                           | 
@@ -399,8 +401,8 @@ identifier
 						FunctionCall<&fn>
 						}
 					          
-                          
-                          
+                         
+                         
                           | (  "->" {"{"} identifier {"}"} 
 
 			)			  
@@ -461,9 +463,19 @@ identifier
    identifier 
    }  .
   
-  Primary              = 
+  Primary<char* fullName>              = 
 
  identifier 
+
+ 	{	("##" identifier
+				
+			) | ("::" identifier
+			
+			)
+			
+	}
+			
+			
   | "new" Creator
    
 	| "$"

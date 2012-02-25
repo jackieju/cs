@@ -56,6 +56,7 @@ TOKENS
  /* string2 = "==" [ strings1 ] .*/
   char1       = "'" [ "\\" ] chars "'" .
   library    = "<" files { files } ">" .
+  /*pubfunc    = { "_" | letter | digit }"#"{ "_" | letter | digit } .*/
   /*module =  [letter] { "/" [ letter ] } .*/
 
 PRAGMAS
@@ -95,26 +96,31 @@ PRODUCTIONS
 
 
     C                    =      (. 
-	
-	CClassDes *pNewCD = new CClassDes(this);
-	if (m_pCurClassDes != NULL){
-		pNewCD->setParent(m_pCurClassDes);
+	CClassDes* pNewCD = m_classTable->getClass("_global_");
+	printf("1-->%x", pNewCD);
+	if (!pNewCD){
+		pNewCD = new CClassDes(this);
+		if (m_pCurClassDes != NULL){
+			pNewCD->setParent(m_pCurClassDes);
+		}
+		pNewCD->setName("_global_");
+		// add class def first because it maybe referenced by its own code	
+	 	m_classTable->addClass(pNewCD);
 	}
+
 	 m_pCurClassDes = pNewCD;
 	 //std::string className = JUJU::getFileName(curFileName);
 	 //m_pCurClassDes->SetName((char*)className.c_str());	
-	m_pCurClassDes->setName("_global_");
-	// add class def first because it maybe referenced by its own code
-	 m_classTable->addClass(m_pCurClassDes);
-    
+	
 	// set main function and add to class _global_
 	this->m_pMainFunction = m_pCurClassDes;
+	printf("3m_pMainFunction-->%x", m_pMainFunction);
 	m_pMainFunction->m_SymbolTable.m_pParser = this;
 	this->m_LoopTree->m_pFunc = m_pMainFunction;
 //	m_pMainFunction->setName("create");
 //	m_pCurClassDes->AddMethod(m_pMainFunction);
 //	m_pMainFunction->setParent(m_pCurClassDes);
-	// add "this" as first parameter to function 
+/*	// add "this" as first parameter to function 
 	PTYPEDES type = new TYPEDES;
 	type->refLevel = 0;
 	type->type = dtGeneral;
@@ -123,8 +129,8 @@ PRODUCTIONS
 	else
 		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
 	delete type;
-
-	printf("m_pMainFunction1=%x", m_pMainFunction);
+*/
+	printf("m_pMainFunction1=%x\n", m_pMainFunction);
     .)
    [ Package ] { Import | LoadLib } [ Inheritance ] 
 
@@ -140,7 +146,7 @@ PRODUCTIONS
   //fprintf(file, "%s", s->c_str());
   //SAFEDELETE(s);
   //fclose(file);
-
+	printf("m_pMainFunction11=%x\n", m_pMainFunction);
 // add return statement
 	ADDCOMMAND0(__ret);
 	
@@ -175,18 +181,19 @@ PRODUCTIONS
   (.
 	    // load external library 
 	    std::string lib = GetCurrSym();
-	#ifdef 	WIN32
+/*	#ifdef 	WIN32
 	    std::string libfile = lib+".dll";
 	#else
 		std::string libfile = "lib"+lib+".so";
 	#endif
-	    std::string libintfile = lib+".int";
+*/	   
+	 std::string libintfile = lib+".int";
 	
 	int r=-1;
 #ifdef WIN32
-		r = m_PubFuncTable->LoadLib((char*)libfile.c_str(), (char*)libintfile.c_str());
+		r = m_PubFuncTable->LoadLib((char*)lib.c_str(), (char*)libintfile.c_str());
 #else
-	    char* c1 = (char*)(libfile).c_str();
+	    char* c1 = (char*)(lib).c_str();
 	    char* c2 = (char*)(libintfile).c_str();
 		r = m_PubFuncTable->LoadLib(c1, c2);
 #endif
@@ -262,8 +269,9 @@ PRODUCTIONS
 		printf("szName=%s", szName);
 	printf("m_pMainFunction2=%x", m_pMainFunction);
 	CClassDes * pNewCD = new CClassDes(this);
-	pNewCD->setParent(m_pMainFunction);
+	pNewCD->setParent(m_pCurClassDes);
 	m_pMainFunction =  m_pCurClassDes = pNewCD;
+	printf("m_pMainFunction1122=%x\n", m_pMainFunction);
 	// std::string className = JUJU::getFileName(curFileName);
 	char fullName[1024] = "";
 	if (strlen(curPackageName)>0){
@@ -312,7 +320,8 @@ ClassBody	";" .
 	(.
 	
 	m_pMainFunction = m_pCurClassDes;
-	// call construction function "create"
+		printf("m_pMainFunction3222=%x\n", m_pMainFunction);
+/*	// call construction function "create"
 	FUNCCALL fn;
 	CFunction* pScript = m_pCurClassDes->getMethod("create");	
 	fn.name = "::create";
@@ -326,11 +335,11 @@ ClassBody	";" .
 	ADDCOMMAND1(__paramv, 0xc100, 0);
 	ADDCOMMAND0(__endcallv);
 	m_pCurClassDes->getFuncTable()->ReleaseFunc();
-	
+*/	
 	ADDCOMMAND0(__ret);
 	m_pMainFunction = m_pMainFunction->getParent();
 	
-		printf("m_pMainFunction3=%x", m_pMainFunction);
+		printf("m_pMainFunction3=%x\n", m_pMainFunction);
 	/*
 	//添加class
 	if (!Error->Errors)
@@ -462,20 +471,26 @@ ArraySize
 	else
 		strcpy(m_pMainFunction->m_szName, szName);
 		
-	// add "this" as first parameter to function if it belong to a class
-	if (m_pCurClassDes){
+	printf("m_pCurClassDes=%lx(%s), m_pMainFunction=%lx(%s)\n", m_pCurClassDes, m_pCurClassDes->name(), m_pMainFunction, m_pMainFunction->name());
+	// add "this" as first parameter to function if it belongs to a class
+	if (m_pCurClassDes ){
 		if (m_pCurClassDes != m_pMainFunction){
-		//	m_pCurClassDes->AddMethod(m_pMainFunction);
+			
+		//	m_pCurClassDes->AddMethod(m_pMainFunction); // will add function in functionhead
 			m_pMainFunction->setParent(m_pCurClassDes);
 		}
-		PTYPEDES type = new TYPEDES;
-		type->refLevel = 0;
-		type->type = dtGeneral;
-		if (!AllocVar(type, "this"))
-			GENERR(113);
-		else
-			m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
-		delete type;
+		printf(" m_pMainFunction->parent=%lx\n", m_pMainFunction->getParent());
+		if (stricmp(m_pCurClassDes->name(), "_global_")){
+			PTYPEDES type = new TYPEDES;
+			type->refLevel = 0;
+			type->type = dtGeneral;
+			printf("allocate 'this' as first input parameter for method %s::%s \n", m_pMainFunction->getParent()->name(), m_pMainFunction->name());
+			if (!AllocVar(type, "this"))
+				GENERR(113);
+			else
+				m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+			delete type;
+		}
 	}
 
 	printf("--->FunctionDefinition:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
@@ -500,11 +515,13 @@ ArraySize
 			printf("--->m_pMainFunction221=%x, name=%s\n", m_pMainFunction, m_pMainFunction->name());
 //			delete m_pMainFunction;
 
-			m_pMainFunction = m_pMainFunction->getParent();
+		//	m_pMainFunction = m_pMainFunction->getParent();
+		//			printf("--->m_pMainFunction2333=%x\n", m_pMainFunction);
 		}
 	 }
-	 m_pMainFunction =m_pMainFunction->getParent();
-	//	printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
+		printf("--->m_pMainFunction233=%s\n", m_pMainFunction->name());
+	 m_pMainFunction = m_pMainFunction->getParent();
+	printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
 	
   .)
   .
@@ -521,8 +538,11 @@ ArraySize
 m_pMainFunction->ClearExpStack();
 //printf("add function%s line=%d\n",  m_pMainFunction->name(), Scanner->CurrSym.Line);
   this->m_pMainFunction->m_iParamNum = this->m_pMainFunction->m_SymbolTable.m_nSymbolCount; 
-		if (m_pCurClassDes != m_pMainFunction)
+		if (m_pCurClassDes != m_pMainFunction){
 			m_pCurClassDes->AddMethod(m_pMainFunction);
+			printf("add function %s to class %s(%x)\n", m_pMainFunction->name(), m_pCurClassDes->name(), m_pCurClassDes);
+		}
+		m_pCurClassDes->getFuncTable()->dump();
   /*if 	(!m_pCurClassDes->getFuncTable()->AddFunction(this->m_pMainFunction))
 		{
 			GENERR(114);
@@ -559,6 +579,8 @@ m_pMainFunction->ClearExpStack();
 			GENERR(113);
 		else
 			m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+					printf("--->FunctionDefinition0:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+
 	}
 	else
 	{
@@ -592,6 +614,9 @@ m_pMainFunction->ClearExpStack();
 		memcpy(type->dimsize, dimsize, (i-1)*sizeof(long));
 		memcpy(&m_pMainFunction->m_SymbolTable.tableEntry[index].type, type, sizeof(TYPEDES));
 		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+		
+				printf("--->FunctionDefinition3:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+
 	}
 
 	}
@@ -606,6 +631,8 @@ m_pMainFunction->ClearExpStack();
 	                  GENERR(113);
 
 		m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+			printf("--->FunctionDefinition2:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+
 	}
 	delete type;
 .)
@@ -1514,14 +1541,40 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 
   UnaryExp             = (. debug("===>UnaryExp"); .)PostFixExp
                          | ( "++" | "--" ) UnaryExp
-                         | UnaryOperator CastExp .
+                         | UnaryOperator CastExp 	
+					/* | "#" identifier 
+						(.{
+							char libName[MAX_IDENTIFIER_LENGTH];
+			memset(libName, 0, MAX_IDENTIFIER_LENGTH);
+			Scanner->GetName(&Scanner->CurrSym, libName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+			printf("lib = %s\n", libName);
+		.)
+		"#" identifier
+				(.
+							char szName[MAX_IDENTIFIER_LENGTH];
+			memset(szName, 0, MAX_IDENTIFIER_LENGTH);
+			Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+			
+			char fullName[MAX_IDENTIFIER_LENGTH] ="";
+			strcpy(fullName, libName);
+			strcat(fullName, "#");
+			strcat(fullName, szName);
+			long index = m_PubFuncTable->FindFuncByName(szName);
+			FUNCCALL fn;
+			fn.name = szName;
+			if (index < 0){
+				GENERR(104);
+			}
+			
+		.)
+		 FunctionCall<&fn> (.}.) */.
 
 /* we should really add
                          | "sizeof" ( UnaryExp | "(" (. PTYPEDES type = new TYPEDES;.) Type<type> ")" ) .
    but this breaks it badly */
 
-  PostFixExp           = (. debug("===>PostFixExp"); .)
-	Primary
+  PostFixExp           = (. debug("===>PostFixExp"); char fullName[MAX_IDENTIFIER_LENGTH] =""; .)
+	Primary<fullName>
                          { "[" Expression "]"
 (.
 {
@@ -1597,19 +1650,62 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
                           | 
 (.	
 {
-			char szName[MAX_IDENTIFIER_LENGTH];
+		/*	char szName[MAX_IDENTIFIER_LENGTH];
 			memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 			Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-			long index = m_PubFuncTable->FindFuncByName(szName);
+		*/
+			printf("1fullname=%s\n", fullName);
+		
+			long index = m_PubFuncTable->FindFuncByName(fullName);
 			FUNCCALL fn;
-			fn.name = szName;
+			fn.name = fullName;
 			if (index < 0) // cannot find function name in public function table, guess is was class method
 			{
-				if (m_pCurClassDes){ // if in class scope
+				//printf("search function %s\n", fullName);
+				if (strchr(fullName, '/') != 0){
+					char* pch = strrchr(fullName, '/');
+					if (pch){
+						*pch = 0;
+					}
+					pch++;
+				//		printf("search2 function %s\n", fullName);
+					CClassDes* cd = m_classTable->getClass(fullName);
+					
+						printf("search3 function %s in class %s(%x)\n", pch, fullName, cd);
+					m_classTable->dump();
+					if (cd){
+						CFunction* pScript = cd->getMethod(pch);
+						cd->getFuncTable()->dump();
+						printf("found function %s=%x\n", pch, pScript);
+						if (pScript){
+							fn.pVF = pScript;
+							fn.nType = 0;
+							ADDCOMMAND1(__callv, CC, (long)pScript);
+						}else	{
+							ERR1p("failed to find function %s\n", pch);
+							GENERR(97);
+							Get();
+							return;
+						}
+					}else{
+						ERR1p("failed to find class %s\n", fullName);
+					}
+					/*char* pch = strtok (str,"::");
+  					while (pch != NULL)
+  					{
+    					printf ("-%s-\n",pch);
+						CClassDes * pcd = CCompiler::classDesTable.getClass((char*)(pch));
+						
+    					pch = strtok (NULL, "::");
+  					}*/
+				}
+				else if (m_pCurClassDes){ // if in class scope
 					// find in script function table
-					CFunction* pScript = m_pCurClassDes->getFuncTable()->GetFunction(szName, &index);
+					char* tName = (char*)fullName;
+					CFunction* pScript = m_pCurClassDes->getFuncTable()->GetFunction( (char*)fullName, &index );
 					if (pScript == NULL)
 					{	
+						ERR1p("failed to find function %s\n", fullName);
 						GENERR(97);
 						Get();
 						return;
@@ -1620,7 +1716,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 						ADDCOMMAND1(__callv, CC, (long)pScript);
 						
 						// add "this" as first parameter
-						printf("add this as parameter for class method\n");
+						printf("pass this as parameter for calling class method %s\n", fullName);
 						ADDCOMMAND1(__paramv, 0xc100, 0);
 						
 						m_pCurClassDes->getFuncTable()->ReleaseFunc();
@@ -1792,8 +1888,8 @@ identifier
 	}
 	ADDCOMMAND1(__callv, O0, _AX);
 				
-	// add "this" as first parameter
-	printf("add this as parameter for class method\n");
+	// pass "this" as first parameter
+	printf("pass this as parameter for calling dynamic method of class %s\n");
 	ADDCOMMAND1(__paramv, O0 , op1);
 				
 	m_pCurClassDes->getFuncTable()->ReleaseFunc();
@@ -1840,8 +1936,8 @@ identifier
 			
 } // for "break" problem 
 .)          
-                          
-                          
+                         
+                         
                           | ( (. {int state = 0;.) "->" {"{"(. state++ .)} identifier {"}"(. state++ .)} 
 (.
 		if (state == 0)	{				
@@ -2202,7 +2298,7 @@ identifier
 	ADDCOMMAND1(__callv, CC, (long)pScript);
 				
 	// add "this" as first parameter
-	printf("add this as parameter for class method\n");
+	printf("pass this as parameter for calling class method %s\n", fn.name);
 	ADDCOMMAND1(__paramv, O0 , temp);
 				
 	m_pCurClassDes->getFuncTable()->ReleaseFunc();
@@ -2232,15 +2328,53 @@ identifier
    identifier (. strcat(szName, GetCurrSym()); .)
    }  .
   
-  Primary              = 
+  Primary<char* fullName>              = 
 (.
+	printf("=====>Primary\n");
 	char szName[MAX_IDENTIFIER_LENGTH];
 	memset(szName, 0, MAX_IDENTIFIER_LENGTH);
+//	char fullName[MAX_IDENTIFIER_LENGTH] ="";
 .)
- identifier (.
+ identifier 
+(. 	
+Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称 
+		strcpy(fullName, szName);
+.)
+ 	{	("##" identifier
+				(.
+					printf("=====>##\n");
+							char szName2[MAX_IDENTIFIER_LENGTH];
+			memset(szName2, 0, MAX_IDENTIFIER_LENGTH);
+			Scanner->GetName(&Scanner->CurrSym, szName2, MAX_IDENTIFIER_LENGTH-1);//得到名称
+			
+		
+	
+			strcat(fullName, "#");
+			strcat(fullName, szName2);
+			printf("===>fullname=%s\n", fullName);
+			
+			.)
+			) | ("::" identifier
+			(.	printf("=====>::\n");
+			char szName2[MAX_IDENTIFIER_LENGTH];
+			memset(szName2, 0, MAX_IDENTIFIER_LENGTH);
+			Scanner->GetName(&Scanner->CurrSym, szName2, MAX_IDENTIFIER_LENGTH-1);//得到名称
+			
+		
+	
+			strcat(fullName, "/");
+			strcat(fullName, szName2);
+			printf("===>fullname=%s\n", fullName);
+			
+			.)
+			)
+			
+	}
+			
+			(.
  
  		{
-	Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
+
  		
  			
 			int address = -1;
@@ -2257,17 +2391,17 @@ identifier
 			}else
 			    address = GetSymAddress(szName); // return -1 if not found
 		*/
-			address = GetSymAddress(szName); // try to get symbol from main function and its ancestor
-			printf("identiefier=%s, address=%x\n", szName, address);	
+			address = GetSymAddress(fullName); // try to get symbol from main function and its ancestor
+			printf("identiefier=%s, address=%x, m_pMainFunction=%lx\n", fullName, address, m_pMainFunction);	
 
 			 // address < 0 => function, address >= 0 => variable
 			          if (address >= 0 )// is a variable of current main function, push it into expression stack
 			          {
 			                  TYPEDES dt;
-			                  SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym(szName);
+			                  SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym(fullName);
 			                  if (pElement == NULL)
 			                  {
-									  printf("===>generror 115, symbol name=%s", szName);
+									  printf("===>generror 115, symbol name=%s", fullName);
 			                          GENERR(115); // not found it symbol table, check it in runtime
 			                  }
 			                  else
@@ -2324,20 +2458,21 @@ identifier
 			          }
 			else // address < 0, not found in symbol table
 			{
-				//GENERR(126);
-				if (this->m_PubFuncTable->FindFuncByName(szName) < 0) // not found in pub function table
+			/*	//GENERR(126);
+				if (this->m_PubFuncTable->FindFuncByName(fullName) < 0) // not found in pub function table
 				{
 					// find it in class methods
 					long index = 0;
-					if (m_pCurClassDes->getFuncTable()->GetFunction(szName, &index) == NULL){ // not found in class function table
+					if (m_pCurClassDes->getFuncTable()->GetFunction(fullName, &index) == NULL){ // not found in class function table
 						// cannot create an object variable for it, because it maybe a function call
 						GENERR(104);
+						ERR1p("failed to get function %s", fullName);
 					} 
 
 					else
 						m_pCurClassDes->getFuncTable()->ReleaseFunc();
 				}
-				//	return;
+				//	return;*/
 			}
 }
  .)

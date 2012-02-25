@@ -128,7 +128,7 @@ class CCompiler;
 // add by jackie juju
 /////////////////////////
 const int MAXSYM = 6;
-const int MAXERROR = 112;
+const int MAXERROR = 114;
 
 class cParser : public CRParser, public CPUtil
 {
@@ -319,7 +319,7 @@ private:
     void UnaryExp();
     void PostFixExp();
     void UnaryOperator();
-    void Primary();
+    void Primary(char* fullName);
     void FunctionCall(FUNCCALL* pFuncEntry);
     void SetDef();
     void SetItems(long temp);

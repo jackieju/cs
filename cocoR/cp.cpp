@@ -71,8 +71,8 @@ void cParser::Get()
     Scanner->NextSym.SetSym(Sym);
     if (Sym <= MAXT) Error->ErrorDist ++;
     else {
-      if (Sym == PreProcessorSym) { /*85*/
-      # line 64 "cs.atg"
+      if (Sym == PreProcessorSym) { /*86*/
+      # line 65 "cs.atg"
 	
       	    // process #include                                 
       	char str[256];
@@ -127,31 +127,36 @@ int cParser::WeakSeparator(int n, int syFol, int repFol)
   return In(SymSet[syFol], Sym);
 }
 
-# line 97 "cs.atg"
+# line 98 "cs.atg"
 void cParser::C()
 {
-# line 97 "cs.atg"
+# line 98 "cs.atg"
 	
-	
-	CClassDes *pNewCD = new CClassDes(this);
+	CClassDes* pNewCD = m_classTable->getClass("_global_");
+	printf("1-->%x", pNewCD);
+	if (!pNewCD){
+	pNewCD = new CClassDes(this);
 	if (m_pCurClassDes != NULL){
 	pNewCD->setParent(m_pCurClassDes);
 	}
+	pNewCD->setName("_global_");
+	// add class def first because it maybe referenced by its own code      
+	m_classTable->addClass(pNewCD);
+	}
+	
 	m_pCurClassDes = pNewCD;
 	//std::string className = JUJU::getFileName(curFileName);
 	//m_pCurClassDes->SetName((char*)className.c_str());   
-	m_pCurClassDes->setName("_global_");
-	// add class def first because it maybe referenced by its own code
-	m_classTable->addClass(m_pCurClassDes);
 	
 	// set main function and add to class _global_
 	this->m_pMainFunction = m_pCurClassDes;
+	printf("3m_pMainFunction-->%x", m_pMainFunction);
 	m_pMainFunction->m_SymbolTable.m_pParser = this;
 	this->m_LoopTree->m_pFunc = m_pMainFunction;
 	//      m_pMainFunction->setName("create");
 	//      m_pCurClassDes->AddMethod(m_pMainFunction);
 	//      m_pMainFunction->setParent(m_pCurClassDes);
-	// add "this" as first parameter to function 
+	/*      // add "this" as first parameter to function 
 	PTYPEDES type = new TYPEDES;
 	type->refLevel = 0;
 	type->type = dtGeneral;
@@ -160,31 +165,31 @@ void cParser::C()
 	else
 	m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
 	delete type;
-	
-	printf("m_pMainFunction1=%x", m_pMainFunction);
-# line 129 "cs.atg"
+	*/
+	printf("m_pMainFunction1=%x\n", m_pMainFunction);
+# line 135 "cs.atg"
 	if (Sym == packageSym) {
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 		Package();
 	}
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 	while (Sym == useSym ||
 	       Sym == loadSym) {
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 		if (Sym == useSym) {
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 			Import();
 		} else if (Sym == loadSym) {
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 			LoadLib();
-		} else GenError(86);
+		} else GenError(87);
 	}
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 	if (Sym >= inheritSym && Sym <= LessSym) {
-# line 129 "cs.atg"
+# line 135 "cs.atg"
 		Inheritance();
 	}
-# line 131 "cs.atg"
+# line 137 "cs.atg"
 	while (Sym >= identifierSym && Sym <= numberSym ||
 	       Sym >= stringD1Sym && Sym <= charD1Sym ||
 	       Sym == SemicolonSym ||
@@ -199,12 +204,12 @@ void cParser::C()
 	       Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	       Sym >= newSym && Sym <= DollarSym ||
 	       Sym >= BangSym && Sym <= TildeSym) {
-# line 131 "cs.atg"
+# line 137 "cs.atg"
 		Definition();
 	}
-# line 131 "cs.atg"
+# line 137 "cs.atg"
 	Expect(EOF_Sym);
-# line 131 "cs.atg"
+# line 137 "cs.atg"
 	
 	/*
 	if (Error->Errors){ // if compile failed, remove this class
@@ -217,7 +222,7 @@ void cParser::C()
 	//fprintf(file, "%s", s->c_str());
 	//SAFEDELETE(s);
 	//fclose(file);
-	
+	printf("m_pMainFunction11=%x\n", m_pMainFunction);
 	// add return statement
 	ADDCOMMAND0(__ret);
 	
@@ -229,27 +234,27 @@ void cParser::C()
 	m_pMainFunction->Output(path);
 }
 
-# line 217 "cs.atg"
+# line 224 "cs.atg"
 void cParser::Package()
 {
-# line 217 "cs.atg"
+# line 224 "cs.atg"
 	Expect(packageSym);
-# line 217 "cs.atg"
+# line 224 "cs.atg"
 	Expect(identifierSym);
-# line 218 "cs.atg"
+# line 225 "cs.atg"
 	char *szName = new char[MAX_IDENTIFIER_LENGTH];
 	     memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	     Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
 	             printf("package=%s", szName);
 	             strcpy(curPackageName, szName);
 	     
-# line 224 "cs.atg"
+# line 231 "cs.atg"
 	while (Sym == SlashSym) {
-# line 224 "cs.atg"
+# line 231 "cs.atg"
 		Get();
-# line 224 "cs.atg"
+# line 231 "cs.atg"
 		Expect(identifierSym);
-# line 225 "cs.atg"
+# line 232 "cs.atg"
 		
 		
 		memset(szName, 0, MAX_IDENTIFIER_LENGTH);
@@ -260,20 +265,20 @@ void cParser::Package()
 		
 		
 	}
-# line 233 "cs.atg"
+# line 240 "cs.atg"
 	Expect(SemicolonSym);
 }
 
-# line 155 "cs.atg"
+# line 161 "cs.atg"
 void cParser::Import()
 {
-# line 155 "cs.atg"
+# line 161 "cs.atg"
 	Expect(useSym);
-# line 155 "cs.atg"
+# line 161 "cs.atg"
 	char szName[_MAX_PATH]= "";
-# line 155 "cs.atg"
+# line 161 "cs.atg"
 	ClassFullName(szName);
-# line 156 "cs.atg"
+# line 162 "cs.atg"
 	
 	    // load class by name, if not found, look for the source and compile it
 	    CClassDes* cd = this->m_classTable->getClass(szName);
@@ -290,33 +295,34 @@ void cParser::Import()
 	                                                            cc.getClassPath().insert(cc.getClassPath().begin(), JUJU::getFilePath(c->getCurSrcFile()));
 	                                cc.Compile(szName);
 	    };
-# line 172 "cs.atg"
+# line 178 "cs.atg"
 	Expect(SemicolonSym);
 }
 
-# line 174 "cs.atg"
+# line 180 "cs.atg"
 void cParser::LoadLib()
 {
-# line 174 "cs.atg"
+# line 180 "cs.atg"
 	Expect(loadSym);
-# line 174 "cs.atg"
+# line 180 "cs.atg"
 	Expect(identifierSym);
-# line 175 "cs.atg"
+# line 181 "cs.atg"
 	
 	        // load external library 
 	        std::string lib = GetCurrSym();
-	    #ifdef          WIN32
+	/*      #ifdef          WIN32
 	        std::string libfile = lib+".dll";
 	    #else
 	            std::string libfile = "lib"+lib+".so";
 	    #endif
-	        std::string libintfile = lib+".int";
+	*/         
+	     std::string libintfile = lib+".int";
 	    
 	    int r=-1;
 	#ifdef WIN32
-	            r = m_PubFuncTable->LoadLib((char*)libfile.c_str(), (char*)libintfile.c_str());
+	            r = m_PubFuncTable->LoadLib((char*)lib.c_str(), (char*)libintfile.c_str());
 	#else
-	        char* c1 = (char*)(libfile).c_str();
+	        char* c1 = (char*)(lib).c_str();
 	        char* c2 = (char*)(libintfile).c_str();
 	            r = m_PubFuncTable->LoadLib(c1, c2);
 	#endif
@@ -327,24 +333,24 @@ void cParser::LoadLib()
 	    int address = m_pMainFunction->AddStaticData(lib.size()+1, (BYTE*)lib.c_str());
 	    ADDCOMMAND1(__loadlib, DS, address);
 	*/              ;
-# line 201 "cs.atg"
+# line 208 "cs.atg"
 	Expect(SemicolonSym);
 }
 
-# line 235 "cs.atg"
+# line 242 "cs.atg"
 void cParser::Inheritance()
 {
-# line 235 "cs.atg"
+# line 242 "cs.atg"
 	if (Sym == inheritSym) {
-# line 235 "cs.atg"
+# line 242 "cs.atg"
 		Get();
 	} else if (Sym == LessSym) {
-# line 235 "cs.atg"
+# line 242 "cs.atg"
 		Get();
-	} else GenError(87);
-# line 235 "cs.atg"
+	} else GenError(88);
+# line 242 "cs.atg"
 	Expect(identifierSym);
-# line 236 "cs.atg"
+# line 243 "cs.atg"
 	
 	
 	// TODO get full name in current imported classes, should not need to provide full name here
@@ -362,18 +368,18 @@ void cParser::Inheritance()
 	    }
 	//      this->m_pCurClassDes->setParent(szName);
 	    this->m_pCurClassDes->setParent(cd);
-# line 253 "cs.atg"
+# line 260 "cs.atg"
 	Expect(SemicolonSym);
 }
 
-# line 207 "cs.atg"
+# line 214 "cs.atg"
 void cParser::Definition()
 {
-# line 207 "cs.atg"
+# line 214 "cs.atg"
 	debug("===>Definition");
-# line 208 "cs.atg"
+# line 215 "cs.atg"
 	if (Sym == classSym) {
-# line 208 "cs.atg"
+# line 215 "cs.atg"
 		ClassDef();
 	} else if (Sym >= EOF_Sym && Sym <= numberSym ||
 	           Sym >= stringD1Sym && Sym <= charD1Sym ||
@@ -388,39 +394,39 @@ void cParser::Definition()
 	           Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	           Sym >= newSym && Sym <= DollarSym ||
 	           Sym >= BangSym && Sym <= TildeSym) {
-# line 208 "cs.atg"
+# line 215 "cs.atg"
 		Statements();
-	} else GenError(88);
+	} else GenError(89);
 }
 
-# line 2229 "cs.atg"
+# line 2325 "cs.atg"
 void cParser::ClassFullName(char* szName)
 {
-# line 2230 "cs.atg"
+# line 2326 "cs.atg"
 	Expect(identifierSym);
-# line 2230 "cs.atg"
+# line 2326 "cs.atg"
 	strcpy(szName, GetCurrSym());
-# line 2231 "cs.atg"
+# line 2327 "cs.atg"
 	while (Sym == ColonColonSym) {
-# line 2231 "cs.atg"
+# line 2327 "cs.atg"
 		Get();
-# line 2231 "cs.atg"
+# line 2327 "cs.atg"
 		strcat(szName, PATH_SEPARATOR_S);
-# line 2232 "cs.atg"
+# line 2328 "cs.atg"
 		Expect(identifierSym);
-# line 2232 "cs.atg"
+# line 2328 "cs.atg"
 		strcat(szName, GetCurrSym());
 	}
 }
 
-# line 256 "cs.atg"
+# line 263 "cs.atg"
 void cParser::ClassDef()
 {
-# line 256 "cs.atg"
+# line 263 "cs.atg"
 	Expect(classSym);
-# line 256 "cs.atg"
+# line 263 "cs.atg"
 	Expect(identifierSym);
-# line 257 "cs.atg"
+# line 264 "cs.atg"
 	
 	      // get name
 	      char *szName = new char[MAX_IDENTIFIER_LENGTH];
@@ -429,8 +435,9 @@ void cParser::ClassDef()
 	              printf("szName=%s", szName);
 	      printf("m_pMainFunction2=%x", m_pMainFunction);
 	      CClassDes * pNewCD = new CClassDes(this);
-	      pNewCD->setParent(m_pMainFunction);
+	      pNewCD->setParent(m_pCurClassDes);
 	      m_pMainFunction =  m_pCurClassDes = pNewCD;
+	      printf("m_pMainFunction1122=%x\n", m_pMainFunction);
 	      // std::string className = JUJU::getFileName(curFileName);
 	      char fullName[1024] = "";
 	      if (strlen(curPackageName)>0){
@@ -446,21 +453,21 @@ void cParser::ClassDef()
 	      printf("fullname=%s", fullName);
 	      
 	
-# line 283 "cs.atg"
+# line 291 "cs.atg"
 	while (Sym >= inheritSym && Sym <= LessSym) {
-# line 283 "cs.atg"
+# line 291 "cs.atg"
 		Inheritance();
 	}
-# line 284 "cs.atg"
+# line 292 "cs.atg"
 	ClassBody();
-# line 284 "cs.atg"
+# line 292 "cs.atg"
 	Expect(SemicolonSym);
 }
 
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 void cParser::Statements()
 {
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 	while (Sym >= identifierSym && Sym <= numberSym ||
 	       Sym >= stringD1Sym && Sym <= charD1Sym ||
 	       Sym == SemicolonSym ||
@@ -475,9 +482,9 @@ void cParser::Statements()
 	       Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	       Sym >= newSym && Sym <= DollarSym ||
 	       Sym >= BangSym && Sym <= TildeSym) {
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 		if (Sym >= staticSym && Sym <= stringSym) {
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 			LocalDeclaration();
 		} else if (Sym >= identifierSym && Sym <= numberSym ||
 		           Sym >= stringD1Sym && Sym <= charD1Sym ||
@@ -492,18 +499,18 @@ void cParser::Statements()
 		           Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 		           Sym >= newSym && Sym <= DollarSym ||
 		           Sym >= BangSym && Sym <= TildeSym) {
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 			Statement();
-		} else GenError(89);
+		} else GenError(90);
 	}
-# line 670 "cs.atg"
+# line 697 "cs.atg"
 	        printf("1m_pMainFunction=%x", m_pMainFunction);
 }
 
-# line 285 "cs.atg"
+# line 293 "cs.atg"
 void cParser::ClassBody()
 {
-# line 286 "cs.atg"
+# line 294 "cs.atg"
 	
 	debug("===>classbody");
 	// 利用CFunction来存放类成员
@@ -527,9 +534,9 @@ void cParser::ClassBody()
 	delete type;
 	      
 	
-# line 310 "cs.atg"
+# line 318 "cs.atg"
 	Expect(LbraceSym);
-# line 310 "cs.atg"
+# line 318 "cs.atg"
 	while (Sym >= identifierSym && Sym <= numberSym ||
 	       Sym >= stringD1Sym && Sym <= charD1Sym ||
 	       Sym == SemicolonSym ||
@@ -544,16 +551,17 @@ void cParser::ClassBody()
 	       Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	       Sym >= newSym && Sym <= DollarSym ||
 	       Sym >= BangSym && Sym <= TildeSym) {
-# line 310 "cs.atg"
+# line 318 "cs.atg"
 		Definition();
 	}
-# line 310 "cs.atg"
+# line 318 "cs.atg"
 	Expect(RbraceSym);
-# line 312 "cs.atg"
+# line 320 "cs.atg"
 	
 	
 	m_pMainFunction = m_pCurClassDes;
-	// call construction function "create"
+	      printf("m_pMainFunction3222=%x\n", m_pMainFunction);
+	/*      // call construction function "create"
 	FUNCCALL fn;
 	CFunction* pScript = m_pCurClassDes->getMethod("create");       
 	fn.name = "::create";
@@ -567,11 +575,11 @@ void cParser::ClassBody()
 	ADDCOMMAND1(__paramv, 0xc100, 0);
 	ADDCOMMAND0(__endcallv);
 	m_pCurClassDes->getFuncTable()->ReleaseFunc();
-	
+	*/      
 	ADDCOMMAND0(__ret);
 	m_pMainFunction = m_pMainFunction->getParent();
 	
-	      printf("m_pMainFunction3=%x", m_pMainFunction);
+	      printf("m_pMainFunction3=%x\n", m_pMainFunction);
 	/*
 	//添加class
 	if (!Error->Errors)
@@ -613,38 +621,38 @@ void cParser::ClassBody()
 	;
 }
 
-# line 376 "cs.atg"
+# line 385 "cs.atg"
 void cParser::StorageClass()
 {
-# line 378 "cs.atg"
+# line 387 "cs.atg"
 	if (Sym == staticSym) {
-# line 377 "cs.atg"
+# line 386 "cs.atg"
 		Get();
 	} else if (Sym == mySym) {
-# line 378 "cs.atg"
+# line 387 "cs.atg"
 		Get();
 	} else if (Sym == functionSym) {
-# line 379 "cs.atg"
+# line 388 "cs.atg"
 		Get();
-	} else GenError(90);
+	} else GenError(91);
 }
 
-# line 382 "cs.atg"
+# line 391 "cs.atg"
 void cParser::Type(PTYPEDES type)
 {
-# line 405 "cs.atg"
+# line 414 "cs.atg"
 	switch (Sym) {
 		case varSym: 
 		case mixedSym:  
-# line 388 "cs.atg"
+# line 397 "cs.atg"
 			if (Sym == varSym) {
-# line 388 "cs.atg"
+# line 397 "cs.atg"
 				Get();
 			} else if (Sym == mixedSym) {
-# line 388 "cs.atg"
+# line 397 "cs.atg"
 				Get();
-			} else GenError(91);
-# line 389 "cs.atg"
+			} else GenError(92);
+# line 398 "cs.atg"
 			
 			              /*      #ifdef __SUPPORT_OBJ
 			                      char szName[MAX_IDENTIFIER_LENGTH];
@@ -662,144 +670,144 @@ void cParser::Type(PTYPEDES type)
 			      type->type = dtGeneral; type->refLevel = 0;
 			break;
 		case shortSym:  
-# line 406 "cs.atg"
+# line 415 "cs.atg"
 			Get();
-# line 406 "cs.atg"
+# line 415 "cs.atg"
 			if (Sym == intSym) {
-# line 406 "cs.atg"
+# line 415 "cs.atg"
 				Get();
 			}
-# line 407 "cs.atg"
+# line 416 "cs.atg"
 			                         type->type = dtShort; type->refLevel = 0;      
 			break;
 		case longSym:  
-# line 408 "cs.atg"
+# line 417 "cs.atg"
 			Get();
-# line 408 "cs.atg"
+# line 417 "cs.atg"
 			if (Sym == intSym ||
 			    Sym == floatSym) {
-# line 408 "cs.atg"
+# line 417 "cs.atg"
 				if (Sym == intSym) {
-# line 408 "cs.atg"
+# line 417 "cs.atg"
 					Get();
 				} else if (Sym == floatSym) {
-# line 408 "cs.atg"
-					Get();
-				} else GenError(92);
-			}
-# line 409 "cs.atg"
-			                         type->type = dtLong; type->refLevel = 0;
-			break;
-		case unsignedSym:  
-# line 410 "cs.atg"
-			Get();
-# line 410 "cs.atg"
-			if (Sym >= intSym && Sym <= longSym ||
-			    Sym == charSym) {
-# line 410 "cs.atg"
-				if (Sym == charSym) {
-# line 410 "cs.atg"
-					Get();
-				} else if (Sym == intSym) {
-# line 410 "cs.atg"
-					Get();
-				} else if (Sym == longSym) {
-# line 410 "cs.atg"
+# line 417 "cs.atg"
 					Get();
 				} else GenError(93);
 			}
+# line 418 "cs.atg"
+			                         type->type = dtLong; type->refLevel = 0;
+			break;
+		case unsignedSym:  
+# line 419 "cs.atg"
+			Get();
+# line 419 "cs.atg"
+			if (Sym >= intSym && Sym <= longSym ||
+			    Sym == charSym) {
+# line 419 "cs.atg"
+				if (Sym == charSym) {
+# line 419 "cs.atg"
+					Get();
+				} else if (Sym == intSym) {
+# line 419 "cs.atg"
+					Get();
+				} else if (Sym == longSym) {
+# line 419 "cs.atg"
+					Get();
+				} else GenError(94);
+			}
 			break;
 		case charSym:  
-# line 411 "cs.atg"
+# line 420 "cs.atg"
 			Get();
-# line 412 "cs.atg"
+# line 421 "cs.atg"
 			                        type->type = dtChar;                    type->refLevel = 0;
 			break;
 		case intSym:  
-# line 413 "cs.atg"
+# line 422 "cs.atg"
 			Get();
-# line 414 "cs.atg"
+# line 423 "cs.atg"
 			                         type->type = dtInt; type->refLevel = 0;
 			break;
 		case floatSym:  
-# line 415 "cs.atg"
+# line 424 "cs.atg"
 			Get();
-# line 416 "cs.atg"
+# line 425 "cs.atg"
 			                        type->type = dtFloat;                   type->refLevel = 0;
 			break;
 		case doubleSym:  
-# line 418 "cs.atg"
+# line 427 "cs.atg"
 			Get();
 			break;
 		case voidSym:  
-# line 418 "cs.atg"
+# line 427 "cs.atg"
 			Get();
 			break;
 		case stringSym:  
-# line 418 "cs.atg"
+# line 427 "cs.atg"
 			Get();
-# line 419 "cs.atg"
+# line 428 "cs.atg"
 			type->type =  dtStr;            type->refLevel = 0;
 			break;
-		default :GenError(94); break;
+		default :GenError(95); break;
 	}
 }
 
-# line 422 "cs.atg"
+# line 431 "cs.atg"
 void cParser::VarList(PTYPEDES type, char* szFirstName)
 {
-# line 423 "cs.atg"
+# line 432 "cs.atg"
 	ArraySize();
-# line 424 "cs.atg"
+# line 433 "cs.atg"
 	
 	      doVarDecl(type, szFirstName);
 	      char szName[MAX_IDENTIFIER_LENGTH];
-# line 427 "cs.atg"
+# line 436 "cs.atg"
 	if (Sym == EqualSym) {
-# line 427 "cs.atg"
+# line 436 "cs.atg"
 		Get();
-# line 427 "cs.atg"
+# line 436 "cs.atg"
 		Expression();
-# line 427 "cs.atg"
+# line 436 "cs.atg"
 		debug("assignment");doAssign();
 	}
-# line 428 "cs.atg"
+# line 437 "cs.atg"
 	while (Sym == CommaSym) {
-# line 428 "cs.atg"
+# line 437 "cs.atg"
 		Get();
-# line 428 "cs.atg"
+# line 437 "cs.atg"
 		Expect(identifierSym);
-# line 429 "cs.atg"
+# line 438 "cs.atg"
 		
 		              memset(szName, 0, MAX_IDENTIFIER_LENGTH-1);
 		              Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH);
 		              
 		
-# line 436 "cs.atg"
+# line 445 "cs.atg"
 		ArraySize();
-# line 437 "cs.atg"
+# line 446 "cs.atg"
 		
 		               doVarDecl(type, szName);
-# line 440 "cs.atg"
+# line 449 "cs.atg"
 		if (Sym == EqualSym) {
-# line 440 "cs.atg"
+# line 449 "cs.atg"
 			Get();
-# line 440 "cs.atg"
+# line 449 "cs.atg"
 			Expression();
-# line 440 "cs.atg"
+# line 449 "cs.atg"
 			        doAssign();
 		}
 	}
 }
 
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 void cParser::ArraySize()
 {
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 	while (Sym == LbrackSym) {
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 		Get();
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 		if (Sym >= identifierSym && Sym <= numberSym ||
 		    Sym >= stringD1Sym && Sym <= charD1Sym ||
 		    Sym == LbraceSym ||
@@ -810,29 +818,29 @@ void cParser::ArraySize()
 		    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 		    Sym >= newSym && Sym <= DollarSym ||
 		    Sym >= BangSym && Sym <= TildeSym) {
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 			ConstExpression();
 		}
-# line 443 "cs.atg"
+# line 452 "cs.atg"
 		Expect(RbrackSym);
 	}
 }
 
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 void cParser::Expression()
 {
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 	debug("===>Expression");
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 	Conditional();
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 	while (Sym == EqualSym ||
 	       Sym >= StarEqualSym && Sym <= GreaterGreaterEqualSym) {
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 		AssignmentOperator();
-# line 943 "cs.atg"
+# line 970 "cs.atg"
 		Expression();
-# line 944 "cs.atg"
+# line 971 "cs.atg"
 		
 		printf("===>AssignmentOperator\n");
 		    if (!doAssign()) 
@@ -841,17 +849,17 @@ void cParser::Expression()
 	}
 }
 
-# line 941 "cs.atg"
+# line 968 "cs.atg"
 void cParser::ConstExpression()
 {
-# line 941 "cs.atg"
+# line 968 "cs.atg"
 	Expression();
 }
 
-# line 447 "cs.atg"
+# line 456 "cs.atg"
 void cParser::FunctionDefinition()
 {
-# line 448 "cs.atg"
+# line 457 "cs.atg"
 	
 	    this->m_pMainFunction = new CFunction();
 	
@@ -869,30 +877,36 @@ void cParser::FunctionDefinition()
 	    else
 	            strcpy(m_pMainFunction->m_szName, szName);
 	            
-	    // add "this" as first parameter to function if it belong to a class
-	    if (m_pCurClassDes){
+	    printf("m_pCurClassDes=%lx(%s), m_pMainFunction=%lx(%s)\n", m_pCurClassDes, m_pCurClassDes->name(), m_pMainFunction, m_pMainFunction->name());
+	    // add "this" as first parameter to function if it belongs to a class
+	    if (m_pCurClassDes ){
 	            if (m_pCurClassDes != m_pMainFunction){
-	            //      m_pCurClassDes->AddMethod(m_pMainFunction);
+	                    
+	            //      m_pCurClassDes->AddMethod(m_pMainFunction); // will add function in functionhead
 	                    m_pMainFunction->setParent(m_pCurClassDes);
 	            }
-	            PTYPEDES type = new TYPEDES;
-	            type->refLevel = 0;
-	            type->type = dtGeneral;
-	            if (!AllocVar(type, "this"))
-	                    GENERR(113);
-	            else
-	                    m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
-	            delete type;
+	            printf(" m_pMainFunction->parent=%lx\n", m_pMainFunction->getParent());
+	            if (stricmp(m_pCurClassDes->name(), "_global_")){
+	                    PTYPEDES type = new TYPEDES;
+	                    type->refLevel = 0;
+	                    type->type = dtGeneral;
+	                    printf("allocate 'this' as first input parameter for method %s::%s \n", m_pMainFunction->getParent()->name(), m_pMainFunction->name());
+	                    if (!AllocVar(type, "this"))
+	                            GENERR(113);
+	                    else
+	                            m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+	                    delete type;
+	            }
 	    }
 	
 	    printf("--->FunctionDefinition:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
 	
 	            
-# line 485 "cs.atg"
+# line 500 "cs.atg"
 	FunctionHeader();
-# line 485 "cs.atg"
+# line 500 "cs.atg"
 	FunctionBody();
-# line 486 "cs.atg"
+# line 501 "cs.atg"
 	
 	    if (!this->Error->Errors)
 	    {
@@ -910,39 +924,44 @@ void cParser::FunctionDefinition()
 	                    printf("--->m_pMainFunction221=%x, name=%s\n", m_pMainFunction, m_pMainFunction->name());
 	//                      delete m_pMainFunction;
 	
-	                    m_pMainFunction = m_pMainFunction->getParent();
+	            //      m_pMainFunction = m_pMainFunction->getParent();
+	            //                      printf("--->m_pMainFunction2333=%x\n", m_pMainFunction);
 	            }
 	     }
-	     m_pMainFunction =m_pMainFunction->getParent();
-	    //      printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
+	            printf("--->m_pMainFunction233=%s\n", m_pMainFunction->name());
+	     m_pMainFunction = m_pMainFunction->getParent();
+	    printf("--->m_pMainFunction23=%x\n", m_pMainFunction);
 	    
 }
 
-# line 511 "cs.atg"
+# line 528 "cs.atg"
 void cParser::FunctionHeader()
 {
-# line 512 "cs.atg"
+# line 529 "cs.atg"
 	
 	    
 	
 	
-# line 519 "cs.atg"
+# line 536 "cs.atg"
 	Expect(LparenSym);
-# line 519 "cs.atg"
+# line 536 "cs.atg"
 	if (Sym == identifierSym ||
 	    Sym >= varSym && Sym <= stringSym) {
-# line 519 "cs.atg"
+# line 536 "cs.atg"
 		FormalParamList();
 	}
-# line 519 "cs.atg"
+# line 536 "cs.atg"
 	Expect(RparenSym);
-# line 520 "cs.atg"
+# line 537 "cs.atg"
 	        
 	m_pMainFunction->ClearExpStack();
 	//printf("add function%s line=%d\n",  m_pMainFunction->name(), Scanner->CurrSym.Line);
 	this->m_pMainFunction->m_iParamNum = this->m_pMainFunction->m_SymbolTable.m_nSymbolCount; 
-	           if (m_pCurClassDes != m_pMainFunction)
+	           if (m_pCurClassDes != m_pMainFunction){
 	                   m_pCurClassDes->AddMethod(m_pMainFunction);
+	                   printf("add function %s to class %s(%x)\n", m_pMainFunction->name(), m_pCurClassDes->name(), m_pCurClassDes);
+	           }
+	           m_pCurClassDes->getFuncTable()->dump();
 	/*if          (!m_pCurClassDes->getFuncTable()->AddFunction(this->m_pMainFunction))
 	           {
 	                   GENERR(114);
@@ -950,71 +969,71 @@ void cParser::FunctionHeader()
 	*/;
 }
 
-# line 532 "cs.atg"
+# line 552 "cs.atg"
 void cParser::FunctionBody()
 {
-# line 532 "cs.atg"
+# line 552 "cs.atg"
 	CompoundStatement();
-# line 532 "cs.atg"
+# line 552 "cs.atg"
 	        ADDCOMMAND0(__ret);
 }
 
-# line 533 "cs.atg"
+# line 553 "cs.atg"
 void cParser::FormalParamList()
 {
-# line 533 "cs.atg"
+# line 553 "cs.atg"
 	FormalParameter();
-# line 533 "cs.atg"
+# line 553 "cs.atg"
 	while (Sym == CommaSym) {
-# line 533 "cs.atg"
+# line 553 "cs.atg"
 		Get();
-# line 533 "cs.atg"
+# line 553 "cs.atg"
 		FormalParameter();
 	}
 }
 
-# line 668 "cs.atg"
+# line 695 "cs.atg"
 void cParser::CompoundStatement()
 {
-# line 668 "cs.atg"
+# line 695 "cs.atg"
 	Expect(LbraceSym);
-# line 668 "cs.atg"
+# line 695 "cs.atg"
 	Statements();
-# line 668 "cs.atg"
+# line 695 "cs.atg"
 	Expect(RbraceSym);
 }
 
-# line 534 "cs.atg"
+# line 554 "cs.atg"
 void cParser::FormalParameter()
 {
-# line 534 "cs.atg"
+# line 554 "cs.atg"
 	PTYPEDES type = new TYPEDES; ;          type->type = dtGeneral; type->refLevel = 0;
-# line 534 "cs.atg"
+# line 554 "cs.atg"
 	while (Sym >= varSym && Sym <= stringSym) {
-# line 535 "cs.atg"
+# line 555 "cs.atg"
 		Type(type);
-# line 535 "cs.atg"
+# line 555 "cs.atg"
 		while (Sym == StarSym) {
-# line 535 "cs.atg"
+# line 555 "cs.atg"
 			//test;
-# line 535 "cs.atg"
+# line 555 "cs.atg"
 			Get();
-# line 535 "cs.atg"
+# line 555 "cs.atg"
 			type->refLevel++;
 		}
 	}
-# line 536 "cs.atg"
+# line 556 "cs.atg"
 	Expect(identifierSym);
-# line 537 "cs.atg"
+# line 557 "cs.atg"
 	
 	   char szName[MAX_IDENTIFIER_LENGTH];
 	   memset(szName, 0, MAX_IDENTIFIER_LENGTH-1);
 	   Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH);
-# line 542 "cs.atg"
+# line 562 "cs.atg"
 	while (Sym == LbrackSym) {
-# line 542 "cs.atg"
+# line 562 "cs.atg"
 		ArraySize();
-# line 543 "cs.atg"
+# line 563 "cs.atg"
 		
 		     if (type->type == dtGeneral){
 		             fprintf(stderr, "Cannot specify array for a var type variable");
@@ -1034,6 +1053,8 @@ void cParser::FormalParameter()
 		                     GENERR(113);
 		             else
 		                     m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+		                                     printf("--->FunctionDefinition0:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+		
 		     }
 		     else
 		     {
@@ -1067,11 +1088,14 @@ void cParser::FormalParameter()
 		             memcpy(type->dimsize, dimsize, (i-1)*sizeof(long));
 		             memcpy(&m_pMainFunction->m_SymbolTable.tableEntry[index].type, type, sizeof(TYPEDES));
 		             m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+		             
+		                             printf("--->FunctionDefinition3:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+		
 		     }
 		
 		     };
 	}
-# line 599 "cs.atg"
+# line 624 "cs.atg"
 	
 	//      printf("===>2\n");
 	// allocate variable
@@ -1082,22 +1106,24 @@ void cParser::FormalParameter()
 	                        GENERR(113);
 	
 	              m_pMainFunction->m_iParamTotalSize += this->UnitSize(*type);
+	                      printf("--->FunctionDefinition2:: m_pMainFunction=%x, name=%s, expStockPt=%x, m_iParamTotalSize=%d\n", m_pMainFunction, m_pMainFunction->name(), m_pMainFunction->m_pExpDigitPt, m_pMainFunction->m_iParamTotalSize);
+	
 	      }
 	      delete type;
 }
 
-# line 616 "cs.atg"
+# line 643 "cs.atg"
 void cParser::Statement()
 {
-# line 616 "cs.atg"
+# line 643 "cs.atg"
 	debug("====>statement");
-# line 617 "cs.atg"
+# line 644 "cs.atg"
 	while (Sym == caseSym ||
 	       Sym == defaultSym) {
-# line 617 "cs.atg"
+# line 644 "cs.atg"
 		Label();
 	}
-# line 625 "cs.atg"
+# line 652 "cs.atg"
 	switch (Sym) {
 		case identifierSym: 
 		case numberSym: 
@@ -1115,146 +1141,146 @@ void cParser::Statement()
 		case DollarSym: 
 		case BangSym: 
 		case TildeSym:  
-# line 625 "cs.atg"
+# line 652 "cs.atg"
 			AssignmentStatement();
 			break;
 		case breakSym:  
-# line 625 "cs.atg"
+# line 652 "cs.atg"
 			BreakStatement();
 			break;
 		case continueSym:  
-# line 626 "cs.atg"
+# line 653 "cs.atg"
 			ContinueStatement();
 			break;
 		case doSym:  
-# line 627 "cs.atg"
+# line 654 "cs.atg"
 			DoStatement();
 			break;
 		case forSym:  
-# line 627 "cs.atg"
+# line 654 "cs.atg"
 			ForStatement();
 			break;
 		case ifSym:  
-# line 628 "cs.atg"
+# line 655 "cs.atg"
 			IfStatement();
 			break;
 		case SemicolonSym:  
-# line 628 "cs.atg"
+# line 655 "cs.atg"
 			NullStatement();
 			break;
 		case returnSym:  
-# line 629 "cs.atg"
+# line 656 "cs.atg"
 			ReturnStatement();
 			break;
 		case switchSym:  
-# line 629 "cs.atg"
+# line 656 "cs.atg"
 			SwitchStatement();
 			break;
 		case whileSym:  
-# line 630 "cs.atg"
+# line 657 "cs.atg"
 			WhileStatement();
 			break;
-		default :GenError(95); break;
+		default :GenError(96); break;
 	}
-# line 630 "cs.atg"
+# line 657 "cs.atg"
 	        m_pMainFunction->ClearExpStack();
 }
 
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 void cParser::Label()
 {
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 	if (Sym == caseSym) {
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 		Get();
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 		ConstExpression();
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 		Expect(ColonSym);
 	} else if (Sym == defaultSym) {
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 		Get();
-# line 633 "cs.atg"
+# line 660 "cs.atg"
 		Expect(ColonSym);
-	} else GenError(96);
+	} else GenError(97);
 }
 
-# line 638 "cs.atg"
+# line 665 "cs.atg"
 void cParser::AssignmentStatement()
 {
-# line 638 "cs.atg"
+# line 665 "cs.atg"
 	debug("===>AssignmentStatement1");
-# line 638 "cs.atg"
+# line 665 "cs.atg"
 	Expression();
-# line 638 "cs.atg"
+# line 665 "cs.atg"
 	Expect(SemicolonSym);
-# line 638 "cs.atg"
+# line 665 "cs.atg"
 	debug("===>AssignmentStatement2"); if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 640 "cs.atg"
+# line 667 "cs.atg"
 void cParser::BreakStatement()
 {
-# line 640 "cs.atg"
+# line 667 "cs.atg"
 	Expect(breakSym);
-# line 641 "cs.atg"
+# line 668 "cs.atg"
 	        //recode this command for write back
 	   this->m_curloop->AddBreak(this->m_pMainFunction->m_nCurrentCmdNum);
 	   //add command
 	   ADDCOMMAND1(__jmp, CC, 0);      
-# line 646 "cs.atg"
+# line 673 "cs.atg"
 	Expect(SemicolonSym);
-# line 646 "cs.atg"
+# line 673 "cs.atg"
 	if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 672 "cs.atg"
+# line 699 "cs.atg"
 void cParser::ContinueStatement()
 {
-# line 672 "cs.atg"
+# line 699 "cs.atg"
 	Expect(continueSym);
-# line 673 "cs.atg"
+# line 700 "cs.atg"
 	
 	    //recode this command for write back
 	    this->m_curloop->AddContinue(this->m_pMainFunction->m_nCurrentCmdNum);
 	    //add command
 	    ADDCOMMAND1(__jmp, CC, 0);      
 	
-# line 680 "cs.atg"
+# line 707 "cs.atg"
 	Expect(SemicolonSym);
-# line 680 "cs.atg"
+# line 707 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 void cParser::DoStatement()
 {
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expect(doSym);
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Statement();
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expect(whileSym);
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expect(LparenSym);
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expression();
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expect(RparenSym);
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	Expect(SemicolonSym);
-# line 683 "cs.atg"
+# line 710 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 void cParser::ForStatement()
 {
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 	Expect(forSym);
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 	Expect(LparenSym);
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
@@ -1265,12 +1291,12 @@ void cParser::ForStatement()
 	    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	    Sym >= newSym && Sym <= DollarSym ||
 	    Sym >= BangSym && Sym <= TildeSym) {
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 		Expression();
 	}
-# line 685 "cs.atg"
+# line 712 "cs.atg"
 	Expect(SemicolonSym);
-# line 686 "cs.atg"
+# line 713 "cs.atg"
 	
 	    //循环从下一句开始
 	    int loopEntry = this->m_pMainFunction->m_nCurrentCmdNum;
@@ -1281,9 +1307,9 @@ void cParser::ForStatement()
 	    this->m_curloop->m_entry = loopEntry;//设置新looptree的入口
 	
 	;
-# line 697 "cs.atg"
+# line 724 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
-# line 698 "cs.atg"
+# line 725 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
@@ -1294,27 +1320,27 @@ void cParser::ForStatement()
 	    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	    Sym >= newSym && Sym <= DollarSym ||
 	    Sym >= BangSym && Sym <= TildeSym) {
-# line 698 "cs.atg"
+# line 725 "cs.atg"
 		Expression();
 	}
-# line 699 "cs.atg"
+# line 726 "cs.atg"
 	
 	            //add command jz
 	            jzCmd = this->m_pMainFunction->m_nCurrentCmdNum;
 	            ADDCOMMAND1(__jnz, CC, 0)
 	;
-# line 705 "cs.atg"
+# line 732 "cs.atg"
 	Expect(SemicolonSym);
-# line 705 "cs.atg"
+# line 732 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
-# line 706 "cs.atg"
+# line 733 "cs.atg"
 	
 	    PCOMMAND cmd = NULL;
 	    int cmdsaved;
 	    int cmdnum;
 	
 	
-# line 713 "cs.atg"
+# line 740 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
@@ -1325,12 +1351,12 @@ void cParser::ForStatement()
 	    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	    Sym >= newSym && Sym <= DollarSym ||
 	    Sym >= BangSym && Sym <= TildeSym) {
-# line 714 "cs.atg"
+# line 741 "cs.atg"
 		
 		              cmdsaved = this->m_pMainFunction->m_nCurrentCmdNum;
-# line 717 "cs.atg"
+# line 744 "cs.atg"
 		Expression();
-# line 718 "cs.atg"
+# line 745 "cs.atg"
 		
 		              cmdnum = this->m_pMainFunction->m_nCurrentCmdNum - cmdsaved;
 		              cmd = new COMMAND[cmdnum];    
@@ -1340,11 +1366,11 @@ void cParser::ForStatement()
 		              m_pMainFunction->m_nCurrentCmdNum = cmdsaved;           
 		
 	}
-# line 727 "cs.atg"
+# line 754 "cs.atg"
 	Expect(RparenSym);
-# line 727 "cs.atg"
+# line 754 "cs.atg"
 	Statement();
-# line 728 "cs.atg"
+# line 755 "cs.atg"
 	
 	    long nContinue;//continue 语句的跳转目的地。
 	    nContinue = this->m_pMainFunction->m_nCurrentCmdNum;
@@ -1367,18 +1393,18 @@ void cParser::ForStatement()
 	;
 }
 
-# line 750 "cs.atg"
+# line 777 "cs.atg"
 void cParser::IfStatement()
 {
-# line 750 "cs.atg"
+# line 777 "cs.atg"
 	Expect(ifSym);
-# line 750 "cs.atg"
+# line 777 "cs.atg"
 	Expect(LparenSym);
-# line 750 "cs.atg"
+# line 777 "cs.atg"
 	Expression();
-# line 750 "cs.atg"
+# line 777 "cs.atg"
 	Expect(RparenSym);
-# line 751 "cs.atg"
+# line 778 "cs.atg"
 	
 	    //判断
 	    {
@@ -1414,15 +1440,15 @@ void cParser::IfStatement()
 	    int jzcmd = this->m_pMainFunction->m_nCurrentCmdNum;
 	    //加入判断语句
 	    ADDCOMMAND1(__jz, CC, 0)//跳转目标在下面补上;
-# line 787 "cs.atg"
+# line 814 "cs.atg"
 	Statement();
-# line 787 "cs.atg"
+# line 814 "cs.atg"
 	        int nextcmd; bool bElse = false;
-# line 787 "cs.atg"
+# line 814 "cs.atg"
 	if (Sym == elseSym) {
-# line 789 "cs.atg"
+# line 816 "cs.atg"
 		Get();
-# line 790 "cs.atg"
+# line 817 "cs.atg"
 		
 		            bElse = true;
 		            int jmpcmd = this->m_pMainFunction->m_nCurrentCmdNum;
@@ -1431,16 +1457,16 @@ void cParser::IfStatement()
 		            nextcmd = this->m_pMainFunction->m_nCurrentCmdNum;
 		            this->m_pMainFunction->m_pCmdTable[jzcmd].op[0] = nextcmd;
 		
-# line 799 "cs.atg"
+# line 826 "cs.atg"
 		Statement();
-# line 800 "cs.atg"
+# line 827 "cs.atg"
 		
 		            nextcmd = this->m_pMainFunction->m_nCurrentCmdNum;
 		            //补上jmp的跳转目标
 		            this->m_pMainFunction->m_pCmdTable[jmpcmd].op[0] = nextcmd;
 		
 	}
-# line 807 "cs.atg"
+# line 834 "cs.atg"
 	
 	if (!bElse)
 	{
@@ -1450,21 +1476,21 @@ void cParser::IfStatement()
 	   };
 }
 
-# line 817 "cs.atg"
+# line 844 "cs.atg"
 void cParser::NullStatement()
 {
-# line 817 "cs.atg"
+# line 844 "cs.atg"
 	Expect(SemicolonSym);
-# line 817 "cs.atg"
+# line 844 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 819 "cs.atg"
+# line 846 "cs.atg"
 void cParser::ReturnStatement()
 {
-# line 819 "cs.atg"
+# line 846 "cs.atg"
 	Expect(returnSym);
-# line 819 "cs.atg"
+# line 846 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
@@ -1475,10 +1501,10 @@ void cParser::ReturnStatement()
 	    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	    Sym >= newSym && Sym <= DollarSym ||
 	    Sym >= BangSym && Sym <= TildeSym) {
-# line 819 "cs.atg"
+# line 846 "cs.atg"
 		Expression();
 	}
-# line 820 "cs.atg"
+# line 847 "cs.atg"
 	
 	    //pop
 	    long op1;
@@ -1499,35 +1525,35 @@ void cParser::ReturnStatement()
 	    // return
 	    ADDCOMMAND0(__ret);
 	
-# line 841 "cs.atg"
+# line 868 "cs.atg"
 	Expect(SemicolonSym);
-# line 841 "cs.atg"
+# line 868 "cs.atg"
 	        if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 844 "cs.atg"
+# line 871 "cs.atg"
 void cParser::SwitchStatement()
 {
-# line 844 "cs.atg"
+# line 871 "cs.atg"
 	Expect(switchSym);
-# line 844 "cs.atg"
+# line 871 "cs.atg"
 	Expect(LparenSym);
-# line 846 "cs.atg"
+# line 873 "cs.atg"
 	Expression();
-# line 849 "cs.atg"
+# line 876 "cs.atg"
 	Expect(RparenSym);
-# line 849 "cs.atg"
+# line 876 "cs.atg"
 	Statement();
 }
 
-# line 853 "cs.atg"
+# line 880 "cs.atg"
 void cParser::WhileStatement()
 {
-# line 853 "cs.atg"
+# line 880 "cs.atg"
 	Expect(whileSym);
-# line 853 "cs.atg"
+# line 880 "cs.atg"
 	Expect(LparenSym);
-# line 854 "cs.atg"
+# line 881 "cs.atg"
 	
 	  int loopentry = this->m_pMainFunction->m_nCurrentCmdNum;
 	
@@ -1536,9 +1562,9 @@ void cParser::WhileStatement()
 	  this->m_curloop->m_entry = loopentry;//设置新looptree的入口
 	
 	;
-# line 863 "cs.atg"
+# line 890 "cs.atg"
 	Expression();
-# line 864 "cs.atg"
+# line 891 "cs.atg"
 	
 	//判断
 	{
@@ -1573,11 +1599,11 @@ void cParser::WhileStatement()
 	int jnzCmd =  this->m_pMainFunction->m_nCurrentCmdNum;
 	//jnz command
 	ADDCOMMAND1(__jz, CC, 0);
-# line 899 "cs.atg"
+# line 926 "cs.atg"
 	Expect(RparenSym);
-# line 899 "cs.atg"
+# line 926 "cs.atg"
 	Statement();
-# line 901 "cs.atg"
+# line 928 "cs.atg"
 	
 	 long nContinue;//continue 语句的跳转目的地。
 	 nContinue = this->m_pMainFunction->m_nCurrentCmdNum;
@@ -1593,135 +1619,135 @@ void cParser::WhileStatement()
 	;
 }
 
-# line 648 "cs.atg"
+# line 675 "cs.atg"
 void cParser::LocalDeclaration()
 {
-# line 649 "cs.atg"
+# line 676 "cs.atg"
 	
 	debug("===>LocalDeclaration");
 	      PTYPEDES type = new TYPEDES;
 	      char szName[MAX_IDENTIFIER_LENGTH];
 	      
 	
-# line 655 "cs.atg"
+# line 682 "cs.atg"
 	if (Sym >= varSym && Sym <= stringSym) {
-# line 655 "cs.atg"
+# line 682 "cs.atg"
 		Type(type);
 	} else if (Sym >= staticSym && Sym <= functionSym) {
-# line 655 "cs.atg"
+# line 682 "cs.atg"
 		StorageClass();
-# line 655 "cs.atg"
+# line 682 "cs.atg"
 		if (Sym >= varSym && Sym <= stringSym) {
-# line 655 "cs.atg"
+# line 682 "cs.atg"
 			Type(type);
 		}
-	} else GenError(97);
-# line 658 "cs.atg"
+	} else GenError(98);
+# line 685 "cs.atg"
 	while (Sym == StarSym) {
-# line 658 "cs.atg"
+# line 685 "cs.atg"
 		Get();
-# line 658 "cs.atg"
+# line 685 "cs.atg"
 		                type->refLevel++;
 	}
-# line 661 "cs.atg"
+# line 688 "cs.atg"
 	Expect(identifierSym);
-# line 661 "cs.atg"
+# line 688 "cs.atg"
 	        
 	                      memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 	                      Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);
 	              
-# line 665 "cs.atg"
+# line 692 "cs.atg"
 	if (Sym == LparenSym) {
-# line 665 "cs.atg"
+# line 692 "cs.atg"
 		FunctionDefinition();
 	} else if (Sym == SemicolonSym ||
 	           Sym >= EqualSym && Sym <= LbrackSym) {
-# line 665 "cs.atg"
+# line 692 "cs.atg"
 		VarList(type, szName);
-# line 665 "cs.atg"
+# line 692 "cs.atg"
 		Expect(SemicolonSym);
-	} else GenError(98);
-# line 665 "cs.atg"
+	} else GenError(99);
+# line 692 "cs.atg"
 	delete type; if (m_pMainFunction )m_pMainFunction->ClearExpStack();
 }
 
-# line 952 "cs.atg"
+# line 979 "cs.atg"
 void cParser::Conditional()
 {
-# line 952 "cs.atg"
+# line 979 "cs.atg"
 	LogORExp();
 }
 
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 void cParser::AssignmentOperator()
 {
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 	switch (Sym) {
 		case EqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case StarEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case SlashEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case PercentEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case PlusEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case MinusEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case AndEqualSym:  
-# line 2656 "cs.atg"
+# line 2791 "cs.atg"
 			Get();
 			break;
 		case UparrowEqualSym:  
-# line 2657 "cs.atg"
+# line 2792 "cs.atg"
 			Get();
 			break;
 		case BarEqualSym:  
-# line 2657 "cs.atg"
+# line 2792 "cs.atg"
 			Get();
 			break;
 		case LessLessEqualSym:  
-# line 2657 "cs.atg"
+# line 2792 "cs.atg"
 			Get();
 			break;
 		case GreaterGreaterEqualSym:  
-# line 2657 "cs.atg"
+# line 2792 "cs.atg"
 			Get();
 			break;
-		default :GenError(99); break;
+		default :GenError(100); break;
 	}
 }
 
-# line 954 "cs.atg"
+# line 981 "cs.atg"
 void cParser::LogORExp()
 {
-# line 954 "cs.atg"
+# line 981 "cs.atg"
 	LogANDExp();
-# line 954 "cs.atg"
+# line 981 "cs.atg"
 	        int type = -1;
-# line 954 "cs.atg"
+# line 981 "cs.atg"
 	while (Sym == BarBarSym) {
-# line 954 "cs.atg"
+# line 981 "cs.atg"
 		Get();
-# line 956 "cs.atg"
+# line 983 "cs.atg"
 		
 		            type = 7;
-# line 959 "cs.atg"
+# line 986 "cs.atg"
 		LogANDExp();
-# line 960 "cs.atg"
+# line 987 "cs.atg"
 		
 		              //add command
 		              long op1, op2;
@@ -1748,7 +1774,7 @@ void cParser::LogORExp()
 		                      this->m_pMainFunction->PushDigit(_PSW, 0x82, dt);
 		              };
 	}
-# line 988 "cs.atg"
+# line 1015 "cs.atg"
 	
 	      if (type >= 0)
 	      {
@@ -1773,26 +1799,26 @@ void cParser::LogORExp()
 	      };
 }
 
-# line 1013 "cs.atg"
+# line 1040 "cs.atg"
 void cParser::LogANDExp()
 {
-# line 1014 "cs.atg"
+# line 1041 "cs.atg"
 	        
 	int type = -1;
 	    long op1, op2;
 	    long type1, type2;
 	    TYPEDES dt1, dt2;
-# line 1021 "cs.atg"
+# line 1048 "cs.atg"
 	InclORExp();
-# line 1021 "cs.atg"
+# line 1048 "cs.atg"
 	while (Sym == AndAndSym) {
-# line 1021 "cs.atg"
+# line 1048 "cs.atg"
 		Get();
-# line 1023 "cs.atg"
+# line 1050 "cs.atg"
 		                type = 7;
-# line 1025 "cs.atg"
+# line 1052 "cs.atg"
 		InclORExp();
-# line 1027 "cs.atg"
+# line 1054 "cs.atg"
 		
 		              //add command
 		              //pop出乘数和被乘数
@@ -1817,7 +1843,7 @@ void cParser::LogANDExp()
 		              }
 		;
 	}
-# line 1052 "cs.atg"
+# line 1079 "cs.atg"
 	
 	      if (type >= 0)
 	      {
@@ -1841,79 +1867,79 @@ void cParser::LogANDExp()
 	              };
 }
 
-# line 1076 "cs.atg"
+# line 1103 "cs.atg"
 void cParser::InclORExp()
 {
-# line 1076 "cs.atg"
+# line 1103 "cs.atg"
 	ExclORExp();
-# line 1076 "cs.atg"
+# line 1103 "cs.atg"
 	while (Sym == BarSym) {
-# line 1076 "cs.atg"
+# line 1103 "cs.atg"
 		Get();
-# line 1076 "cs.atg"
+# line 1103 "cs.atg"
 		ExclORExp();
 	}
 }
 
-# line 1078 "cs.atg"
+# line 1105 "cs.atg"
 void cParser::ExclORExp()
 {
-# line 1078 "cs.atg"
+# line 1105 "cs.atg"
 	ANDExp();
-# line 1078 "cs.atg"
+# line 1105 "cs.atg"
 	while (Sym == UparrowSym) {
-# line 1078 "cs.atg"
+# line 1105 "cs.atg"
 		Get();
-# line 1078 "cs.atg"
+# line 1105 "cs.atg"
 		ANDExp();
 	}
 }
 
-# line 1080 "cs.atg"
+# line 1107 "cs.atg"
 void cParser::ANDExp()
 {
-# line 1080 "cs.atg"
+# line 1107 "cs.atg"
 	EqualExp();
-# line 1080 "cs.atg"
+# line 1107 "cs.atg"
 	while (Sym == AndSym) {
-# line 1080 "cs.atg"
+# line 1107 "cs.atg"
 		Get();
-# line 1080 "cs.atg"
+# line 1107 "cs.atg"
 		EqualExp();
 	}
 }
 
-# line 1082 "cs.atg"
+# line 1109 "cs.atg"
 void cParser::EqualExp()
 {
-# line 1083 "cs.atg"
+# line 1110 "cs.atg"
 	
 	    int type = -1;//0: == 1: !=
 	    long op1, op2;
 	    long type1, type2;
 	    TYPEDES dt1, dt2;
 	
-# line 1091 "cs.atg"
+# line 1118 "cs.atg"
 	RelationExp();
-# line 1091 "cs.atg"
+# line 1118 "cs.atg"
 	while (Sym >= EqualEqualSym && Sym <= BangEqualSym) {
-# line 1093 "cs.atg"
+# line 1120 "cs.atg"
 		if (Sym == EqualEqualSym) {
-# line 1091 "cs.atg"
+# line 1118 "cs.atg"
 			Get();
-# line 1092 "cs.atg"
+# line 1119 "cs.atg"
 			                        type = 0;
 		} else if (Sym == BangEqualSym) {
-# line 1093 "cs.atg"
+# line 1120 "cs.atg"
 			Get();
-# line 1094 "cs.atg"
+# line 1121 "cs.atg"
 			
 			                      type = 1;
 			
-		} else GenError(100);
-# line 1097 "cs.atg"
+		} else GenError(101);
+# line 1124 "cs.atg"
 		RelationExp();
-# line 1099 "cs.atg"
+# line 1126 "cs.atg"
 		
 		              //add command
 		              //pop出乘数和被乘数
@@ -1947,7 +1973,7 @@ void cParser::EqualExp()
 		              }
 		;
 	}
-# line 1134 "cs.atg"
+# line 1161 "cs.atg"
 	
 	      if (type >= 0)
 	      {
@@ -1972,52 +1998,52 @@ void cParser::EqualExp()
 	      };
 }
 
-# line 1159 "cs.atg"
+# line 1186 "cs.atg"
 void cParser::RelationExp()
 {
-# line 1160 "cs.atg"
+# line 1187 "cs.atg"
 	
 	    int type = -1;
 	    long op1, op2;
 	    long type1, type2;
 	    TYPEDES dt1, dt2;
 	
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 	ShiftExp();
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 	while (Sym == LessSym ||
 	       Sym >= GreaterSym && Sym <= GreaterEqualSym) {
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 		switch (Sym) {
 			case LessSym:  
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				Get();
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				type = 5;
 				break;
 			case GreaterSym:  
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				Get();
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				type = 4;
 				break;
 			case LessEqualSym:  
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				Get();
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				type = 3;
 				break;
 			case GreaterEqualSym:  
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				Get();
-# line 1167 "cs.atg"
+# line 1194 "cs.atg"
 				type = 2;
 				break;
-			default :GenError(101); break;
+			default :GenError(102); break;
 		}
-# line 1168 "cs.atg"
+# line 1195 "cs.atg"
 		ShiftExp();
-# line 1170 "cs.atg"
+# line 1197 "cs.atg"
 		
 		            //add command
 		            //pop出乘数和被乘数
@@ -2045,7 +2071,7 @@ void cParser::RelationExp()
 		
 		;
 	}
-# line 1199 "cs.atg"
+# line 1226 "cs.atg"
 	
 	    if (type >= 0)
 	    {
@@ -2071,50 +2097,50 @@ void cParser::RelationExp()
 	    };
 }
 
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 void cParser::ShiftExp()
 {
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 	AddExp();
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 	while (Sym >= LessLessSym && Sym <= GreaterGreaterSym) {
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 		if (Sym == LessLessSym) {
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 			Get();
 		} else if (Sym == GreaterGreaterSym) {
-# line 1225 "cs.atg"
+# line 1252 "cs.atg"
 			Get();
-		} else GenError(102);
-# line 1225 "cs.atg"
+		} else GenError(103);
+# line 1252 "cs.atg"
 		AddExp();
 	}
 }
 
-# line 1227 "cs.atg"
+# line 1254 "cs.atg"
 void cParser::AddExp()
 {
-# line 1227 "cs.atg"
+# line 1254 "cs.atg"
 	        int type = -1;//1: add 0: sub;
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 	MultExp();
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 	while (Sym >= PlusSym && Sym <= MinusSym) {
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 		if (Sym == PlusSym) {
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 			Get();
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 			        type = 1;
 		} else if (Sym == MinusSym) {
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 			Get();
-# line 1228 "cs.atg"
+# line 1255 "cs.atg"
 			type = 0;
-		} else GenError(103);
-# line 1228 "cs.atg"
+		} else GenError(104);
+# line 1255 "cs.atg"
 		MultExp();
-# line 1230 "cs.atg"
+# line 1257 "cs.atg"
 		
 		              //add command
 		              long op1, op2;
@@ -2198,41 +2224,41 @@ void cParser::AddExp()
 	}
 }
 
-# line 1314 "cs.atg"
+# line 1341 "cs.atg"
 void cParser::MultExp()
 {
-# line 1314 "cs.atg"
+# line 1341 "cs.atg"
 	        char szName[MAX_IDENTIFIER_LENGTH];     memset(szName, 0, MAX_IDENTIFIER_LENGTH);
-# line 1315 "cs.atg"
+# line 1342 "cs.atg"
 	CastExp();
-# line 1316 "cs.atg"
+# line 1343 "cs.atg"
 	
 	     Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
 	     int type = -1;//0: mult 1: div 2:percent;
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 	while (Sym == SlashSym ||
 	       Sym == StarSym ||
 	       Sym == PercentSym) {
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 		if (Sym == StarSym) {
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			Get();
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			        type = 0;
 		} else if (Sym == SlashSym) {
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			Get();
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			        type = 1;
 		} else if (Sym == PercentSym) {
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			Get();
-# line 1319 "cs.atg"
+# line 1346 "cs.atg"
 			        type = 2;
-		} else GenError(104);
-# line 1319 "cs.atg"
+		} else GenError(105);
+# line 1346 "cs.atg"
 		CastExp();
-# line 1320 "cs.atg"
+# line 1347 "cs.atg"
 		
 		              Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
 		              
@@ -2286,12 +2312,12 @@ void cParser::MultExp()
 	}
 }
 
-# line 1373 "cs.atg"
+# line 1400 "cs.atg"
 void cParser::CastExp()
 {
-# line 1373 "cs.atg"
+# line 1400 "cs.atg"
 	debug("===>CastExp");
-# line 1374 "cs.atg"
+# line 1401 "cs.atg"
 	
 	    //保存一元操作符栈
 	    EXPRESSIONOP* pSavedStack = this->m_pExpOpPt;
@@ -2299,9 +2325,9 @@ void cParser::CastExp()
 	    m_pExpOpPt = &m_ExpOp;
 	    //int op;
 	
-# line 1382 "cs.atg"
+# line 1409 "cs.atg"
 	UnaryExp();
-# line 1384 "cs.atg"
+# line 1411 "cs.atg"
 	
 	    int op;
 	    while (this->PopOp(&op))
@@ -2428,62 +2454,62 @@ void cParser::CastExp()
 	    m_pExpOpPt = pSavedStack;  
 }
 
-# line 1515 "cs.atg"
+# line 1542 "cs.atg"
 void cParser::UnaryExp()
 {
-# line 1515 "cs.atg"
+# line 1542 "cs.atg"
 	debug("===>UnaryExp");
-# line 1516 "cs.atg"
+# line 1543 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
 	    Sym == LparenSym ||
 	    Sym >= newSym && Sym <= DollarSym) {
-# line 1515 "cs.atg"
+# line 1542 "cs.atg"
 		PostFixExp();
 	} else if (Sym >= PlusPlusSym && Sym <= MinusMinusSym) {
-# line 1516 "cs.atg"
+# line 1543 "cs.atg"
 		if (Sym == PlusPlusSym) {
-# line 1516 "cs.atg"
+# line 1543 "cs.atg"
 			Get();
 		} else if (Sym == MinusMinusSym) {
-# line 1516 "cs.atg"
+# line 1543 "cs.atg"
 			Get();
-		} else GenError(105);
-# line 1516 "cs.atg"
+		} else GenError(106);
+# line 1543 "cs.atg"
 		UnaryExp();
 	} else if (Sym == StarSym ||
 	           Sym == AndSym ||
 	           Sym >= PlusSym && Sym <= MinusSym ||
 	           Sym >= BangSym && Sym <= TildeSym) {
-# line 1517 "cs.atg"
+# line 1544 "cs.atg"
 		UnaryOperator();
-# line 1517 "cs.atg"
+# line 1544 "cs.atg"
 		CastExp();
-	} else GenError(106);
+	} else GenError(107);
 }
 
-# line 1523 "cs.atg"
+# line 1576 "cs.atg"
 void cParser::PostFixExp()
 {
-# line 1523 "cs.atg"
-	debug("===>PostFixExp");
-# line 1524 "cs.atg"
-	Primary();
-# line 1525 "cs.atg"
+# line 1576 "cs.atg"
+	debug("===>PostFixExp"); char fullName[MAX_IDENTIFIER_LENGTH] ="";
+# line 1577 "cs.atg"
+	Primary(fullName);
+# line 1578 "cs.atg"
 	while (Sym == LbrackSym ||
 	       Sym == LparenSym ||
 	       Sym >= PlusPlusSym && Sym <= MinusGreaterSym) {
-# line 1597 "cs.atg"
+# line 1650 "cs.atg"
 		switch (Sym) {
 			case LbrackSym:  
-# line 1525 "cs.atg"
+# line 1578 "cs.atg"
 				Get();
-# line 1525 "cs.atg"
+# line 1578 "cs.atg"
 				Expression();
-# line 1525 "cs.atg"
+# line 1578 "cs.atg"
 				Expect(RbrackSym);
-# line 1526 "cs.atg"
+# line 1579 "cs.atg"
 				
 				{
 				                              //add command
@@ -2556,22 +2582,65 @@ void cParser::PostFixExp()
 				};
 				break;
 			case LparenSym:  
-# line 1598 "cs.atg"
+# line 1651 "cs.atg"
 				        
 				{
-				                      char szName[MAX_IDENTIFIER_LENGTH];
+				              /*      char szName[MAX_IDENTIFIER_LENGTH];
 				                      memset(szName, 0, MAX_IDENTIFIER_LENGTH);
 				                      Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-				                      long index = m_PubFuncTable->FindFuncByName(szName);
+				              */
+				                      printf("1fullname=%s\n", fullName);
+				              
+				                      long index = m_PubFuncTable->FindFuncByName(fullName);
 				                      FUNCCALL fn;
-				                      fn.name = szName;
+				                      fn.name = fullName;
 				                      if (index < 0) // cannot find function name in public function table, guess is was class method
 				                      {
-				                              if (m_pCurClassDes){ // if in class scope
+				                              //printf("search function %s\n", fullName);
+				                              if (strchr(fullName, '/') != 0){
+				                                      char* pch = strrchr(fullName, '/');
+				                                      if (pch){
+				                                              *pch = 0;
+				                                      }
+				                                      pch++;
+				                              //              printf("search2 function %s\n", fullName);
+				                                      CClassDes* cd = m_classTable->getClass(fullName);
+				                                      
+				                                              printf("search3 function %s in class %s(%x)\n", pch, fullName, cd);
+				                                      m_classTable->dump();
+				                                      if (cd){
+				                                              CFunction* pScript = cd->getMethod(pch);
+				                                              cd->getFuncTable()->dump();
+				                                              printf("found function %s=%x\n", pch, pScript);
+				                                              if (pScript){
+				                                                      fn.pVF = pScript;
+				                                                      fn.nType = 0;
+				                                                      ADDCOMMAND1(__callv, CC, (long)pScript);
+				                                              }else   {
+				                                                      ERR1p("failed to find function %s\n", pch);
+				                                                      GENERR(97);
+				                                                      Get();
+				                                                      return;
+				                                              }
+				                                      }else{
+				                                              ERR1p("failed to find class %s\n", fullName);
+				                                      }
+				                                      /*char* pch = strtok (str,"::");
+				                                      while (pch != NULL)
+				                                      {
+				                                      printf ("-%s-\n",pch);
+				                                              CClassDes * pcd = CCompiler::classDesTable.getClass((char*)(pch));
+				                                              
+				                                      pch = strtok (NULL, "::");
+				                                      }*/
+				                              }
+				                              else if (m_pCurClassDes){ // if in class scope
 				                                      // find in script function table
-				                                      CFunction* pScript = m_pCurClassDes->getFuncTable()->GetFunction(szName, &index);
+				                                      char* tName = (char*)fullName;
+				                                      CFunction* pScript = m_pCurClassDes->getFuncTable()->GetFunction( (char*)fullName, &index );
 				                                      if (pScript == NULL)
 				                                      {       
+				                                              ERR1p("failed to find function %s\n", fullName);
 				                                              GENERR(97);
 				                                              Get();
 				                                              return;
@@ -2582,7 +2651,7 @@ void cParser::PostFixExp()
 				                                              ADDCOMMAND1(__callv, CC, (long)pScript);
 				                                              
 				                                              // add "this" as first parameter
-				                                              printf("add this as parameter for class method\n");
+				                                              printf("pass this as parameter for calling class method %s\n", fullName);
 				                                              ADDCOMMAND1(__paramv, 0xc100, 0);
 				                                              
 				                                              m_pCurClassDes->getFuncTable()->ReleaseFunc();
@@ -2600,21 +2669,21 @@ void cParser::PostFixExp()
 				                      }
 				
 				                                                ;
-# line 1641 "cs.atg"
+# line 1737 "cs.atg"
 				FunctionCall(&fn);
-# line 1642 "cs.atg"
+# line 1738 "cs.atg"
 				};
 				break;
 			case PointSym:  
-# line 1644 "cs.atg"
+# line 1740 "cs.atg"
 				        printf("==> 1 \n");
 				{  // for "break" problem
 				      int nStatus = 0;  bool bFun = false;
 				
 				
-# line 1650 "cs.atg"
+# line 1746 "cs.atg"
 				Get();
-# line 1650 "cs.atg"
+# line 1746 "cs.atg"
 				                
 				//      long target = NULL;  // the variable presenting a string will be used by _eaobj
 				 _typedes(dtTarget, dtStr)
@@ -2627,11 +2696,11 @@ void cParser::PostFixExp()
 				 }
 				 long address_target;
 				 address_target = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
-# line 1687 "cs.atg"
+# line 1783 "cs.atg"
 				if (Sym == identifierSym) {
-# line 1667 "cs.atg"
+# line 1763 "cs.atg"
 					Get();
-# line 1668 "cs.atg"
+# line 1764 "cs.atg"
 					
 					                              char* member = GetCurrSym(); // get identifier
 					                              char szName[1024]="";
@@ -2652,11 +2721,11 @@ void cParser::PostFixExp()
 					         
 					      };
 				} else if (Sym == LbraceSym) {
-# line 1687 "cs.atg"
+# line 1783 "cs.atg"
 					Get();
-# line 1687 "cs.atg"
+# line 1783 "cs.atg"
 					Expression();
-# line 1688 "cs.atg"
+# line 1784 "cs.atg"
 					
 					      { // if it is expression, convert the result to string variable by "_evalobj"
 					              POPEXP1
@@ -2683,10 +2752,10 @@ void cParser::PostFixExp()
 					      }
 					               
 					;
-# line 1715 "cs.atg"
+# line 1811 "cs.atg"
 					Expect(RbraceSym);
-				} else GenError(107);
-# line 1734 "cs.atg"
+				} else GenError(108);
+# line 1830 "cs.atg"
 				
 				      // get target address for a.b
 				      // popup a
@@ -2728,9 +2797,9 @@ void cParser::PostFixExp()
 				
 				      ADDCOMMAND2(__mov, getAddressMode(AMODE_MEM, AMODE_REG, DT1, DT2), _AX, target);
 				      */;
-# line 1777 "cs.atg"
+# line 1873 "cs.atg"
 				while (Sym == LparenSym) {
-# line 1778 "cs.atg"
+# line 1874 "cs.atg"
 					
 					
 					bFun = true;
@@ -2748,16 +2817,16 @@ void cParser::PostFixExp()
 					}
 					ADDCOMMAND1(__callv, O0, _AX);
 					                     
-					// add "this" as first parameter
-					printf("add this as parameter for class method\n");
+					// pass "this" as first parameter
+					printf("pass this as parameter for calling dynamic method of class %s\n");
 					ADDCOMMAND1(__paramv, O0 , op1);
 					                     
 					m_pCurClassDes->getFuncTable()->ReleaseFunc();
 					
-# line 1802 "cs.atg"
+# line 1898 "cs.atg"
 					FunctionCall(&fn);
 				}
-# line 1804 "cs.atg"
+# line 1900 "cs.atg"
 				
 				/*
 				              if (!bFun)
@@ -2798,27 +2867,27 @@ void cParser::PostFixExp()
 				} // for "break" problem ;
 				break;
 			case MinusGreaterSym:  
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 				{int state = 0;
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 				Get();
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 				while (Sym == LbraceSym) {
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 					Get();
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 					state++;
 				}
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 				Expect(identifierSym);
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 				while (Sym == RbraceSym) {
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 					Get();
-# line 1845 "cs.atg"
+# line 1941 "cs.atg"
 					state++;
 				}
-# line 1846 "cs.atg"
+# line 1942 "cs.atg"
 				
 				              if (state == 0)         {                               
 				                              //pop
@@ -2901,9 +2970,9 @@ void cParser::PostFixExp()
 				                      ;
 				break;
 			case PlusPlusSym:  
-# line 1933 "cs.atg"
+# line 2029 "cs.atg"
 				Get();
-# line 1935 "cs.atg"
+# line 2031 "cs.atg"
 				
 				              {
 				                              long op1;
@@ -2957,9 +3026,9 @@ void cParser::PostFixExp()
 				              ;
 				break;
 			case MinusMinusSym:  
-# line 1987 "cs.atg"
+# line 2083 "cs.atg"
 				Get();
-# line 1989 "cs.atg"
+# line 2085 "cs.atg"
 				
 				                      {
 				                              long op1;
@@ -3011,171 +3080,220 @@ void cParser::PostFixExp()
 				                              }
 				                      };
 				break;
-			default :GenError(108); break;
+			default :GenError(109); break;
 		}
 	}
 }
 
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 void cParser::UnaryOperator()
 {
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 	switch (Sym) {
 		case PlusSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
 		case MinusSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
 		case StarSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
 		case BangSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
 		case AndSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
 		case TildeSym:  
-# line 2659 "cs.atg"
+# line 2794 "cs.atg"
 			Get();
 			break;
-		default :GenError(109); break;
+		default :GenError(110); break;
 	}
 }
 
-# line 2235 "cs.atg"
-void cParser::Primary()
+# line 2331 "cs.atg"
+void cParser::Primary(char* fullName)
 {
-# line 2236 "cs.atg"
+# line 2332 "cs.atg"
 	
+	      printf("=====>Primary\n");
 	      char szName[MAX_IDENTIFIER_LENGTH];
 	      memset(szName, 0, MAX_IDENTIFIER_LENGTH);
-# line 2344 "cs.atg"
+	//      char fullName[MAX_IDENTIFIER_LENGTH] ="";
+# line 2479 "cs.atg"
 	switch (Sym) {
 		case identifierSym:  
-# line 2240 "cs.atg"
+# line 2338 "cs.atg"
 			Get();
-# line 2240 "cs.atg"
+# line 2339 "cs.atg"
+			        
+			Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称 
+			             strcpy(fullName, szName);
+# line 2343 "cs.atg"
+			while (Sym >= ColonColonSym && Sym <= HashHashSym) {
+# line 2357 "cs.atg"
+				if (Sym == HashHashSym) {
+# line 2343 "cs.atg"
+					Get();
+# line 2343 "cs.atg"
+					Expect(identifierSym);
+# line 2344 "cs.atg"
+					
+					      printf("=====>##\n");
+					                      char szName2[MAX_IDENTIFIER_LENGTH];
+					memset(szName2, 0, MAX_IDENTIFIER_LENGTH);
+					Scanner->GetName(&Scanner->CurrSym, szName2, MAX_IDENTIFIER_LENGTH-1);//得到名称
+					
+					
+					
+					strcat(fullName, "#");
+					strcat(fullName, szName2);
+					printf("===>fullname=%s\n", fullName);
+					
+					
+				} else if (Sym == ColonColonSym) {
+# line 2357 "cs.atg"
+					Get();
+# line 2357 "cs.atg"
+					Expect(identifierSym);
+# line 2358 "cs.atg"
+					        printf("=====>::\n");
+					char szName2[MAX_IDENTIFIER_LENGTH];
+					memset(szName2, 0, MAX_IDENTIFIER_LENGTH);
+					Scanner->GetName(&Scanner->CurrSym, szName2, MAX_IDENTIFIER_LENGTH-1);//得到名称
+					
+					
+					
+					strcat(fullName, "/");
+					strcat(fullName, szName2);
+					printf("===>fullname=%s\n", fullName);
+					
+					
+				} else GenError(111);
+			}
+# line 2374 "cs.atg"
 			
 			
-			  {
-			Scanner->GetName(&Scanner->CurrSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
-			  
-			          
-			          int address = -1;
+			{
+			
+			
+			
+			int address = -1;
 			/*              
-			          bool bThis = false;     
-			          if (strcmp(szName, "this")==0){
-			          // check whether this is a class method
-			                  if (m_pCurClassDes){
-			                          bThis = true;
-			                          address = 0;
-			                  }else{
-			                          GENERR(127);
-			                  }
-			          }else
-			              address = GetSymAddress(szName); // return -1 if not found
-			  */
-			          address = GetSymAddress(szName); // try to get symbol from main function and its ancestor
-			          printf("identiefier=%s, address=%x\n", szName, address);        
+			bool bThis = false;     
+			if (strcmp(szName, "this")==0){
+			// check whether this is a class method
+			      if (m_pCurClassDes){
+			              bThis = true;
+			              address = 0;
+			      }else{
+			              GENERR(127);
+			      }
+			}else
+			  address = GetSymAddress(szName); // return -1 if not found
+			*/
+			address = GetSymAddress(fullName); // try to get symbol from main function and its ancestor
+			printf("identiefier=%s, address=%x, m_pMainFunction=%lx\n", fullName, address, m_pMainFunction);        
 			
-			           // address < 0 => function, address >= 0 => variable
-			                    if (address >= 0 )// is a variable of current main function, push it into expression stack
-			                    {
-			                            TYPEDES dt;
-			                            SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym(szName);
-			                            if (pElement == NULL)
-			                            {
-			                                                            printf("===>generror 115, symbol name=%s", szName);
-			                                    GENERR(115); // not found it symbol table, check it in runtime
-			                            }
-			                            else
-			                            {
-			                                    memcpy(&dt ,&(pElement->type), sizeof(TYPEDES));
-			                                    /*if (pdt == NULL)
-			                                    {
-			                                    GENERR(111);
-			                                    }
-			                                    else*/
-			                            
-			                                    if ((dt.dim ==0 && dt.type !=dtGeneral ) // if not array and not object
-			                                            || (dt.type ==dtGeneral  && dt.refLevel > 0)) // if is pointer to object 
-			                                    {//如果不是数组和obj
-			                                            int opsize;
-			                                            if (dt.refLevel > 0) 
-			                                                    opsize = log2((int)OPSIZE_PTR);
-			                                            else
-			                                                    opsize = log2((int)typesize(dt.type, dt.objID));
-			                                            opsize &= 0x3;
-			                  debug("primary: push primitive");
-			                                            m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
-			                                    }
-			                                    else
-			                                    {//如果是数组或obj, 生成临时变量存放数组地址
-			                                            if (dt.dim != 0)
-			                                            {
-			                                                    long temp = AllocTempVar(dtLong, 1);
-			                                                    if (temp == -1)
-			                                                    {
-			                                                            GENERR(98);
-			                                                    }
-			                                                    
-			                                                    ADDCOMMAND2(__ea, DD, temp, address)
-			                                                    /*居卫华2001－8－22修改
-			                                                    dt.refLevel++;
-			                                                    dt.dim--;
-			                                                    */
-			                  debug("primary: push array");
-			                                                    m_pMainFunction->PushDigit(temp, AMODE_MEM|(log2( (int)(OPSIZE_PTR) )<<6), dt);
-			                                            }
-			                                            else // if it is object
-			                                            {
-			                                                                                   // int opsize;
-			                                                                                   // opsize = log2((int)OPSIZE_PTR);
-			                                               // opsize &= 0x3;
-			                                                                                  //  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
-			                                                                                  debug("primary: push obj");
-			                                                                                  m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_MEM, dt), dt);
-			                                            }
-			                                    }
-			                                    
-			                            }
-			                    }
-			          else // address < 0, not found in symbol table
-			          {
-			                  //GENERR(126);
-			                  if (this->m_PubFuncTable->FindFuncByName(szName) < 0) // not found in pub function table
-			                  {
-			                          // find it in class methods
-			                          long index = 0;
-			                          if (m_pCurClassDes->getFuncTable()->GetFunction(szName, &index) == NULL){ // not found in class function table
-			                                  // cannot create an object variable for it, because it maybe a function call
-			                                  GENERR(104);
-			                          } 
+			// address < 0 => function, address >= 0 => variable
+			        if (address >= 0 )// is a variable of current main function, push it into expression stack
+			        {
+			                TYPEDES dt;
+			                SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym(fullName);
+			                if (pElement == NULL)
+			                {
+			                                                printf("===>generror 115, symbol name=%s", fullName);
+			                        GENERR(115); // not found it symbol table, check it in runtime
+			                }
+			                else
+			                {
+			                        memcpy(&dt ,&(pElement->type), sizeof(TYPEDES));
+			                        /*if (pdt == NULL)
+			                        {
+			                        GENERR(111);
+			                        }
+			                        else*/
+			                
+			                        if ((dt.dim ==0 && dt.type !=dtGeneral ) // if not array and not object
+			                                || (dt.type ==dtGeneral  && dt.refLevel > 0)) // if is pointer to object 
+			                        {//如果不是数组和obj
+			                                int opsize;
+			                                if (dt.refLevel > 0) 
+			                                        opsize = log2((int)OPSIZE_PTR);
+			                                else
+			                                        opsize = log2((int)typesize(dt.type, dt.objID));
+			                                opsize &= 0x3;
+			      debug("primary: push primitive");
+			                                m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
+			                        }
+			                        else
+			                        {//如果是数组或obj, 生成临时变量存放数组地址
+			                                if (dt.dim != 0)
+			                                {
+			                                        long temp = AllocTempVar(dtLong, 1);
+			                                        if (temp == -1)
+			                                        {
+			                                                GENERR(98);
+			                                        }
+			                                        
+			                                        ADDCOMMAND2(__ea, DD, temp, address)
+			                                        /*居卫华2001－8－22修改
+			                                        dt.refLevel++;
+			                                        dt.dim--;
+			                                        */
+			      debug("primary: push array");
+			                                        m_pMainFunction->PushDigit(temp, AMODE_MEM|(log2( (int)(OPSIZE_PTR) )<<6), dt);
+			                                }
+			                                else // if it is object
+			                                {
+			                                                                       // int opsize;
+			                                                                       // opsize = log2((int)OPSIZE_PTR);
+			                                   // opsize &= 0x3;
+			                                                                      //  m_pMainFunction->PushDigit(address, AMODE_MEM|(opsize << 6), dt);
+			                                                                      debug("primary: push obj");
+			                                                                      m_pMainFunction->PushDigit(address, getAddressModeForExpStack(AMODE_MEM, dt), dt);
+			                                }
+			                        }
+			                        
+			                }
+			        }
+			else // address < 0, not found in symbol table
+			{
+			/*      //GENERR(126);
+			      if (this->m_PubFuncTable->FindFuncByName(fullName) < 0) // not found in pub function table
+			      {
+			              // find it in class methods
+			              long index = 0;
+			              if (m_pCurClassDes->getFuncTable()->GetFunction(fullName, &index) == NULL){ // not found in class function table
+			                      // cannot create an object variable for it, because it maybe a function call
+			                      GENERR(104);
+			                      ERR1p("failed to get function %s", fullName);
+			              } 
 			
-			                          else
-			                                  m_pCurClassDes->getFuncTable()->ReleaseFunc();
-			                  }
-			                  //      return;
-			          }
+			              else
+			                      m_pCurClassDes->getFuncTable()->ReleaseFunc();
+			      }
+			      //      return;*/
+			}
 			};
 			break;
 		case newSym:  
-# line 2344 "cs.atg"
+# line 2479 "cs.atg"
 			Get();
-# line 2344 "cs.atg"
+# line 2479 "cs.atg"
 			Creator();
 			break;
 		case DollarSym:  
-# line 2346 "cs.atg"
+# line 2481 "cs.atg"
 			Get();
-# line 2347 "cs.atg"
+# line 2482 "cs.atg"
 			{
 			      TYPEDES dt;
 			      SYMBOLTABLEELE *pElement = m_pMainFunction->m_SymbolTable.GetSym("this");
@@ -3191,9 +3309,9 @@ void cParser::Primary()
 			};
 			break;
 		case stringD1Sym:  
-# line 2381 "cs.atg"
+# line 2516 "cs.atg"
 			Get();
-# line 2382 "cs.atg"
+# line 2517 "cs.atg"
 			
 			             {
 			                            printf("===>string1\n");
@@ -3244,9 +3362,9 @@ void cParser::Primary()
 			                                };
 			break;
 		case charD1Sym:  
-# line 2432 "cs.atg"
+# line 2567 "cs.atg"
 			Get();
-# line 2433 "cs.atg"
+# line 2568 "cs.atg"
 			
 			            {
 			                    Scanner->GetName(&Scanner->NextSym, szName, MAX_IDENTIFIER_LENGTH-1);//得到名称
@@ -3256,9 +3374,9 @@ void cParser::Primary()
 			;
 			break;
 		case numberSym:  
-# line 2441 "cs.atg"
+# line 2576 "cs.atg"
 			Get();
-# line 2442 "cs.atg"
+# line 2577 "cs.atg"
 			
 			
 			debug("push number");
@@ -3280,32 +3398,32 @@ void cParser::Primary()
 			;
 			break;
 		case LparenSym:  
-# line 2462 "cs.atg"
+# line 2597 "cs.atg"
 			Get();
-# line 2462 "cs.atg"
+# line 2597 "cs.atg"
 			Expression();
-# line 2462 "cs.atg"
+# line 2597 "cs.atg"
 			Expect(RparenSym);
 			break;
 		case LbraceSym:  
-# line 2463 "cs.atg"
+# line 2598 "cs.atg"
 			SetDef();
 			break;
-		default :GenError(110); break;
+		default :GenError(112); break;
 	}
 }
 
-# line 2466 "cs.atg"
+# line 2601 "cs.atg"
 void cParser::FunctionCall(FUNCCALL* pFuncEntry)
 {
-# line 2466 "cs.atg"
+# line 2601 "cs.atg"
 	Expect(LparenSym);
-# line 2467 "cs.atg"
+# line 2602 "cs.atg"
 	
 	     debug("=====>FunctionCall");
 	     // if this is object instance method, attach "this" first.
 	     ;
-# line 2474 "cs.atg"
+# line 2609 "cs.atg"
 	if (Sym >= identifierSym && Sym <= numberSym ||
 	    Sym >= stringD1Sym && Sym <= charD1Sym ||
 	    Sym == LbraceSym ||
@@ -3316,12 +3434,12 @@ void cParser::FunctionCall(FUNCCALL* pFuncEntry)
 	    Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	    Sym >= newSym && Sym <= DollarSym ||
 	    Sym >= BangSym && Sym <= TildeSym) {
-# line 2474 "cs.atg"
+# line 2609 "cs.atg"
 		ActualParameters(pFuncEntry);
 	}
-# line 2474 "cs.atg"
+# line 2609 "cs.atg"
 	Expect(RparenSym);
-# line 2475 "cs.atg"
+# line 2610 "cs.atg"
 	
 	//      debug("======>functioncall2 ");
 	//long lParamNum = 0;
@@ -3375,12 +3493,12 @@ void cParser::FunctionCall(FUNCCALL* pFuncEntry)
 	            debug("======>functioncall3 ");
 }
 
-# line 2043 "cs.atg"
+# line 2139 "cs.atg"
 void cParser::SetDef()
 {
-# line 2043 "cs.atg"
+# line 2139 "cs.atg"
 	Expect(LbraceSym);
-# line 2044 "cs.atg"
+# line 2140 "cs.atg"
 	
 	      _typedes(dtTemp, dtGeneral)
 	      long temp = AllocTempVar(dtGeneral, 0);
@@ -3392,7 +3510,7 @@ void cParser::SetDef()
 	      _typedes(dtAx, dtGeneral)     // temp <= Ax
 	      ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, AMODE_REG, dtTemp, dtAx), temp, _AX,  dtGeneral<<4, dtGeneral<<4); 
 	              
-# line 2056 "cs.atg"
+# line 2152 "cs.atg"
 	while (Sym >= identifierSym && Sym <= numberSym ||
 	       Sym >= stringD1Sym && Sym <= charD1Sym ||
 	       Sym == LbraceSym ||
@@ -3403,42 +3521,42 @@ void cParser::SetDef()
 	       Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	       Sym >= newSym && Sym <= DollarSym ||
 	       Sym >= BangSym && Sym <= TildeSym) {
-# line 2056 "cs.atg"
+# line 2152 "cs.atg"
 		SetItems(temp);
 	}
-# line 2060 "cs.atg"
+# line 2156 "cs.atg"
 	
 	     // push the newly created hash
 	     _typedes(dt1, dtGeneral);
 	     m_pMainFunction->PushDigit(temp, AMODE_MEM, dt1);
-# line 2066 "cs.atg"
+# line 2162 "cs.atg"
 	Expect(RbraceSym);
 }
 
-# line 2067 "cs.atg"
+# line 2163 "cs.atg"
 void cParser::SetItems(long temp)
 {
-# line 2067 "cs.atg"
+# line 2163 "cs.atg"
 	HashItem(temp);
-# line 2067 "cs.atg"
+# line 2163 "cs.atg"
 	while (Sym == CommaSym) {
-# line 2067 "cs.atg"
+# line 2163 "cs.atg"
 		Get();
-# line 2067 "cs.atg"
+# line 2163 "cs.atg"
 		HashItem(temp);
 	}
 }
 
-# line 2070 "cs.atg"
+# line 2166 "cs.atg"
 void cParser::HashItem(long temp)
 {
-# line 2070 "cs.atg"
+# line 2166 "cs.atg"
 	int state = 0;
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 	if (Sym == identifierSym) {
-# line 2072 "cs.atg"
+# line 2168 "cs.atg"
 		Get();
-# line 2073 "cs.atg"
+# line 2169 "cs.atg"
 		
 		              GET_NAME
 		              int address = m_pMainFunction->AddStaticData(strlen(szName)+1, (BYTE*)szName);
@@ -3457,26 +3575,26 @@ void cParser::HashItem(long temp)
 	           Sym >= PlusPlusSym && Sym <= MinusMinusSym ||
 	           Sym >= newSym && Sym <= DollarSym ||
 	           Sym >= BangSym && Sym <= TildeSym) {
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 		while (Sym == LbraceSym) {
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 			Get();
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 			state++;
 		}
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 		        
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 		Expression();
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 		        
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 		while (Sym == RbraceSym) {
-# line 2083 "cs.atg"
+# line 2179 "cs.atg"
 			Get();
 		}
-	} else GenError(111);
-# line 2088 "cs.atg"
+	} else GenError(113);
+# line 2184 "cs.atg"
 	
 	              if (state == 0)         {       // identifier           
 	                      debug("identifier");    
@@ -3510,11 +3628,11 @@ void cParser::HashItem(long temp)
 	              debug("hash name");
 	
 	              
-# line 2121 "cs.atg"
+# line 2217 "cs.atg"
 	Expect(ColonSym);
-# line 2121 "cs.atg"
+# line 2217 "cs.atg"
 	Expression();
-# line 2122 "cs.atg"
+# line 2218 "cs.atg"
 	
 	      
 	      // op2 <= value, op1<=member
@@ -3542,14 +3660,14 @@ void cParser::HashItem(long temp)
 	
 }
 
-# line 2151 "cs.atg"
+# line 2247 "cs.atg"
 void cParser::Creator()
 {
-# line 2152 "cs.atg"
+# line 2248 "cs.atg"
 	char szName[_MAX_PATH] = "";
-# line 2153 "cs.atg"
+# line 2249 "cs.atg"
 	ClassFullName(szName);
-# line 2154 "cs.atg"
+# line 2250 "cs.atg"
 	        
 	   CClassDes* cd = this->m_classTable->getClass(szName);
 	   if (cd == NULL){
@@ -3590,7 +3708,7 @@ void cParser::Creator()
 	                   REPORT_COMPILE_ERROR("add symbol failed");
 	   }
 	;
-# line 2195 "cs.atg"
+# line 2291 "cs.atg"
 	
 	      FUNCCALL fn;
 	      CFunction* pScript = cd->getMethod("create");   
@@ -3601,16 +3719,16 @@ void cParser::Creator()
 	      ADDCOMMAND1(__callv, CC, (long)pScript);
 	                              
 	      // add "this" as first parameter
-	      printf("add this as parameter for class method\n");
+	      printf("pass this as parameter for calling class method %s\n", fn.name);
 	      ADDCOMMAND1(__paramv, O0 , temp);
 	                              
 	      m_pCurClassDes->getFuncTable()->ReleaseFunc();
-# line 2210 "cs.atg"
+# line 2306 "cs.atg"
 	while (Sym == LparenSym) {
-# line 2210 "cs.atg"
+# line 2306 "cs.atg"
 		FunctionCall(&fn);
 	}
-# line 2211 "cs.atg"
+# line 2307 "cs.atg"
 	
 	      
 	      
@@ -3628,10 +3746,10 @@ void cParser::Creator()
 	      };
 }
 
-# line 2528 "cs.atg"
+# line 2663 "cs.atg"
 void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 {
-# line 2529 "cs.atg"
+# line 2664 "cs.atg"
 	
 	//      lParamNum = 0;
 	    if (pFuncEntry == NULL)
@@ -3639,9 +3757,9 @@ void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 	
 	    char cParamNum = 0;     
 	
-# line 2536 "cs.atg"
+# line 2671 "cs.atg"
 	Expression();
-# line 2537 "cs.atg"
+# line 2672 "cs.atg"
 	
 	    //pop
 	    long op1;
@@ -3673,13 +3791,13 @@ void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 	            ADDCOMMAND1(__paramv, (AMODE_MEM|0xc0)<<8, temp)
 	    }
 	    cParamNum++; 
-# line 2569 "cs.atg"
+# line 2704 "cs.atg"
 	while (Sym == CommaSym) {
-# line 2569 "cs.atg"
+# line 2704 "cs.atg"
 		Get();
-# line 2569 "cs.atg"
+# line 2704 "cs.atg"
 		Expression();
-# line 2571 "cs.atg"
+# line 2706 "cs.atg"
 		
 		                    // modified on 20030331 by weihua ju
 		//                      if (cParamNum > pFuncEntry->params.size()-1)
@@ -3752,7 +3870,7 @@ void cParser::ActualParameters(FUNCCALL* pFuncEntry)
 		                    }               
 		;
 	}
-# line 2644 "cs.atg"
+# line 2779 "cs.atg"
 	
 	
 	    /*      // code added on 20030331 weihua ju
@@ -3816,8 +3934,8 @@ printf("allocate var for %s\n", szName);
 
 	if (m_pMainFunction) // in function definition
 		return m_pMainFunction->AddVal(szName, *type);
-	else
-		return this->m_pCurClassDes->AddMember(szName, *type);
+//	else
+	//	return this->m_pCurClassDes->AddMember(szName, *type);
 
 }
 
@@ -3922,12 +4040,14 @@ int cParser::GetSymAddress(char *szName)
 {
 	int ret = -1;
 	ret = this->m_pMainFunction->GetSymbolAddress(szName);
-	CFunction* p = m_pMainFunction;
-	while (p != NULL){
-		ret = p->GetSymbolAddress(szName);
-		if (ret >= 0)
-			return ret;
-		p = p->getParent();
+	if (!ret){
+		CFunction* p = m_pMainFunction;
+		while (p != NULL){
+			ret = p->GetSymbolAddress(szName);
+			if (ret >= 0)
+				return ret;
+			p = p->getParent();
+		}
 	}
 	return ret;
 }
@@ -4561,7 +4681,7 @@ cParser::~cParser()
 	}*/
 
 	SAFEDELETE(m_LoopTree);
-    SAFEDELETE(m_pMainFunction);
+//    SAFEDELETE(m_pMainFunction);
 }
 
 

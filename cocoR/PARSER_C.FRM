@@ -125,8 +125,8 @@ printf("allocate var for %s\n", szName);
 
 	if (m_pMainFunction) // in function definition
 		return m_pMainFunction->AddVal(szName, *type);
-	else
-		return this->m_pCurClassDes->AddMember(szName, *type);
+//	else
+	//	return this->m_pCurClassDes->AddMember(szName, *type);
 
 }
 
@@ -231,12 +231,14 @@ int cParser::GetSymAddress(char *szName)
 {
 	int ret = -1;
 	ret = this->m_pMainFunction->GetSymbolAddress(szName);
-	CFunction* p = m_pMainFunction;
-	while (p != NULL){
-		ret = p->GetSymbolAddress(szName);
-		if (ret >= 0)
-			return ret;
-		p = p->getParent();
+	if (!ret){
+		CFunction* p = m_pMainFunction;
+		while (p != NULL){
+			ret = p->GetSymbolAddress(szName);
+			if (ret >= 0)
+				return ret;
+			p = p->getParent();
+		}
 	}
 	return ret;
 }
@@ -870,7 +872,7 @@ void cParser::SetByteCodeFilePath(char* szPath)
 	}*/
 
 	SAFEDELETE(m_LoopTree);
-    SAFEDELETE(m_pMainFunction);
+//    SAFEDELETE(m_pMainFunction);
 }
 
 
