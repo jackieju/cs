@@ -86,9 +86,9 @@ private:
 	static std::vector<std::string> class_path;
 
 #ifdef WIN32
-	static stdext::hash_map<std::string, long> file_list;
+	static stdext::hash_map<char*, time_t> file_list;
 #else
-	static hash_map<std::string, long> file_list;
+	static hash_map<char*, time_t> file_list;
 #endif
 };
 

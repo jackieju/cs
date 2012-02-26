@@ -166,7 +166,8 @@ ArraySize
 
 							"(" [ FormalParamList ] ")" 
   .
-  FunctionBody         = CompoundStatement   .
+  FunctionBody         = CompoundStatement
+   .
   FormalParamList      = FormalParameter { "," FormalParameter } .
   FormalParameter      =  { 
   	Type<type> {  "*" 			 }  

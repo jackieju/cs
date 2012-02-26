@@ -8,6 +8,7 @@ using namespace stdext;
 #include <ext/hash_map>
 #endif
 
+#include "log.h"
 
 typedef struct _eqstr
 {
@@ -29,7 +30,7 @@ typedef union vtype_t {
 	unsigned short ust;
 	unsigned long ul;
 //	std::string* s;
-	CObjectInst * o;
+//	CObjectInst * o;
 	long fn;
 	char* s;
 } VTYPE;
@@ -46,12 +47,21 @@ typedef	stdext::hash_map<std::string, CObjectInst*> STR_HASHMAP;
 typedef	stdext::hash_map<std::string, CObjectInst*>::iterator  STR_HASHMAP_IT;
 #endif
 
-
-
+/*
+	CRef->ref=CAttribuite*->v=int
+							  char*
+							  float
+							  ...
+				or
+			  CObjectInst * -> members={
+														CRef*
+														CRef*
+															}
+*/
 class CAttribute{
 
-public:
-	
+
+protected:
 		CAttribute(){
 			//isLeaf = true;
 			s_temp = "";
@@ -62,7 +72,11 @@ public:
 			memset(&v, 0, sizeof(VTYPE));
 			ref = 0;
 		};
-		~CAttribute(){};
+		~CAttribute(){
+		//	if (valueType == dtGeneral)
+		//		if (v.o) 
+		//			delete v.o;
+		};
 		CAttribute(const CAttribute& src){
 			//this->name = src->getName();
 			//setValue(src->getType(), &(src->getValue()));
@@ -71,6 +85,7 @@ public:
 			this->valueType = src.valueType;
 		//	this->vs = src.vs;
 		};
+public:
 		void setName(char* name){
 			this->name = name;
 		}
@@ -79,7 +94,7 @@ public:
 		}
 		// set value, value is address of the value needs to be set
 		void setValue(int type, void* value){
-			printf("==>setValue, type=%d, value=%d, dtUlong=%d, dtLong=%d, v=%x\n", type, *(long*)value, dtULong, dtLong, v.s);
+			DEBUG5p("==>setValue, type=%d, value=%d, dtUlong=%d, dtLong=%d, v=%x\n", type, *(long*)value, dtULong, dtLong, v.s);
 		switch(type){
 			case dtInt:
 			v.i = *(int*)value;
@@ -116,11 +131,11 @@ public:
 			case dtStr:
 			//vs = (char*)value;
 			v.s = *(char**)value;
-			printf("set value to string %s", *(char**) value);
+				DEBUG1p("set value to string %s", *(char**) value);
 			break;
 			
-			case dtGeneral:
-			v.o = *(CObjectInst**)value;
+//			case dtGeneral:
+//			v.o = *(CObjectInst**)value;
 			
 			default:
 			fprintf(stderr, "Cannot set object value type to %d\n", type);
@@ -206,6 +221,8 @@ public:
 	}
 	void subRef(){
 		ref --;
+		if (ref == 0)
+			delete this;
 	}
 protected:
 	int valueType;
@@ -226,9 +243,12 @@ public:
 	};
 	CRef(char* name){
 		ref = NULL;
+		if (name)
 		this->name=name;
 	};
-	~CRef();
+	~CRef(){
+		release();
+	};
 	CAttribute* getRef(){
 		return ref;
 	}
@@ -240,6 +260,8 @@ public:
 	void release(){
 		if (ref != NULL)
 			ref->subRef();
+		ref = NULL;
+		this->name="";
 	}
 private:
 	CAttribute* ref;
@@ -250,10 +272,6 @@ class CObjectInst : public CAttribute
 {
 public:
 	
-	void addRef(){
-		ref ++;
-	}
-
 	int getRef(){
 		return ref;
 	}
@@ -261,6 +279,7 @@ public:
 	CRef*  getMemberRef(char* szName){
 		CRef * r =  members[szName];
 		if (r == NULL){
+			printf("add member ref %s\n", szName);
 			r = addMember(szName);
 		}
 		printf("r=%x\n",r);
@@ -281,7 +300,6 @@ public:
 	}*/
 	
 	CRef* addMember(char* szName){
-	
 		// CAttribute *p = CObjectInst::createObject(NULL);
 		members[szName] = new CRef(szName);
 		return members[szName];
@@ -318,7 +336,14 @@ public:
 	CObjectInst(long id, CClass* cls);
 
 public:
-	~CObjectInst(void);
+	~CObjectInst(void){	
+		STR_HASHMAP_IT it = members.begin();
+		while(it!=members.end()){
+			if (it->second)
+				delete (CRef*)(it->second);
+			it++;
+		}
+	};
 };
 
 #endif //__OBJECTINST_H__

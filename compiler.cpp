@@ -2,7 +2,7 @@
 //#include "io.h"
 #include "fcntl.h"
 #include "string.h"
-
+#include <sys/stat.h>
 
 #include "cocoR/CR_SCAN.hpp"
 #include "cocoR/CR_ERROR.hpp"
@@ -26,9 +26,9 @@ char CCompiler::m_szErrFile[_MAX_PATH] = "";
 CConfigure CCompiler::m_conf;
 std::vector<std::string> CCompiler::class_path;
 #ifdef WIN32
-stdext::hash_map<std::string, long> CCompiler::file_list;
+stdext::hash_map<char*, time_t> CCompiler::file_list;
 #else
-__gnu_cxx::hash_map<std::string, long> CCompiler::file_list;
+__gnu_cxx::hash_map<char*, time_t> CCompiler::file_list;
 #endif
 char *MyError::ErrorMsg[] = {
 #include "cocoR/ce.hpp"
@@ -162,10 +162,35 @@ BOOL CCompiler::Compile(char *szFileName)
 	else {
 		
 			// record file compile time
-	struct stat sb;
-	stat(path.c_str(), &sb);
-	CCompiler::file_list[path, sb.st_ctime];
-			strcpy(this->m_szSourceFile, path.c_str());
+		struct stat sb;
+		stat(path.c_str(), &sb);
+
+	
+		strcpy(this->m_szSourceFile, path.c_str());
+		bool modified = true;
+		time_t lt = 	CCompiler::file_list[m_szSourceFile];
+		if (lt == 0)
+			CCompiler::file_list[m_szSourceFile]=sb.st_mtime;
+		else{
+
+        struct tm *ptm = localtime(&sb.st_mtime);
+		char t_new[100] = "";
+		char t_old[100] = "";
+        snprintf(t_new, 100, "%s%04d%02d%02d", ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday);
+		ptm = localtime(&lt);
+        snprintf(t_old, 100, "%s%04d%02d%02d", ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday);
+		printf("file %s new mod time %s, while last modified time is %s\n", m_szSourceFile, t_new, t_old );
+			if (sb.st_mtime > lt){
+				modified = true;
+			}else
+                modified = false;
+		}
+		
+		if (!modified){
+			return TRUE;
+		}
+		
+
 #ifdef _MACOS	// binary and text files has no difference in unix
 		int mode = O_RDONLY;
 #else

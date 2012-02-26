@@ -48,7 +48,7 @@
 #define __newobj		0x10ab				// create new object or array
 #define __movobj		0x10ac				// assignment for object
 #define __i_evalstring	0x10ad				// eval string including #{}
-
+#define __rmref			0x10ae				// remove ref
 //类型转换(__cast(目标地址,  原地址, 转换类型)
 #define	__cast			0x10f6				
 
@@ -150,7 +150,12 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 #define DS 0xc1c3
 #define DA 0xc1c4
 #define AR 0xc4c2
+
 #define O0 0xc500
+#define D0 0xc100
+#define _0D 0xc1
+#define R0 0xc200
+#define _0R 0xc2
 #else
 #define DD 0x8181	// AMODE_MEM, AMODE_MEM
 #define CC 0x8080   // direct, direct
@@ -166,6 +171,13 @@ addressing mode, 0: Immediate 1: mem 2: register 3: static 4: preserved
 #define DA 0x8184
 #define AR 0x8482
 #define O0 0x8500
+
+#define R0 0x8200
+#define D0 0x8100
+#define _0D 0x81
+#define R0 0x8200
+#define _0R 0x82
+
 #endif
 
 #endif

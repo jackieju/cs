@@ -148,7 +148,11 @@ PRODUCTIONS
   //fclose(file);
 	printf("m_pMainFunction11=%x\n", m_pMainFunction);
 // add return statement
-	ADDCOMMAND0(__ret);
+
+//	ADDCOMMAND0(__ret);
+	if (m_pMainFunction->m_nCurrentCmdNum> 0 && m_pMainFunction->m_pCmdTable[m_pMainFunction->m_nCurrentCmdNum].opcode != __ret){
+		doReturn();
+	}
 	
 			   char path[_MAX_PATH];
 				if (strlen(m_szByteCodeFilePath) == 0 )
@@ -336,7 +340,12 @@ ClassBody	";" .
 	ADDCOMMAND0(__endcallv);
 	m_pCurClassDes->getFuncTable()->ReleaseFunc();
 */	
-	ADDCOMMAND0(__ret);
+	
+//	ADDCOMMAND0(__ret);
+	if (m_pMainFunction->m_nCurrentCmdNum > 0 && m_pMainFunction->m_pCmdTable[m_pMainFunction->m_nCurrentCmdNum].opcode != __ret){
+		doReturn();
+	}
+		
 	m_pMainFunction = m_pMainFunction->getParent();
 	
 		printf("m_pMainFunction3=%x\n", m_pMainFunction);
@@ -549,7 +558,12 @@ m_pMainFunction->ClearExpStack();
 		}		
  */
   .).
-  FunctionBody         = CompoundStatement (.	ADDCOMMAND0(__ret); .)  .
+  FunctionBody         = CompoundStatement
+ (.
+	if (m_pMainFunction->m_nCurrentCmdNum > 0 && m_pMainFunction->m_pCmdTable[m_pMainFunction->m_nCurrentCmdNum].opcode != __ret){
+		doReturn();
+	}
+.)  .
   FormalParamList      = FormalParameter { "," FormalParameter } .
   FormalParameter      = (. PTYPEDES type = new TYPEDES; ; 	type->type = dtGeneral; type->refLevel = 0;.) { 
   	Type<type> { (. //test; .) "*" 		(. type->refLevel++; .)	 }  
@@ -845,25 +859,7 @@ m_pMainFunction->ClearExpStack();
 
   ReturnStatement      = "return" [ Expression ] 
   (.
-	//pop
-	long op1;
-	long type;
-	TYPEDES dt1;
-	if (!m_pMainFunction->PopDigit(&op1, &type, &dt1)|| type <FIRST_ADDRESS_MODE || type >LAST_ADDRESS_MODE )
-	{
-	//	REPORT_COMPILE_ERROR("POP UP FAILED");
-		GENERR(96);
-		return;
-	}
-	int address_mode = type&0x00ff;
-	address_mode |= (log2(UnitSize(dt1))<<6);
-	
-	//ADDCOMMAND
-	// move reutrn value to _ax
-	ADDCOMMAND2(__mov, address_mode|0x8200, _AX, op1);
-	// return
-	ADDCOMMAND0(__ret);
-
+	 doReturn();
   .)
   ";"  (.	if (m_pMainFunction )m_pMainFunction->ClearExpStack(); .) .
                          /* Expression usually in parentheses */
@@ -1509,7 +1505,7 @@ MultExp     { ( "+" (. 	type = 1; .) | "-" (. type = 0; .) ) MultExp
 					}
 					else
 					{
-						ADDCOMMAND2(__ea, 0x8100|type1, temp, op1)
+						ADDCOMMAND2(__ea, D0|type1, temp, op1)
 						dt1.refLevel ++;
 						m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, dt1);
 					}
@@ -2644,13 +2640,14 @@ debug("pub function");
 		ADDCOMMAND0(__endcallv);
 
 		//save return value
-		_typedes(dt, dtLong)
+		_typedes(dt, dtGeneral)
 		if (m_pMainFunction->AddVal(NULL, dt))
 		{
 			long temp;
 			temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
-			ADDCOMMAND2(__mov, DR, temp , _AX);
-			m_pMainFunction->PushDigit(temp, AMODE_MEM|0x80, dt);
+			ADDCOMMAND2(__movobj, DR, temp, _AX);
+			m_pMainFunction->PushDigit(temp, _0D, dt);
+			ADDCOMMAND1(__rmref, R0, _AX)
 		}
 		else
 		{

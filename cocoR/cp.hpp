@@ -334,6 +334,7 @@ private: // function to generate code
 	bool doMove(long type1, long type2, long op1, long op2, TYPEDES& dt1, TYPEDES& dt2 );
 	void pushResultAX();
 	void doVarDecl(PTYPEDES type, char* szFirstName);
+	void doReturn();
 //<--
 };
 

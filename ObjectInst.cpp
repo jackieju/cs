@@ -11,11 +11,17 @@ CObjectInst::CObjectInst(long id, CClass* cls)
 
 
 
-CObjectInst::~CObjectInst(void)
-{
+/*CObjectInst::~CObjectInst(void)
+{	
+//	STR_HASHMAP_IT it = members.begin();
+//	while(it!=STR_HASHMAP_IT.end()){
+//		if (it->second)
+//			delete (CRef*)(it->second);
+//		it++;
+//	}
 }
 
-
+*/
 //CObjectInst* CObjectInst::createObject(CClass* c){
 //	long id;
 //	

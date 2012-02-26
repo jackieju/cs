@@ -228,6 +228,12 @@ void debug(char* fmt, ...);
 #define TRACE1(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "TRC", category)
 #define DEBUGc(m, category)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", category)
 #define DEBUG0(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "")
+#define DEBUG1p(m, p1)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1)
+#define DEBUG2p(m, p1, p2)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1, p2)
+#define DEBUG3p(m, p1, p2, p3)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1, p2, p3)
+#define DEBUG4p(m, p1, p2, p3, p4)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1, p2, p3, p4)
+#define DEBUG5p(m, p1, p2, p3, p4, p5)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1, p2, p3, p4,p5)
+#define DEBUG6p(m, p1, p2, p3, p4, p5, p6)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "", p1, p2, p3, p4,p5,p6)
 #define DEBUG(m)  JUJU::CLog::Log(m, __FILE__, __LINE__, 10, "DBG", "")
 using namespace JUJU;
 #endif

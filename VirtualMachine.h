@@ -47,6 +47,7 @@ typedef struct {
 	long ulVMemSize;
 	long ulDataSegSize;
 	long ulSSize;
+	vector<CRef*> refs;
 }CALLSTACKELE;
 typedef struct {
 	long fn;
@@ -256,9 +257,19 @@ public:
 	void DumpToFile();
 	BOOL IsDebugBreak(){return m_bIsDebugBreak;};
 
-	
+	std::string getCodeName(int code);
 private:
 
+	
+	CRef* createRef(char* str=NULL){
+		CRef* r = new CRef(str);
+		m_pCurCall->refs.push_back(r);
+		return r;
+	}
+	/*void removeRef(CRef* ref){
+		if (ref)
+			delete ref;
+	}*/
 	void _LoadFunc(CFunction *pFunc);
 	
 	//设置和删除断点
@@ -305,6 +316,9 @@ private:
 	BOOL _eaobj(PCOMMAND cmd);    // get address for object/member
 	BOOL _movobj(PCOMMAND cmd);   // new command for object
 	BOOL _newobj(PCOMMAND cmd); 
+	BOOL _rmref(PCOMMAND cmd); 
+	
+
 };
 
 

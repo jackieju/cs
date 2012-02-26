@@ -981,6 +981,51 @@ void -->ParserClass::pushResultAX(){
 	memset(&dt, 0, sizeof(TYPEDES));
 	this->m_pMainFunction->PushDigit(_AX, 0x82,dt);
 }
+
+void -->ParserClass::doReturn(){
+	//pop
+	long op1;
+	long type;
+	TYPEDES dt1;
+	if (!m_pMainFunction->PopDigit(&op1, &type, &dt1)|| type <FIRST_ADDRESS_MODE || type >LAST_ADDRESS_MODE )
+	{
+	//	REPORT_COMPILE_ERROR("POP UP FAILED");
+	//	GENERR(96);
+	//	return;
+			ADDCOMMAND1(__newobj,RS, -2);
+	}else{
+	int address_mode = type&0x00ff;
+	address_mode |= (log2(UnitSize(dt1))<<6);
+	
+	//ADDCOMMAND
+		// create temp var to store return value, in case return value is just in _AX
+		_typedes(DT1, dtGeneral)
+		long temp= NULL;
+		if (m_pMainFunction->AddVal(NULL, DT1))
+		{
+			
+			temp = m_pMainFunction->m_SymbolTable.tableEntry[m_pMainFunction->m_SymbolTable.m_nSymbolCount-1].address;
+			ADDCOMMAND4(__movobj, getAddressMode2(AMODE_MEM, AMODE_MEM, DT1, dt1), temp, op1, DT1.type<<4|DT1.refLevel, dt1.type<<4|dt1.refLevel)
+		}
+		else
+		{
+			REPORT_COMPILE_ERROR("add symbol failed");
+			return;
+		}
+
+	// move reutrn value to _ax
+	//ADDCOMMAND2(__mov, address_mode|R0, _AX, op1);
+	_typedes(dtTarget, dtGeneral)  // for _AX
+//	ADDCOMMAND2(__mov, RC, _AX, 0)
+	// create new object in _AX which will not be delete by function return
+	ADDCOMMAND1(__newobj,RS, -2);
+	// assign return object to _AX
+	ADDCOMMAND4(__movobj, getAddressMode2(AMODE_REG, AMODE_MEM, dtTarget, dt1), _AX, temp,  dtTarget.type<<4|dtTarget.refLevel, dt1.type<<4|dt1.refLevel); 
+//		ADDCOMMAND2(__ea, R0|type, _AX, op1)
+	}
+	// return
+	ADDCOMMAND0(__ret);
+}
 bool -->ParserClass::doAssign()
 {
 printf("==>do Assign\n");

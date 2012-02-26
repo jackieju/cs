@@ -401,7 +401,11 @@ void CVirtualMachine::Reset()
 		m_pCurCall = &(m_CallStack.back());
 		if (m_pCurCall->VMemory)
 		{
-			delete m_pCurCall->VMemory;			
+			delete m_pCurCall->VMemory;	
+			for (int i = 0; i< m_pCurCall->refs.size();i++){
+				if (m_pCurCall->refs[i])
+					delete m_pCurCall->refs[i];
+			}		
 		}
 		m_CallStack.pop_back();		
 	}	
@@ -474,7 +478,7 @@ void CVirtualMachine::LoadFunction(CFunction *pFunc)
 */
 void CVirtualMachine::_LoadFunc(CFunction *pFunc)
 {
-	printf("call virtual function %s(%lx)\n", pFunc->name(), pFunc);
+	printf("load virtual function %s(%lx)\n", pFunc->name(), pFunc);
 	if (pFunc == NULL)
 		throw new CVMMException("input CFuntion is null");	
 	
@@ -566,7 +570,7 @@ BOOL CVirtualMachine::_mov(PCOMMAND cmd)
 	case 2:	memcpy(dest, src, 4);break;
 	case 3:	memcpy(dest, src, 8);break;
 	}
-	printf("*dest=%x\n", *(long*)dest);
+	printf("*dest=%lx\n", *(long*)dest);
 	__IP++;
 	return TRUE;
 }
@@ -862,12 +866,12 @@ BOOL CVirtualMachine::_jmp(PCOMMAND cmd)
 // get physical address of one variable, and put into dest 
 BOOL CVirtualMachine::_ea(PCOMMAND cmd)
 {
-	long EA;
+	long* EA;
 	CMD_PREPROCESS2
-	EA = (long)src;
+	EA = (long*)src;
 
-	memcpy(dest, &EA, sizeof(long));
-	printf("-->EA: src=%lx, dest=%lx", src, dest);
+	memcpy(dest, &EA, sizeof(long*));
+	DEBUG2p("-->EA: src=%lx, dest=%lx\n", src, dest);
 	__IP++;
 	return TRUE;
 }
@@ -880,8 +884,12 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 	long EA=NULL;
 	
 	CRef *dest_ref = *(CRef**)dest;
+	if (dest_ref == NULL || dest_ref->getRef() == NULL){
+		ERR("_eaobj:object not initialzed");
+		return FALSE;
+	}
 	if (dest_ref == NULL){
-		dest_ref = new CRef();
+		dest_ref = createRef();
 		*(CRef**)dest = dest_ref;
 	}
 	if (dest_ref->getRef() == NULL){
@@ -894,8 +902,10 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 	debug("member name=%s", member);
 //	CAttribute* o =  obj->getMemberAddress(member);
 	CRef* r = obj->getMemberRef(member);
-		printf("==>eaobj obj=%x, dest ref=%x, member ref=%x, member=%s\n", obj, *(CRef**)dest, r, member);
-		debug("member object = %x", r->getRef());
+		printf("==>eaobj: obj=%x, dest ref=%x, member ref=%x, member name=%s\n", obj, *(CRef**)dest, r, member);
+	r = obj->getMemberRef(member);
+		printf("==>eaobj: obj=%x, dest ref=%x, member ref=%x, member name=%s\n", obj, *(CRef**)dest, r, member);
+	debug("member object = %x", r->getRef());
 	EA = (long)r;
 /*	if (cmd->opnum > 2){
 		if (obj == NULL)
@@ -956,8 +966,17 @@ BOOL CVirtualMachine::_eaobj(PCOMMAND cmd)
 BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 {
 		
-			CRef * r = new CRef();
-	if ( cmd->op[0] != -1){
+	CRef * r = NULL;
+	if (cmd->op[0] == -1) {
+							r =  createRef();
+		r->setRef(createObject(NULL));
+
+
+	}else	if (cmd->op[0] == -2){
+			r =  new CRef(); // tmp ref, prevent it from clean by function return
+		r->setRef(createObject(NULL));
+	} else{
+
 		CMD_PREPROCESS1
 		printf("create object for %s\n", (char*)dest);
 	
@@ -966,16 +985,11 @@ BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 			fprintf(stderr, "Load Object for %s failed!", (char*)dest);
 			return FALSE;
 		}*/
-	
+			r =  createRef();
 		r->setRef(createObject((char*)dest));
 
-	}else{
-				
-		r->setRef(createObject(NULL));
-
-
 	}
-	printf("new ref=%x\n", r);
+	printf("newobj:new ref=%x, new object %lx\n", r, r->getRef());
 		__AX = (long)r;
 	//__AX = LoadObject((char*)dest);
 
@@ -983,6 +997,17 @@ BOOL CVirtualMachine::_newobj(PCOMMAND cmd)
 	return TRUE;
 }
 
+BOOL CVirtualMachine::_rmref(PCOMMAND cmd)
+{
+		CMD_PREPROCESS1
+		printf("rm cref %lx at adddress %lx\n", *dest, dest);
+	CRef * r = *(CRef**)dest;
+		if (r)
+			delete r;
+		*(CRef**)dest = NULL;
+	__IP++;
+	return TRUE;
+}
 /*
 
 int exception_filter(EXCEPTION_POINTERS * pex)
@@ -1475,7 +1500,6 @@ BOOL CVirtualMachine::_endcallv(PCOMMAND cmd)
 	delete pCallInfo;
 	m_FuncStack.pop();
 
-
 	__IP = 0;
 	return TRUE;
 }
@@ -1770,10 +1794,17 @@ BOOL CVirtualMachine::_ret(PCOMMAND cmd)
 {
 	char msg[201] = "";
 	snprintf(msg, 200, "SE:: script '%s' exit at line %04d, IP %04d", m_pCurCall->pFunc->m_szName, cmd->line, __IP);
-	
+	DEBUG(msg);
+//	if (m_pCurCall)
+//		debug("return from call to virtual function %s", ((CFunction*)m_pCurCall->fn)->name());
 	//m_CallStack.back();
-	if (m_pCurCall->VMemory)
+	if (m_pCurCall->VMemory){
 		delete m_pCurCall->VMemory;
+		for (int i = 0; i< m_pCurCall->refs.size();i++){
+				if (m_pCurCall->refs[i])
+					delete m_pCurCall->refs[i];
+		}
+	}
 	m_CallStack.pop_back();
 	if (m_CallStack.empty() == false)
 		m_pCurCall = &m_CallStack.back();
@@ -1786,13 +1817,51 @@ BOOL CVirtualMachine::_ret(PCOMMAND cmd)
 
 		return TRUE;
 	}
-	
+
+
 	__IP = m_pCurCall->IP;
 	
 	return TRUE;	
 }
 
-
+std::string CVirtualMachine::getCodeName(int code){
+	switch(code){
+		case 0x1010: return "__mov		  ";  						//mov (变量, 变量)
+		case 0x10f4: return "__ea		  ";  						//取有效地址(只能用AMODE_MEM寻址方式)
+		case 0x1021: return "__add		  ";  		            //add (变量, 变量)-> ax
+		case 0x1050: return "__sub		  ";  					//sub (变量, 变量)
+		case 0x1070: return "__mul		  ";  					//mul (变量, 常量)
+		case 0x1090: return "__div		  ";  					//div (变量, 常量)
+		case 0x10f0: return "__mod		  ";  					//%
+		case 0x10d0: return "__not		  ";  					//not (变量), 相当于~运算
+		case 0x10f2: return "__test		  ";  					//比较test(a, b, 条件)
+		case 0x10f5: return "__notr		  ";  					//(__notr(变量) !运算 	
+		case 0x1022: return "__fadd		  "; 
+		case 0x1051: return "__fsub		  "; 
+		case 0x1071: return "__fmul		  "; 
+		case 0x1091: return "__fdiv		  "; 
+		case 0x10a0: return "__jmp		  ";                     //jmp (常量)
+		case 0x10a1: return "__jz		  ";  					//jz (语句)
+		case 0x10a2: return "__jnz		  ";  					//jnz (constant)
+		case 0x10f3: return "__ret		  ";                      
+		case 0x10a3: return "__callpub	  ";  				//call (function entry)
+		case 0x10a4: return "__parampub	  ";  				//param (address)
+		case 0x10a5: return "__endcallpub  ";  				//endcall
+		case 0x10a6: return "__callv		  "; 
+		case 0x10a7: return "__paramv	  "; 
+		case 0x10a8: return "__endcallv	  "; 
+		case 0x10a9: return "__loadlib	  ";  			// LoadLib xxx
+		case 0x10aa: return "__eaobj		  ";  			// get address of object
+		case 0x10ab: return "__newobj	  ";  			// create new object or array
+		case 0x10ac: return "__movobj	  ";  			// assignment for object
+		case 0x10ad: return "__i_evalstring";  			// eval string including #{}  
+		case 0x10ae: return "__rmref";            
+		case 0x10f6: return "__cast		  ";  
+		default: 
+			return "";
+	}
+	return "";
+}
 /**
 函数声明：	BOOL CVirtualMachine::Run()
 函数功能：	开始运行vm
@@ -1831,7 +1900,7 @@ BOOL CVirtualMachine::Run()
 	while (m_ToStop.Wait(0) == LOCKEX_ERR_TIMEOUT && !bError && m_pCurCall->pFunc->m_pCmdTable != NULL)
 	{
 		JUJU::CLog::debug("--->__IP=%d, mode=%d\n", __IP, m_nWorkMode);
-		JUJU::CLog::debug("--->line %d, code 0x%x\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode);
+		JUJU::CLog::debug("--->line %d, code 0x%x(%s)\n", m_pCurCall->pFunc->m_pCmdTable[__IP].line, m_pCurCall->pFunc->m_pCmdTable[__IP].opcode, getCodeName(m_pCurCall->pFunc->m_pCmdTable[__IP].opcode).c_str());
 		m_StatusLock.Lock();
 		opcode = m_pCurCall->pFunc->m_pCmdTable[__IP].opcode;
 		pcmd = &(m_pCurCall->pFunc->m_pCmdTable[__IP]);
@@ -1945,6 +2014,9 @@ BOOL CVirtualMachine::Run()
 			break;
 		case __newobj:
 			if (!_newobj(pcmd)) bError = TRUE;
+			break;
+		case __rmref:
+			if (!_rmref(pcmd)) bError = TRUE;
 			break;
 		default:
 			snprintf(msg, 200, "SE:: can not find the implement of this command %xH (line: %d)", opcode, pcmd->line);
@@ -2771,7 +2843,9 @@ BOOL CVirtualMachine::_cast(PCOMMAND cmd)
  * op[1] - src: 
  * op[2] - dest type:  
  * op[3] - src type: 
+ * NOTIC: cRef* should never be assigned to another variable, use dest_ref->setRef() instead
  */
+
 BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 {
 	char msg[201] = "";
@@ -2792,24 +2866,37 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 			printf("dest_ref=%x\n", dest_ref);
 		if (src_type == dtGeneral ){ // object => object
 			CRef* src_ref = *(CRef**)src;
-			printf("src=%x, src_ref=%x\n", src, src_ref);
+			if (src_ref)
+				printf("src=%lx, src_ref=%lx, src_obj=%lx\n", src, src_ref, src_ref->getRef());
+			else
+				printf("src=%lx, src_ref=%lx, src_obj=N/A\n", src, src_ref);
 			if (src_ref == NULL || src_ref->getRef() == NULL){
 				ERR("object not initialzed");
 				return FALSE;
 			}
+		//	if (dest_ref)
+			//	removeRef(dest_ref);
+		//	*(CRef**)dest = src_ref;
 			if (dest_ref == NULL){
-				dest_ref = new CRef();
+				dest_ref = createRef();
 				*(CRef**)dest = dest_ref;
+						
+				printf("new dest_ref=%lx\n", dest_ref);
+			}else{
+				dest_ref->release();
 			}
-					printf("new dest_ref=%x\n", dest_ref);
+		printf("set content of address %lx to ref %lx to object %lx...\n", dest, dest_ref, src_ref->getRef());
 			dest_ref->setRef(  src_ref->getRef() ); // copy address of object
+			printf("set content of address %lx to ref %lx to object %lx\n", dest, dest_ref, dest_ref->getRef());
+
+	
 		}else{ // primitive => object, 
 		
 		
 			CObjectInst* obj = NULL;
 				// release current object instance
 			if (dest_ref == NULL){ //if src is primitive and dest is not initialized object reference
-				CRef* r = new CRef();
+				CRef* r = createRef();
 				*(CRef**)dest = r;
 				dest_ref = *(CRef**)dest;
 			}else {
@@ -2843,7 +2930,7 @@ BOOL CVirtualMachine::_movobj(PCOMMAND cmd)
 		if (src_type == dtGeneral ){  // object => primitive
 			CRef * src_ref = *(CRef**)src;
 			CObjectInst *obj = NULL;
-			printf("src_ref=%x\n", src_ref);
+			printf("src_ref=%lx\n", src_ref);
 			if (src_ref == NULL || src_ref->getRef() == NULL){
 				ERR("object not initialzed");
 				return FALSE;
@@ -3314,14 +3401,17 @@ CObjectInst* CVirtualMachine::LoadObject(CClassDes* c, void* p){
 		LoadFunction(pfn);
 		printf("==>LoadFunction '%s' OK\n", pfn->name());
 		void* pthis = obj;
-		CRef* ref = new CRef("this");
+		CRef* ref = createRef("this");
 		ref->setRef(obj);
 	
 	//	AttachParam((BYTE*)&ref, sizeof(long*));
-		CRef* ref_p = new CRef("p");
-		CAttribute *attr = new CAttribute();
+		CRef* ref_p = createRef("p");
+		/*CAttribute *attr = new CAttribute();
 		attr->setValue(dtLong, &p);
-		ref_p->setRef(attr);
+		ref_p->setRef(attr);*/
+		CObjectInst* oi = createObject(NULL);
+		oi->setValue(dtLong, &p);
+		ref_p->setRef(oi);
 		
 		long** buf_param = new long*[2];
 		memset(buf_param, 0, 2*sizeof(long*));
